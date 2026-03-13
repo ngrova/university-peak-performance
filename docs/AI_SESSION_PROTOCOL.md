@@ -31,16 +31,19 @@ Long conversations degrade AI performance. Monitor for these signals:
 **When a rewind is triggered (by Nick or by you), you MUST do these things IN ORDER before ending:**
 
 1. **Update DECISIONS_LOG.md** — Add all new decisions, deferred items, and completed TODOs
-2. **Draft the git push block** — Give Nick the full `cat > ... ENDOFFILE` + `git add/commit/push` block to paste into the Mac Mini SSH terminal (nick user, `~/university-peak-performance` directory)
-3. **Write the rewind prompt** — Give Nick a ready-to-paste message for the new chat that includes:
+2. **Draft the git push block** — Give Nick the full `cat > ... ENDOFFILE` + `git add/commit/push` block for ALL updated docs (DECISIONS_LOG.md, AI_SESSION_PROTOCOL.md, and any other changed docs). Nick pastes this into Mac Mini SSH terminal (nick user, `~/university-peak-performance` directory).
+3. **Write the rewind prompt** — A single self-contained message Nick can paste to replace his first message in the chat. This prompt MUST contain:
+   - The full text of AI_SESSION_PROTOCOL.md (embedded, not linked)
+   - The full text of DECISIONS_LOG.md (embedded, not linked)
    - What day/task we're on
    - Exactly where we left off (last completed step)
    - What's next (first step of the new session)
    - Which terminal/user/directory to be in
    - Any open issues or blockers
-4. **List documents to upload** — Tell Nick which files to upload to the new chat
 
-Nick should be able to copy the rewind prompt, start a new chat, upload the listed docs, paste the prompt, and be productive in under 2 minutes.
+**How Nick does a rewind:** He scrolls to his first message in the chat, clicks edit, replaces it with the rewind prompt, and sends. That's it — one action, zero memory required. The Mission Briefing stays attached as an uploaded file.
+
+Nick should be productive in the new timeline within 2 minutes.
 
 ## Session Startup Checklist
 
