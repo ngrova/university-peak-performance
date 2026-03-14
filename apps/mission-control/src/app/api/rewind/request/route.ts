@@ -1,35 +1,19 @@
 import { NextResponse } from 'next/server';
 import { writeRewindState, IDLE_STATE } from '../rewind-state-file';
 
-const HOOK_URL = 'http://127.0.0.1:18789/hooks/wake';
-const HOOK_TOKEN = '9b4193b4adc389446c9974cc8272ae02';
-const HOOK_BODY = {
-  text: '⏪ Rewind requested from Mission Control. Respond in the dashboard at http://macmini:3001',
-  mode: 'now',
-};
-
-async function notifyAgent(): Promise<void> {
-  await fetch(HOOK_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${HOOK_TOKEN}`,
-    },
-    body: JSON.stringify(HOOK_BODY),
-    signal: AbortSignal.timeout(5_000),
-  });
-}
+// Skip the agent handshake — go straight to awaiting-confirm so the
+// user can immediately proceed without waiting for an agent response.
+// The hook-based agent notification was unreliable: the agent only
+// responds when actively chatting, not when a background hook fires.
 
 export async function POST() {
   try {
     writeRewindState({
       ...IDLE_STATE,
-      status: 'awaiting-agent',
+      status: 'awaiting-confirm',
       requestedAt: Date.now(),
+      agentMessage: 'Ready to rewind. This will clear session history and restart the gateway.',
     });
-
-    // Fire-and-forget — don't let webhook failure block the response
-    notifyAgent().catch(() => undefined);
 
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {
