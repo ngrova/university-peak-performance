@@ -8,11 +8,9 @@ import { albusState } from './sprite-state';
 interface RoomProps {
   tokens: number;
   subagentCount: number;
-  app: string;
-  task: string;
 }
 
-export function Room({ tokens, subagentCount, app, task }: RoomProps) {
+export function Room({ tokens, subagentCount }: RoomProps) {
   const prevOutputRef = useRef(0);
   const [outputTokens, setOutputTokens] = useState(0);
 
@@ -33,7 +31,7 @@ export function Room({ tokens, subagentCount, app, task }: RoomProps) {
         backgroundPosition: 'center 30%',
       }}
     >
-      <AlbusSprite state={aState} app={app} task={task} />
+      <AlbusSprite state={aState} />
       <ApprenticeSprites count={subagentCount} />
     </div>
   );

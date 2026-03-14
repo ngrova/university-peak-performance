@@ -6,7 +6,8 @@ import { TitleBar } from './components/TitleBar';
 import { StatusBars } from './components/StatusBars';
 import { SessionScorecard } from './components/SessionScorecard';
 import { PerformanceMetrics } from './components/PerformanceMetrics';
-import { InfoStrip } from './components/InfoStrip';
+import { CurrentTaskPanel } from './components/CurrentTaskPanel';
+import { albusState } from './components/sprite-state';
 import { SpellbookOverlay } from './components/SpellbookOverlay';
 import { SpellbookSprite } from './components/SpellbookSprite';
 import { RewindFlash } from './components/RewindFlash';
@@ -100,7 +101,6 @@ export default function LookoutPage() {
           <Room
             tokens={session.tokens}
             subagentCount={subagents.count}
-            app={activity.app} task={activity.task}
           />
           <RewindFlash status={rewind.status} />
           <div style={{ position: 'absolute', bottom: 12, right: 12, zIndex: 10 }}>
@@ -126,7 +126,11 @@ export default function LookoutPage() {
             subagentCount={subagents.count}
             tokenTrend7d={tokenTrend} spendTrend7d={spendTrend}
           />
-          <InfoStrip app={activity.app} task={activity.task} />
+          <CurrentTaskPanel
+            app={activity.app}
+            task={activity.task}
+            albusState={albusState(0, session.outputTokens)}
+          />
         </div>
       </div>
       {showOverlay && (
