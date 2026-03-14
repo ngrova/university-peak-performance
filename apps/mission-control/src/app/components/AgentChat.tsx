@@ -43,7 +43,7 @@ function StageSequence({ stages }: { stages: RewindStateFile['stages'] }) {
   return (
     <div className="flex flex-col gap-3">
       {STAGE_SEQUENCE.map((s) => (
-        <StageLight key={s} status={stages[s]} label={STAGE_LABELS[s]} />
+        <StageLight key={s} status={stages[s]} label={STAGE_LABELS[s] ?? s} />
       ))}
     </div>
   );
