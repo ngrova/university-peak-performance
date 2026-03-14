@@ -1,5 +1,5 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { createServerClient as createSupabaseServerClient } from '@supabase/ssr';
+import { createServerClient as createSupabaseServerClient, createBrowserClient as createSupabaseBrowserClient } from '@supabase/ssr';
 import type { CookieOptions } from '@supabase/ssr';
 
 // Placeholder for generated database types (run supabase gen types later)
@@ -38,5 +38,12 @@ export function createServerClient(
     getEnvVar('NEXT_PUBLIC_SUPABASE_URL'),
     getEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
     { cookies },
+  );
+}
+
+export function createBrowserClient(): ReturnType<typeof createSupabaseBrowserClient<Database>> {
+  return createSupabaseBrowserClient<Database>(
+    getEnvVar('NEXT_PUBLIC_SUPABASE_URL'),
+    getEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
   );
 }
