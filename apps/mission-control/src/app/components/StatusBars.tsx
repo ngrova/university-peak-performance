@@ -25,8 +25,11 @@ export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, re
   const ctxPct = Math.min(100, Math.max(0, percent));
 
   // Segment percentages relative to cap
-  const sysPct  = Math.min(100, Math.round((systemTokens / cap) * 100));
-  const convoPct = Math.min(100 - sysPct, Math.round((convoTokens / cap) * 100));
+  const baselineTokens = Math.max(0, tokens - rewindSavings - convoTokens);
+  const baselinePct = Math.min(100, Math.round((baselineTokens / cap) * 100));
+  const convoPct = Math.min(100 - baselinePct - rewindSavingsPct, Math.round((convoTokens / cap) * 100));
+  // sysPct kept for reference but bar now uses baseline/savings/convo layout
+  const sysPct = Math.min(100, Math.round((systemTokens / cap) * 100)); void sysPct;
 
   const remaining = Math.max(0, BUDGET_CAP - usage);
   const remainingPct = (remaining / BUDGET_CAP) * 100;
@@ -56,50 +59,59 @@ export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, re
         <div style={{ fontSize: 12, color: '#e5e7eb', marginBottom: 4, letterSpacing: '0.05em' }}>
           {`CONTEXT: ${totalK}K / ${capK}K (${ctxPct}%)`}
         </div>
-        <div style={{ background: '#1a1a1a', height: 14, borderRadius: 2, overflow: 'hidden', display: 'flex' }}>
-          {/* System prompt segment */}
-          {sysPct > 0 && (
+        {/* Bar: baseline | savings (green striped) | this msg | empty */}
+        <style>{`
+          @keyframes savingsStripe {
+            0%   { background-position: 0 0; }
+            100% { background-position: 28px 0; }
+          }
+        `}</style>
+        <div style={{ background: '#1a1a1a', height: 14, borderRadius: 2, overflow: 'hidden', display: 'flex', position: 'relative' }}>
+          {/* Baseline — stays after rewind */}
+          {baselinePct > 0 && (
             <div
-              title={`System: ~${Math.round(systemTokens / 1000)}K tokens`}
+              title={`Baseline (stays after rewind): ~${Math.round((tokens - rewindSavings) / 1000)}K`}
+              style={{ width: `${baselinePct}%`, height: '100%', background: '#4b5563', transition: 'width 0.8s ease', flexShrink: 0 }}
+            />
+          )}
+          {/* Rewind savings — animated green stripes */}
+          {rewindSavingsPct > 0 && (
+            <div
+              title={`Rewind frees ${Math.round(rewindSavings / 1000)}K tokens (${rewindSavingsPct}%)`}
               style={{
-                width: `${sysPct}%`,
+                width: `${rewindSavingsPct}%`,
                 height: '100%',
-                background: '#4b5563',
+                backgroundImage: 'repeating-linear-gradient(90deg, #16a34a 0px, #16a34a 14px, #22c55e 14px, #22c55e 28px)',
+                backgroundSize: '28px 100%',
+                animation: 'savingsStripe 1.2s linear infinite',
                 transition: 'width 0.8s ease',
-                borderRight: convoTokens > 0 ? '1px solid #1a1a1a' : 'none',
+                flexShrink: 0,
               }}
             />
           )}
-          {/* Conversation segment */}
+          {/* This message — small blue sliver */}
           {convoPct > 0 && (
             <div
-              title={`Your conversation: ~${Math.round(convoTokens / 1000)}K tokens`}
-              style={{
-                width: `${convoPct}%`,
-                height: '100%',
-                background: ctxPct >= 80 ? '#ef4444' : ctxPct >= 50 ? '#f59e0b' : '#38bdf8',
-                transition: 'width 0.8s ease',
-              }}
+              title={`This message: ${convoTokens} tokens`}
+              style={{ width: `${convoPct}%`, height: '100%', background: '#38bdf8', transition: 'width 0.8s ease', flexShrink: 0, minWidth: 3 }}
             />
           )}
         </div>
-        {/* Legend + rewind savings */}
+        {/* Legend */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
           <div style={{ display: 'flex', gap: 10, fontSize: 8, color: '#9ca3af' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
               <span style={{ display: 'inline-block', width: 8, height: 8, background: '#4b5563', borderRadius: 1 }} />
-              {`CACHED ${Math.round(systemTokens / 1000)}K`}
+              {`BASE ${Math.round((tokens - rewindSavings) / 1000)}K`}
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <span style={{ display: 'inline-block', width: 8, height: 8, background: '#38bdf8', borderRadius: 1 }} />
-              {`THIS MSG ${convoTokens}`}
-            </span>
+            {rewindSavingsPct > 5 && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: '#4ade80' }}>
+                <span style={{ display: 'inline-block', width: 8, height: 8, background: '#22c55e', borderRadius: 1 }} />
+                {`⟳ SAVES ${Math.round(rewindSavings / 1000)}K`}
+              </span>
+            )}
           </div>
-          {rewindSavingsPct > 5 && (
-            <span style={{ fontSize: 8, color: '#4ade80', whiteSpace: 'nowrap' }}>
-              {`⟳ REWIND SAVES ${Math.round(rewindSavings / 1000)}K (${rewindSavingsPct}%)`}
-            </span>
-          )}
+          <span style={{ fontSize: 8, color: '#6b7280' }}>{`${ctxPct}% USED`}</span>
         </div>
       </div>
 
