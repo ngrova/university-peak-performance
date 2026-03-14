@@ -94,10 +94,14 @@ export function Room() {
 
   const handleClose = useCallback(() => setShowOverlay(false), []);
 
-  // Auto-reload after successful rewind so the UI resets cleanly
+  // Auto-reload after successful rewind so the UI resets cleanly.
+  // Reset state to idle first so the page doesn't loop on reload.
   useEffect(() => {
     if (rewind.status === 'done') {
-      const id = setTimeout(() => window.location.reload(), 2_000);
+      const id = setTimeout(async () => {
+        await fetch('/api/rewind/cancel', { method: 'POST' });
+        window.location.reload();
+      }, 2_000);
       return () => clearTimeout(id);
     }
   }, [rewind.status]);

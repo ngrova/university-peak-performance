@@ -22,7 +22,8 @@ const makeFetch = (rewindStatus: string) =>
     if (url === '/api/spend') {
       return Promise.resolve({ json: () => Promise.resolve({ usage: 0, usageToday: 0 }) });
     }
-    return Promise.resolve({ json: () => Promise.resolve({}) });
+    // cancel and other POSTs
+    return Promise.resolve({ json: () => Promise.resolve({ ok: true }) });
   }) as unknown as typeof fetch;
 
 describe('Room — auto-reload on rewind done', () => {
@@ -47,6 +48,7 @@ describe('Room — auto-reload on rewind done', () => {
 
     expect(window.location.reload).not.toHaveBeenCalled();
     await act(async () => { vi.advanceTimersByTime(2_000); });
+    await act(async () => { await Promise.resolve(); }); // flush cancel POST
     expect(window.location.reload).toHaveBeenCalledOnce();
   });
 
