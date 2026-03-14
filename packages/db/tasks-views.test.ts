@@ -19,7 +19,11 @@ const makeTask = (overrides: Partial<TaskWithContext> = {}): TaskWithContext => 
   created_at: '2026-01-01T00:00:00Z',
   completed_at: null,
   updated_at: '2026-01-01T00:00:00Z',
-  goals: { title: 'My Goal', pillar_id: 'p-1', life_pillars: { id: 'p-1', name: 'Health', color: '#fff', icon: '💪' } },
+  goals: {
+    title: 'My Goal',
+    pillar_id: 'p-1',
+    life_pillars: { id: 'p-1', name: 'Health', color: '#fff', icon: '💪' },
+  },
   ...overrides,
 })
 
@@ -28,7 +32,7 @@ function makeOneThingClient(tasks: TaskWithContext[], error?: Error) {
   const neqFn = vi.fn().mockResolvedValue({ data: error ? null : tasks, error: error ?? null })
   const eqFn = vi.fn().mockReturnValue({ neq: neqFn })
   const selectFn = vi.fn().mockReturnValue({ eq: eqFn })
-  return { from: vi.fn().mockReturnValue({ select: selectFn }), _neqFn: neqFn, _eqFn: eqFn }
+  return { from: vi.fn().mockReturnValue({ select: selectFn }) }
 }
 
 describe('getOneThingTask', () => {
@@ -62,7 +66,7 @@ describe('getOneThingTask', () => {
   })
 })
 
-// getTasksWithDeadlines chain: .from().select().eq(user).neq(status).not(due_date).order() → resolved
+// getTasksWithDeadlines: .from().select().eq(user).neq(status).not(due_date).order() → resolved
 function makeDeadlinesClient(tasks: TaskWithContext[], error?: Error) {
   const orderFn = vi.fn().mockResolvedValue({ data: error ? null : tasks, error: error ?? null })
   const notFn = vi.fn().mockReturnValue({ order: orderFn })
@@ -73,14 +77,15 @@ function makeDeadlinesClient(tasks: TaskWithContext[], error?: Error) {
 }
 
 describe('getTasksWithDeadlines', () => {
-  it('returns tasks ordered by due_date', async () => {
+  it('returns tasks in due_date order', async () => {
     const t1 = makeTask({ id: 't1', due_date: '2026-03-20' })
     const t2 = makeTask({ id: 't2', due_date: '2026-03-15' })
     const client = makeDeadlinesClient([t2, t1])
 
     const result = await getTasksWithDeadlines(client as never, 'user-1')
     expect(result).toHaveLength(2)
-    expect(result[0].id).toBe('t2')
+    // DB returns in order; we just pass through
+    expect(result[0]?.id).toBe('t2')
   })
 
   it('throws on db error', async () => {
@@ -89,7 +94,7 @@ describe('getTasksWithDeadlines', () => {
   })
 })
 
-// getTasksForQueue chain: .from().select().eq(user).neq(status) → resolved (no assignee)
+// getTasksForQueue: .from().select().eq(user).neq(status) → resolved (no assignee)
 // with assignee: .from().select().eq(user).neq(status).eq(assignee) → resolved
 function makeQueueClient(tasks: TaskWithContext[], withAssignee?: string) {
   if (withAssignee) {
@@ -97,7 +102,7 @@ function makeQueueClient(tasks: TaskWithContext[], withAssignee?: string) {
     const neqFn = vi.fn().mockReturnValue({ eq: eqAssigneeFn })
     const eqUserFn = vi.fn().mockReturnValue({ neq: neqFn })
     const selectFn = vi.fn().mockReturnValue({ eq: eqUserFn })
-    return { from: vi.fn().mockReturnValue({ select: selectFn }), _eqAssignee: eqAssigneeFn }
+    return { from: vi.fn().mockReturnValue({ select: selectFn }) }
   }
   const neqFn = vi.fn().mockResolvedValue({ data: tasks, error: null })
   const eqFn = vi.fn().mockReturnValue({ neq: neqFn })
@@ -113,9 +118,9 @@ describe('getTasksForQueue', () => {
     const client = makeQueueClient([highP2, critP3, critP1])
 
     const result = await getTasksForQueue(client as never, 'user-1')
-    expect(result[0].id).toBe('c1')
-    expect(result[1].id).toBe('c3')
-    expect(result[2].id).toBe('h2')
+    expect(result[0]?.id).toBe('c1')
+    expect(result[1]?.id).toBe('c3')
+    expect(result[2]?.id).toBe('h2')
   })
 
   it('filters by assignee when provided', async () => {
@@ -123,6 +128,6 @@ describe('getTasksForQueue', () => {
     const client = makeQueueClient([nickTask], 'Nick')
 
     const result = await getTasksForQueue(client as never, 'user-1', 'Nick')
-    expect(result[0].assignee).toBe('Nick')
+    expect(result[0]?.assignee).toBe('Nick')
   })
 })
