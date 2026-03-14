@@ -23,12 +23,17 @@ export async function createGoalAction(pillarId: string, formData: FormData): Pr
     const description = formData.get('description') as string | null
     const targetDate = formData.get('target_date') as string | null
 
+    const colorVal = formData.get('color') as string | null
+    const priorityRankVal = formData.get('priority_rank') as string | null
+
     const input: CreateGoalInput = {
       pillar_id: pillarId,
       title: formData.get('title') as string,
       sort_order: goals.length,
       ...(description ? { description } : {}),
       ...(targetDate ? { target_date: targetDate } : {}),
+      ...(colorVal ? { color: colorVal } : {}),
+      ...(priorityRankVal ? { priority_rank: parseInt(priorityRankVal, 10) } : {}),
     }
     await createGoal(supabase, user.id, input)
     revalidatePath(`/pillars/${pillarId}`)
@@ -42,10 +47,14 @@ export async function updateGoalAction(id: string, pillarId: string, formData: F
     const supabase = await getSupabase()
     const description = formData.get('description') as string | null
     const targetDate = formData.get('target_date') as string | null
+    const colorVal = formData.get('color') as string | null
+    const priorityRankVal = formData.get('priority_rank') as string | null
     await updateGoal(supabase, id, {
       title: formData.get('title') as string,
       description: description ?? null,
       target_date: targetDate ?? null,
+      ...(colorVal ? { color: colorVal } : {}),
+      ...(priorityRankVal ? { priority_rank: parseInt(priorityRankVal, 10) } : {}),
     })
     revalidatePath(`/pillars/${pillarId}`)
   } catch {

@@ -24,6 +24,8 @@ export interface CreateGoalInput {
   description?: string
   target_date?: string
   sort_order: number
+  color?: string
+  priority_rank?: number
 }
 
 export async function createGoal(
@@ -43,7 +45,7 @@ export async function createGoal(
 export async function updateGoal(
   supabase: AnyClient,
   id: string,
-  updates: Partial<Pick<Goal, 'title' | 'description' | 'target_date' | 'status' | 'sort_order'>>,
+  updates: Partial<Pick<Goal, 'title' | 'description' | 'target_date' | 'status' | 'sort_order' | 'color' | 'priority_rank'>>,
 ): Promise<Goal> {
   const { data, error } = await supabase
     .from('goals')

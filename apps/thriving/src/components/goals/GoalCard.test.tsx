@@ -19,6 +19,8 @@ const goal = {
   target_date: '2024-12-31',
   status: 'active' as const,
   sort_order: 0,
+  color: '#6366f1',
+  priority_rank: 5,
   created_at: '2024-01-01',
   updated_at: '2024-01-01',
 }

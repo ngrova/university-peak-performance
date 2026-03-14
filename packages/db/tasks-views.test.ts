@@ -22,6 +22,7 @@ const makeTask = (overrides: Partial<TaskWithContext> = {}): TaskWithContext => 
   goals: {
     title: 'My Goal',
     pillar_id: 'p-1',
+    priority_rank: 5,
     life_pillars: { id: 'p-1', name: 'Health', color: '#fff', icon: '💪' },
   },
   ...overrides,

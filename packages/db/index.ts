@@ -13,3 +13,5 @@ export { getOneThingTask, getTasksWithDeadlines, getTasksForQueue } from './task
 export type { TaskWithContext } from './tasks-views'
 export { saveAssessment, getAssessmentHistory, getLatestAssessment } from './assessments'
 export type { Assessment, DomainKey, DomainScores, DomainAverages } from './assessments'
+export { getTreeData } from './tree'
+export type { TreeData } from './tree'
