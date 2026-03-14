@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { FloatingLabel } from './FloatingLabel';
 import { ThoughtBubble } from './ThoughtBubble';
 import { albusSrc } from './sprite-state';
 import type { AlbusStateSprite } from './sprite-state';
@@ -12,39 +11,39 @@ interface Props {
   task?: string;
 }
 
-// Albus stands center of the treetop platform
-const CODING_POS = { left: '44%', top: '52%' };
-const IDLE_POS   = { left: '44%', top: '52%' };
-
-// Thought bubble slightly to the right of Albus
-const CODING_BUBBLE = { left: '52%', top: '38%' };
-const IDLE_BUBBLE   = { left: '52%', top: '38%' };
+const POS = { left: '38%', top: '38%' };
+const BUBBLE = { left: '54%', top: '24%' };
 
 export function AlbusSprite({ state, app, task }: Props) {
   const src = albusSrc(state);
-  const pos = state === 'coding' ? CODING_POS : IDLE_POS;
-  const bubblePos = state === 'coding' ? CODING_BUBBLE : IDLE_BUBBLE;
-  const labelPos = state === 'coding'
-    ? { left: '45%', top: '68%' }
-    : { left: '47%', top: '70%' };
-  const labelText = state === 'coding' ? 'CODING' : 'IDLE';
 
   return (
     <>
+      <style>{`
+        @keyframes albusFloat {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-8px); }
+        }
+      `}</style>
       {(app || task) && (
-        <ThoughtBubble app={app ?? ''} task={task ?? ''} left={bubblePos.left} top={bubblePos.top} />
+        <ThoughtBubble app={app ?? ''} task={task ?? ''} left={BUBBLE.left} top={BUBBLE.top} />
       )}
-      <div style={{ position: 'absolute', left: pos.left, top: pos.top, width: '10%', transition: 'left 0.6s, top 0.6s' }}>
+      <div style={{
+        position: 'absolute',
+        left: POS.left,
+        top: POS.top,
+        width: '14%',
+        animation: 'albusFloat 3s ease-in-out infinite',
+      }}>
         <Image
           src={src}
           alt={`Albus ${state}`}
-          width={72}
-          height={72}
+          width={96}
+          height={96}
           style={{ width: '100%', height: 'auto', imageRendering: 'pixelated', display: 'block' }}
           unoptimized
         />
       </div>
-      <FloatingLabel text={labelText} left={labelPos.left} top={labelPos.top} />
     </>
   );
 }
