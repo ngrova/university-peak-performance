@@ -8,7 +8,8 @@ import type { AlbusStateSprite } from './sprite-state';
 
 interface Props {
   state: AlbusStateSprite;
-  thought?: string;
+  app?: string;
+  task?: string;
 }
 
 // Albus stands front-center of the platform
@@ -19,7 +20,7 @@ const IDLE_POS   = { left: '46%', top: '58%' };
 const CODING_BUBBLE = { left: '50%', top: '68%' };
 const IDLE_BUBBLE   = { left: '52%', top: '76%' };
 
-export function AlbusSprite({ state, thought }: Props) {
+export function AlbusSprite({ state, app, task }: Props) {
   const src = albusSrc(state);
   const pos = state === 'coding' ? CODING_POS : IDLE_POS;
   const bubblePos = state === 'coding' ? CODING_BUBBLE : IDLE_BUBBLE;
@@ -30,8 +31,8 @@ export function AlbusSprite({ state, thought }: Props) {
 
   return (
     <>
-      {thought && (
-        <ThoughtBubble text={thought} left={bubblePos.left} top={bubblePos.top} />
+      {(app || task) && (
+        <ThoughtBubble app={app ?? ''} task={task ?? ''} left={bubblePos.left} top={bubblePos.top} />
       )}
       <div style={{ position: 'absolute', left: pos.left, top: pos.top, width: '10%', transition: 'left 0.6s, top 0.6s' }}>
         <Image

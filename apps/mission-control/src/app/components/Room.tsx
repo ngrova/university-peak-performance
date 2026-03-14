@@ -64,21 +64,23 @@ function useSubagents(intervalMs: number) {
   return count;
 }
 
+interface ActivityData { app: string; task: string; }
+
 function useActivity(intervalMs: number) {
-  const [thought, setThought] = useState('Waiting for Nick...');
+  const [activity, setActivity] = useState<ActivityData>({ app: 'Mission Control', task: 'Waiting for Nick...' });
   useEffect(() => {
     const fetch_ = () =>
       fetch('/api/activity')
         .then(r => r.json())
-        .then((d: { currentTask: string; lastAction: string }) => {
-          setThought(summarize(d.currentTask));
+        .then((d: ActivityData) => {
+          setActivity({ app: d.app ?? 'Mission Control', task: d.task ?? 'Waiting for Nick...' });
         })
         .catch(() => {});
     fetch_();
     const id = setInterval(fetch_, intervalMs);
     return () => clearInterval(id);
   }, [intervalMs]);
-  return thought;
+  return activity;
 }
 
 function summarize(raw: string): string {
@@ -108,7 +110,7 @@ export function Room() {
   const pct     = session.percent;
 
   const subagentCount = useSubagents(10_000);
-  const thought = useActivity(15_000);
+  const activity = useActivity(15_000);
 
   const [showOverlay, setShowOverlay] = useState(false);
 
@@ -175,7 +177,7 @@ export function Room() {
         />
         <CrystalSprite state={cState} pct={pct} />
         <MoneyBagSprite state={mState} credits={credits} />
-        <AlbusSprite state={aState} thought={thought} />
+        <AlbusSprite state={aState} app={activity.app} task={activity.task} />
         <ApprenticeSprites count={subagentCount} />
         <RewindFlash status={rewind.status} />
         <SpellbookSprite status={rewind.status} onClick={handleRewind} />

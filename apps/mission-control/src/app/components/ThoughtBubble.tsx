@@ -1,13 +1,14 @@
 'use client';
 
 interface Props {
-  text: string;
-  left: string;   // CSS left of the bubble CENTER
-  top: string;    // CSS top of the bubble TOP (positioned below Albus)
+  app: string;
+  task: string;
+  left: string;
+  top: string;
 }
 
-export function ThoughtBubble({ text, left, top }: Props) {
-  if (!text) return null;
+export function ThoughtBubble({ app, task, left, top }: Props) {
+  if (!app && !task) return null;
   return (
     <div
       style={{
@@ -23,50 +24,50 @@ export function ThoughtBubble({ text, left, top }: Props) {
       }}
     >
       {/* Triangle pointer pointing UP toward Albus */}
-      <div
-        style={{
-          width: 0,
-          height: 0,
-          borderLeft: '6px solid transparent',
-          borderRight: '6px solid transparent',
-          borderBottom: '8px solid #2d1a0e',
-        }}
-      />
-      {/* Inner triangle (white fill) */}
-      <div
-        style={{
-          width: 0,
-          height: 0,
-          borderLeft: '4px solid transparent',
-          borderRight: '4px solid transparent',
-          borderBottom: '6px solid rgba(255,255,255,0.92)',
-          marginTop: -6,
-        }}
-      />
+      <div style={{ width: 0, height: 0, borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderBottom: '9px solid #2d1a0e' }} />
+      <div style={{ width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderBottom: '7px solid rgba(255,252,240,0.96)', marginTop: -7 }} />
+
       {/* Bubble body */}
       <div
         style={{
-          background: 'rgba(255,255,255,0.92)',
+          background: 'rgba(255,252,240,0.96)',
           border: '2px solid #2d1a0e',
           borderRadius: 4,
-          padding: '7px 10px',
-          maxWidth: 320,
-          minWidth: 120,
-          textAlign: 'center',
+          padding: '8px 12px',
+          maxWidth: 340,
+          minWidth: 160,
+          textAlign: 'left',
         }}
       >
-        <span
-          style={{
-            fontFamily: "'Press Start 2P', monospace",
-            fontSize: 12,
-            color: '#1a0a00',
-            lineHeight: 1.6,
-            display: 'block',
-            wordBreak: 'break-word',
-          }}
-        >
-          {text}
-        </span>
+        {/* App label — dim/secondary */}
+        {app && (
+          <div
+            style={{
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: 9,
+              color: '#7c6450',
+              marginBottom: 5,
+              letterSpacing: '0.03em',
+              textTransform: 'uppercase',
+            }}
+          >
+            {app}
+          </div>
+        )}
+        {/* Task — primary, larger */}
+        {task && (
+          <div
+            style={{
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: 12,
+              color: '#1a0a00',
+              lineHeight: 1.6,
+              wordBreak: 'break-word',
+            }}
+          >
+            {task}
+          </div>
+        )}
       </div>
     </div>
   );
