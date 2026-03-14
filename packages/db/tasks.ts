@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Task } from './types'
+import type { Task, FailureCost, TaskAssignee } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyClient = SupabaseClient<any, any, any>
@@ -24,6 +24,8 @@ export interface CreateTaskInput {
   due_date?: string
   priority?: 1 | 2 | 3 | 4
   sort_order: number
+  assignee?: TaskAssignee
+  failure_cost?: FailureCost
 }
 
 export async function createTask(
@@ -43,7 +45,7 @@ export async function createTask(
 export async function updateTask(
   supabase: AnyClient,
   id: string,
-  updates: Partial<Pick<Task, 'title' | 'notes' | 'due_date' | 'priority' | 'status' | 'sort_order' | 'completed_at'>>,
+  updates: Partial<Pick<Task, 'title' | 'notes' | 'due_date' | 'priority' | 'status' | 'sort_order' | 'completed_at' | 'assignee' | 'failure_cost' | 'is_one_thing'>>,
 ): Promise<Task> {
   const { data, error } = await supabase
     .from('tasks')

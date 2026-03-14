@@ -14,6 +14,8 @@ const mockTask: Task = {
   status: 'todo',
   is_one_thing: false,
   sort_order: 0,
+  assignee: null,
+  failure_cost: null,
   created_at: '2026-03-14T00:00:00Z',
   completed_at: null,
   updated_at: '2026-03-14T00:00:00Z',
@@ -85,5 +87,36 @@ describe('deleteTask', () => {
     const client = { from: vi.fn().mockReturnValue({ delete: del }) }
 
     await expect(deleteTask(client as never, 'task-1')).rejects.toThrow('delete failed')
+  })
+})
+
+describe('createTask with assignee and failure_cost', () => {
+  it('passes assignee and failure_cost to insert', async () => {
+    const taskWithFields: Task = { ...mockTask, assignee: 'Nick', failure_cost: 'high' }
+    const single = vi.fn().mockResolvedValue({ data: taskWithFields, error: null })
+    const select = vi.fn().mockReturnValue({ single })
+    const insert = vi.fn().mockReturnValue({ select })
+    const client = { from: vi.fn().mockReturnValue({ insert }) }
+
+    const input = { goal_id: 'goal-1', title: 'Deploy fix', sort_order: 0, assignee: 'Nick' as const, failure_cost: 'high' as const }
+    const result = await createTask(client as never, 'user-1', input)
+    expect(result.assignee).toBe('Nick')
+    expect(result.failure_cost).toBe('high')
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ assignee: 'Nick', failure_cost: 'high' }))
+  })
+})
+
+describe('updateTask with assignee and failure_cost', () => {
+  it('updates assignee and failure_cost', async () => {
+    const updated: Task = { ...mockTask, assignee: 'Erin', failure_cost: 'critical' }
+    const single = vi.fn().mockResolvedValue({ data: updated, error: null })
+    const select = vi.fn().mockReturnValue({ single })
+    const eq = vi.fn().mockReturnValue({ select })
+    const update = vi.fn().mockReturnValue({ eq })
+    const client = { from: vi.fn().mockReturnValue({ update }) }
+
+    const result = await updateTask(client as never, 'task-1', { assignee: 'Erin', failure_cost: 'critical' })
+    expect(result.assignee).toBe('Erin')
+    expect(result.failure_cost).toBe('critical')
   })
 })

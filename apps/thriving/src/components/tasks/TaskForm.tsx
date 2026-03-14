@@ -53,6 +53,34 @@ export default function TaskForm({ goalId, pillarId, task, onCancel }: TaskFormP
         </select>
       </div>
       <div>
+        <label htmlFor="assignee" className="block text-sm font-medium text-gray-700">Assignee</label>
+        <select
+          id="assignee"
+          name="assignee"
+          defaultValue={task?.assignee ?? ''}
+          className="mt-1 block w-full rounded border-gray-300 shadow-sm px-3 py-2 border text-sm"
+        >
+          <option value="">Unassigned</option>
+          <option value="Nick">Nick</option>
+          <option value="Erin">Erin</option>
+        </select>
+      </div>
+      <div>
+        <label htmlFor="failure_cost" className="block text-sm font-medium text-gray-700">Failure Cost</label>
+        <select
+          id="failure_cost"
+          name="failure_cost"
+          defaultValue={task?.failure_cost ?? ''}
+          className="mt-1 block w-full rounded border-gray-300 shadow-sm px-3 py-2 border text-sm"
+        >
+          <option value="">— None —</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+      <div>
         <label htmlFor="due_date" className="block text-sm font-medium text-gray-700">Due Date</label>
         <input
           id="due_date"

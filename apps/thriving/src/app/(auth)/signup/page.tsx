@@ -24,6 +24,19 @@ export default function SignupPage(): React.JSX.Element {
 
     setLoading(true);
     const supabase = createBrowserClient();
+
+    const { data: allowed } = await supabase
+      .from('allowed_emails')
+      .select('email')
+      .eq('email', email)
+      .single();
+
+    if (!allowed) {
+      setError('This email is not authorized to create an account. Contact Nick to request access.');
+      setLoading(false);
+      return;
+    }
+
     const { error: authError } = await supabase.auth.signUp({ email, password });
 
     if (authError) {
@@ -64,6 +77,11 @@ export default function SignupPage(): React.JSX.Element {
         <p className="mt-4 text-sm text-gray-600">
           Already have an account?{' '}
           <Link href="/login" className="text-blue-600 hover:underline">Sign in</Link>
+        </p>
+        <p className="mt-6 text-xs text-gray-400">
+          Access is by invitation only. Contact{' '}
+          <a href="mailto:nicholas.grover@b2bbhs.com" className="hover:underline">Nick Grover</a>{' '}
+          to request access.
         </p>
       </div>
     </main>

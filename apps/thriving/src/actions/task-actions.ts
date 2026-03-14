@@ -2,7 +2,7 @@
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { createServerClient, getTasksByGoal, createTask, updateTask, deleteTask } from '@upp/db'
-import type { Task } from '@upp/db'
+import type { Task, FailureCost, TaskAssignee } from '@upp/db'
 
 async function getSupabase() {
   const cookieStore = await cookies()
@@ -30,6 +30,8 @@ export async function createTaskAction(goalId: string, pillarId: string, formDat
     const dueDate = formData.get('due_date') as string | null
     const priorityRaw = formData.get('priority') as string | null
     const priority = priorityRaw ? (parseInt(priorityRaw, 10) as 1 | 2 | 3 | 4) : 4
+    const assigneeRaw = formData.get('assignee') as string | null
+    const failureCostRaw = formData.get('failure_cost') as string | null
 
     await createTask(supabase, user.id, {
       goal_id: goalId,
@@ -38,6 +40,8 @@ export async function createTaskAction(goalId: string, pillarId: string, formDat
       ...(notes ? { notes } : {}),
       ...(dueDate ? { due_date: dueDate } : {}),
       priority,
+      ...(assigneeRaw ? { assignee: assigneeRaw as TaskAssignee } : {}),
+      ...(failureCostRaw ? { failure_cost: failureCostRaw as FailureCost } : {}),
     })
     revalidatePath(`/pillars/${pillarId}/goals/${goalId}`)
   } catch {
@@ -52,12 +56,16 @@ export async function updateTaskAction(id: string, goalId: string, pillarId: str
     const dueDate = formData.get('due_date') as string | null
     const priorityRaw = formData.get('priority') as string | null
     const priority = priorityRaw ? (parseInt(priorityRaw, 10) as 1 | 2 | 3 | 4) : 4
+    const assigneeRaw = formData.get('assignee') as string | null
+    const failureCostRaw = formData.get('failure_cost') as string | null
 
     await updateTask(supabase, id, {
       title: formData.get('title') as string,
       notes: notes ?? null,
       due_date: dueDate ?? null,
       priority,
+      assignee: (assigneeRaw || null) as TaskAssignee | null,
+      failure_cost: (failureCostRaw || null) as FailureCost | null,
     })
     revalidatePath(`/pillars/${pillarId}/goals/${goalId}`)
   } catch {
