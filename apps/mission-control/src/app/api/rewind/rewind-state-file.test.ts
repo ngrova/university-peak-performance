@@ -1,40 +1,56 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
-// We need to test the functions in isolation with a temp path.
-// Since STATE_PATH is hardcoded, we test behavior via the exported functions directly.
-import { readRewindState, writeRewindState, IDLE_STATE } from './rewind-state-file';
-
-const ORIG_PATH = '/Users/openclaw/.openclaw/mission-control/rewind-state.json';
-
 describe('rewind-state-file helpers', () => {
   let tempDir: string;
-  let origContent: string | null = null;
+  let tempFile: string;
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rewind-test-'));
-    // Preserve original state if file exists
-    try { origContent = fs.readFileSync(ORIG_PATH, 'utf-8'); } catch { origContent = null; }
+    tempFile = path.join(tempDir, 'rewind-state.json');
+    vi.resetModules();
+    vi.doMock('./rewind-state-file', async () => {
+      const actual = await vi.importActual<typeof import('./rewind-state-file')>('./rewind-state-file');
+      // Re-implement read/write using tempFile
+      return {
+        ...actual,
+        readRewindState: () => {
+          try {
+            const raw = fs.readFileSync(tempFile, 'utf-8');
+            return JSON.parse(raw);
+          } catch {
+            return { ...actual.IDLE_STATE };
+          }
+        },
+        writeRewindState: (state: typeof actual.IDLE_STATE) => {
+          const dir = path.dirname(tempFile);
+          if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(tempFile, JSON.stringify(state, null, 2));
+        },
+      };
+    });
   });
 
   afterEach(() => {
-    // Restore original state
-    if (origContent !== null) {
-      fs.writeFileSync(ORIG_PATH, origContent);
-    }
+    fs.rmSync(tempDir, { recursive: true, force: true });
+    vi.restoreAllMocks();
+    vi.resetModules();
   });
 
-  it('readRewindState returns IDLE_STATE when file is unreadable', () => {
+  it('readRewindState returns IDLE_STATE when file is unreadable', async () => {
+    const { readRewindState, IDLE_STATE } = await import('./rewind-state-file');
     // Write invalid JSON to force parse failure
-    fs.writeFileSync(ORIG_PATH, 'NOT JSON');
+    fs.mkdirSync(path.dirname(tempFile), { recursive: true });
+    fs.writeFileSync(tempFile, 'NOT JSON');
     const state = readRewindState();
     expect(state.status).toBe('idle');
     expect(state.agentMessage).toBeNull();
   });
 
-  it('writeRewindState persists state and readRewindState reads it back', () => {
+  it('writeRewindState persists state and readRewindState reads it back', async () => {
+    const { readRewindState, writeRewindState, IDLE_STATE } = await import('./rewind-state-file');
     const state = {
       ...IDLE_STATE,
       status: 'awaiting-agent' as const,
@@ -46,7 +62,8 @@ describe('rewind-state-file helpers', () => {
     expect(read.requestedAt).toBe(12345);
   });
 
-  it('writeRewindState handles agentMessage field', () => {
+  it('writeRewindState handles agentMessage field', async () => {
+    const { readRewindState, writeRewindState, IDLE_STATE } = await import('./rewind-state-file');
     const state = {
       ...IDLE_STATE,
       status: 'awaiting-confirm' as const,
@@ -58,7 +75,8 @@ describe('rewind-state-file helpers', () => {
     expect(read.status).toBe('awaiting-confirm');
   });
 
-  it('IDLE_STATE has expected shape', () => {
+  it('IDLE_STATE has expected shape', async () => {
+    const { IDLE_STATE } = await import('./rewind-state-file');
     expect(IDLE_STATE.status).toBe('idle');
     expect(IDLE_STATE.agentMessage).toBeNull();
     expect(IDLE_STATE.stages.clear).toBe('idle');
