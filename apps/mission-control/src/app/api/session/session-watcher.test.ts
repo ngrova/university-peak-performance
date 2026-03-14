@@ -47,7 +47,8 @@ describe('readSessionData', () => {
 describe('watchSessionFile', () => {
   it('calls onChange when file change event fires', () => {
     const onChange = vi.fn();
-    let watchCallback: (() => void) | null = null;
+    // Use array so TS knows mutation happens inside the closure
+    const captured: Array<() => void> = [];
 
     const mockWatcher = {
       on: vi.fn(),
@@ -55,7 +56,7 @@ describe('watchSessionFile', () => {
     };
 
     mockWatch.mockImplementation((_path, cb) => {
-      watchCallback = cb as () => void;
+      captured.push(cb as () => void);
       return mockWatcher as unknown as fs.FSWatcher;
     });
 
@@ -64,7 +65,9 @@ describe('watchSessionFile', () => {
     mockParseSessionOutput.mockReturnValue(expected);
 
     watchSessionFile(onChange);
-    watchCallback?.();
+
+    expect(captured).toHaveLength(1);
+    captured[0]!();
 
     expect(onChange).toHaveBeenCalledWith(expected);
   });
