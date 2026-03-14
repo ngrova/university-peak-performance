@@ -12,13 +12,13 @@ interface Props {
   task?: string;
 }
 
-// Albus stands front-center of the platform
-const CODING_POS = { left: '44%', top: '56%' };
-const IDLE_POS   = { left: '46%', top: '58%' };
+// Albus stands center of the treetop platform
+const CODING_POS = { left: '44%', top: '52%' };
+const IDLE_POS   = { left: '44%', top: '52%' };
 
-// Bubble below Albus — triangle points up toward him
-const CODING_BUBBLE = { left: '50%', top: '68%' };
-const IDLE_BUBBLE   = { left: '52%', top: '76%' };
+// Thought bubble slightly to the right of Albus
+const CODING_BUBBLE = { left: '52%', top: '38%' };
+const IDLE_BUBBLE   = { left: '52%', top: '38%' };
 
 export function AlbusSprite({ state, app, task }: Props) {
   const src = albusSrc(state);

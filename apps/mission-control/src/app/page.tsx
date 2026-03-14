@@ -98,8 +98,8 @@ export default function LookoutPage() {
         <TitleBar />
         <div style={{ position: 'relative', width: 800 }}>
           <Room
-            tokens={session.tokens} cap={session.cap} percent={session.percent}
-            creditsUsage={spend.usage} subagentCount={subagents.count}
+            tokens={session.tokens}
+            subagentCount={subagents.count}
             app={activity.app} task={activity.task}
           />
           <RewindFlash status={rewind.status} />
