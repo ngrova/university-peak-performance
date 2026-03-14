@@ -67,3 +67,14 @@ export async function getLatestAssessment(
   if (error) throw error
   return data
 }
+
+export async function deleteAssessment(
+  supabase: AnyClient,
+  id: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from('assessments')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
