@@ -4,6 +4,6 @@ export function albusState(prevOutputTokens: number, currentOutputTokens: number
   return currentOutputTokens > prevOutputTokens ? 'coding' : 'idle';
 }
 
-export function albusSrc(state: AlbusStateSprite): string {
-  return state === 'coding' ? '/sprites/albus-front.png' : '/sprites/albus-back.png';
+export function albusSrc(_state: AlbusStateSprite): string {
+  return '/sprites/albus.png';
 }

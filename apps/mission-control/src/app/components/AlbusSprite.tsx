@@ -8,23 +8,47 @@ interface Props {
   state: AlbusStateSprite;
 }
 
-const CODING_POS = { left: '44%', top: '56%' };
-const IDLE_POS   = { left: '46%', top: '58%' };
-
 export function AlbusSprite({ state }: Props) {
   const src = albusSrc(state);
-  const pos = state === 'coding' ? CODING_POS : IDLE_POS;
 
   return (
-    <div style={{ position: 'absolute', left: pos.left, top: pos.top, width: '10%', transition: 'left 0.6s, top 0.6s' }}>
-      <Image
-        src={src}
-        alt={`Albus ${state}`}
-        width={72}
-        height={72}
-        style={{ width: '100%', height: 'auto', imageRendering: 'pixelated', display: 'block' }}
-        unoptimized
-      />
-    </div>
+    <>
+      <style>{`
+        @keyframes albusFloat {
+          0%   { transform: translateX(0px)   translateY(0px); }
+          25%  { transform: translateX(12px)  translateY(-6px); }
+          50%  { transform: translateX(24px)  translateY(0px); }
+          75%  { transform: translateX(12px)  translateY(-6px); }
+          100% { transform: translateX(0px)   translateY(0px); }
+        }
+        @keyframes albusFloatCoding {
+          0%   { transform: translateX(0px)   translateY(0px); }
+          20%  { transform: translateX(-10px) translateY(-4px); }
+          50%  { transform: translateX(-20px) translateY(0px); }
+          80%  { transform: translateX(-10px) translateY(-4px); }
+          100% { transform: translateX(0px)   translateY(0px); }
+        }
+      `}</style>
+      <div
+        style={{
+          position: 'absolute',
+          left: '42%',
+          top: '50%',
+          width: '13%',
+          animation: state === 'coding'
+            ? 'albusFloatCoding 6s ease-in-out infinite'
+            : 'albusFloat 8s ease-in-out infinite',
+        }}
+      >
+        <Image
+          src={src}
+          alt={`Albus ${state}`}
+          width={120}
+          height={120}
+          style={{ width: '100%', height: 'auto', imageRendering: 'pixelated', display: 'block' }}
+          unoptimized
+        />
+      </div>
+    </>
   );
 }
