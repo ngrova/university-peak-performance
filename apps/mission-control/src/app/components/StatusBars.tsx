@@ -53,7 +53,7 @@ export function StatusBars({ tokens, cap, percent, usage }: StatusBarsProps) {
     >
       {/* Context bar */}
       <div>
-        <div style={{ fontSize: 6, color: '#e5e7eb', marginBottom: 3, letterSpacing: '0.05em' }}>
+        <div style={{ fontSize: 12, color: '#e5e7eb', marginBottom: 3, letterSpacing: '0.05em' }}>
           {`CONTEXT: ${tokensK}K / ${capK}K (${ctxPct}%)`}
         </div>
         <div
@@ -77,7 +77,7 @@ export function StatusBars({ tokens, cap, percent, usage }: StatusBarsProps) {
 
       {/* Spend bar */}
       <div>
-        <div style={{ fontSize: 6, color: '#e5e7eb', marginBottom: 3, letterSpacing: '0.05em' }}>
+        <div style={{ fontSize: 12, color: '#e5e7eb', marginBottom: 3, letterSpacing: '0.05em' }}>
           {`CREDITS: $${usage.toFixed(2)}`}
         </div>
         <div
