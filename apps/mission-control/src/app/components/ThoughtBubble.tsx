@@ -3,7 +3,7 @@
 interface Props {
   text: string;
   left: string;   // CSS left of the bubble CENTER
-  top: string;    // CSS top of the bubble TOP
+  top: string;    // CSS top of the bubble TOP (positioned below Albus)
 }
 
 export function ThoughtBubble({ text, left, top }: Props) {
@@ -17,8 +17,32 @@ export function ThoughtBubble({ text, left, top }: Props) {
         transform: 'translateX(-50%)',
         pointerEvents: 'none',
         zIndex: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
       }}
     >
+      {/* Triangle pointer pointing UP toward Albus */}
+      <div
+        style={{
+          width: 0,
+          height: 0,
+          borderLeft: '6px solid transparent',
+          borderRight: '6px solid transparent',
+          borderBottom: '8px solid #2d1a0e',
+        }}
+      />
+      {/* Inner triangle (white fill) */}
+      <div
+        style={{
+          width: 0,
+          height: 0,
+          borderLeft: '4px solid transparent',
+          borderRight: '4px solid transparent',
+          borderBottom: '6px solid rgba(255,255,255,0.92)',
+          marginTop: -6,
+        }}
+      />
       {/* Bubble body */}
       <div
         style={{
@@ -44,30 +68,6 @@ export function ThoughtBubble({ text, left, top }: Props) {
           {text}
         </span>
       </div>
-      {/* Triangle pointer pointing down toward Albus */}
-      <div
-        style={{
-          width: 0,
-          height: 0,
-          borderLeft: '6px solid transparent',
-          borderRight: '6px solid transparent',
-          borderTop: '8px solid #2d1a0e',
-          margin: '0 auto',
-          position: 'relative',
-        }}
-      />
-      {/* Inner triangle (white fill) */}
-      <div
-        style={{
-          width: 0,
-          height: 0,
-          borderLeft: '4px solid transparent',
-          borderRight: '4px solid transparent',
-          borderTop: '6px solid rgba(255,255,255,0.92)',
-          margin: '-8px auto 0',
-          position: 'relative',
-        }}
-      />
     </div>
   );
 }

@@ -15,8 +15,9 @@ interface Props {
 const CODING_POS = { left: '44%', top: '56%' };
 const IDLE_POS   = { left: '46%', top: '58%' };
 
-const CODING_BUBBLE = { left: '50%', top: '46%' };
-const IDLE_BUBBLE   = { left: '52%', top: '48%' };
+// Bubble below Albus — triangle points up toward him
+const CODING_BUBBLE = { left: '50%', top: '68%' };
+const IDLE_BUBBLE   = { left: '52%', top: '70%' };
 
 export function AlbusSprite({ state, thought }: Props) {
   const src = albusSrc(state);
