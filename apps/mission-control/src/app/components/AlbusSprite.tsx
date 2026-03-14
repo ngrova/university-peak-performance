@@ -12,7 +12,6 @@ interface Props {
 }
 
 const POS = { left: '38%', top: '38%' };
-const BUBBLE = { left: '54%', top: '24%' };
 
 export function AlbusSprite({ state, app, task }: Props) {
   const src = albusSrc(state);
@@ -25,16 +24,17 @@ export function AlbusSprite({ state, app, task }: Props) {
           50%       { transform: translateY(-8px); }
         }
       `}</style>
-      {(app || task) && (
-        <ThoughtBubble app={app ?? ''} task={task ?? ''} left={BUBBLE.left} top={BUBBLE.top} />
-      )}
       <div style={{
         position: 'absolute',
         left: POS.left,
         top: POS.top,
         width: '14%',
         animation: 'albusFloat 3s ease-in-out infinite',
+        overflow: 'visible',
       }}>
+        {(app || task) && (
+          <ThoughtBubble app={app ?? ''} task={task ?? ''} left="110%" top="-60%" />
+        )}
         <Image
           src={src}
           alt={`Albus ${state}`}
