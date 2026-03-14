@@ -53,6 +53,39 @@ function useRewindState() {
   return state;
 }
 
+function useSubagents(intervalMs: number) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    const fetch_ = () => fetch('/api/subagents').then(r => r.json()).then((d: { count: number }) => setCount(d.count)).catch(() => {});
+    fetch_();
+    const id = setInterval(fetch_, intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return count;
+}
+
+function useActivity(intervalMs: number) {
+  const [thought, setThought] = useState('Waiting for Nick...');
+  useEffect(() => {
+    const fetch_ = () =>
+      fetch('/api/activity')
+        .then(r => r.json())
+        .then((d: { currentTask: string; lastAction: string }) => {
+          setThought(summarize(d.currentTask));
+        })
+        .catch(() => {});
+    fetch_();
+    const id = setInterval(fetch_, intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return thought;
+}
+
+function summarize(raw: string): string {
+  if (!raw || raw === 'Idle') return 'Waiting for Nick...';
+  return raw.length > 24 ? raw.slice(0, 22) + '…' : raw;
+}
+
 export function Room() {
   const session = useSession(30_000);
   const spend   = useSpend(60_000);
@@ -74,8 +107,8 @@ export function Room() {
   const credits = spend.usage;
   const pct     = session.percent;
 
-  // sub-agent count — not in current session API, default 0
-  const subagentCount = 0;
+  const subagentCount = useSubagents(10_000);
+  const thought = useActivity(15_000);
 
   const [showOverlay, setShowOverlay] = useState(false);
 
@@ -140,7 +173,7 @@ export function Room() {
         />
         <CrystalSprite state={cState} pct={pct} />
         <MoneyBagSprite state={mState} credits={credits} />
-        <AlbusSprite state={aState} />
+        <AlbusSprite state={aState} thought={thought} />
         <ApprenticeSprites count={subagentCount} />
         <RewindFlash status={rewind.status} />
         <SpellbookSprite status={rewind.status} onClick={handleRewind} />
