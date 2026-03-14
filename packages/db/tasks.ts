@@ -45,7 +45,7 @@ export async function createTask(
 export async function updateTask(
   supabase: AnyClient,
   id: string,
-  updates: Partial<Pick<Task, 'title' | 'notes' | 'due_date' | 'priority' | 'status' | 'sort_order' | 'completed_at' | 'assignee' | 'failure_cost'>>,
+  updates: Partial<Pick<Task, 'title' | 'notes' | 'due_date' | 'priority' | 'status' | 'sort_order' | 'completed_at' | 'assignee' | 'failure_cost' | 'is_one_thing'>>,
 ): Promise<Task> {
   const { data, error } = await supabase
     .from('tasks')

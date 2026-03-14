@@ -30,6 +30,20 @@ export default function Sidebar(): React.JSX.Element {
         <Link href="/dashboard" className={navClass('/dashboard')}>
           📊 Dashboard
         </Link>
+        <div className="pt-2">
+          <p className="px-3 pb-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            Views
+          </p>
+          <Link href="/one-thing" className={navClass('/one-thing')}>
+            🎯 One Thing
+          </Link>
+          <Link href="/views/deadlines" className={navClass('/views/deadlines')}>
+            📅 Deadlines
+          </Link>
+          <Link href="/views/queue" className={navClass('/views/queue')}>
+            📋 Queue
+          </Link>
+        </div>
         <Link href="/scorecard" className={navClass('/scorecard')}>
           📊 Scorecard
         </Link>
