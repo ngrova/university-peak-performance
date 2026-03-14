@@ -14,7 +14,7 @@ vi.mock('@upp/db', () => ({
       getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'u1', email: 'test@example.com' } } }),
     },
   })),
-  getPillars: vi.fn().mockResolvedValue([]),
+  getPillarsWithProgress: vi.fn().mockResolvedValue([]),
 }))
 
 vi.mock('@/components/pillars/PillarCard', () => ({
