@@ -23,6 +23,9 @@ export interface Goal {
   updated_at: string
 }
 
+export type FailureCost = 'low' | 'medium' | 'high' | 'critical'
+export type TaskAssignee = 'Nick' | 'Erin'
+
 export interface Task {
   id: string
   user_id: string
@@ -32,9 +35,11 @@ export interface Task {
   notes: string | null
   due_date: string | null
   priority: 1 | 2 | 3 | 4
-  status: 'todo' | 'in_progress' | 'done'
+  status: 'todo' | 'in_progress' | 'done' | 'blocked'
   is_one_thing: boolean
   sort_order: number
+  assignee: TaskAssignee | null
+  failure_cost: FailureCost | null
   created_at: string
   completed_at: string | null
   updated_at: string
