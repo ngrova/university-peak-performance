@@ -4,46 +4,52 @@ import userEvent from '@testing-library/user-event';
 import { RewindButton } from './RewindButton';
 
 describe('RewindButton', () => {
-  it('shows REWIND when idle', () => {
-    render(<RewindButton status="idle" onRewind={vi.fn()} onHardRewind={vi.fn()} />);
-    expect(screen.getByRole('button', { name: /⟲ Rewind/i })).toBeInTheDocument();
+  it('shows CONTEXT REWIND label when idle', () => {
+    render(<RewindButton status="idle" onClick={vi.fn()} />);
+    expect(screen.getByRole('button')).toHaveTextContent(/CONTEXT REWIND/i);
   });
 
-  it('shows Hard Rewind secondary button', () => {
-    render(<RewindButton status="idle" onRewind={vi.fn()} onHardRewind={vi.fn()} />);
-    expect(screen.getByRole('button', { name: /Hard Rewind/i })).toBeInTheDocument();
+  it('is enabled when idle', () => {
+    render(<RewindButton status="idle" onClick={vi.fn()} />);
+    expect(screen.getByRole('button')).not.toBeDisabled();
   });
 
-  it('disables main button and shows in progress when not idle', () => {
-    render(<RewindButton status="awaiting-agent" onRewind={vi.fn()} onHardRewind={vi.fn()} />);
-    expect(screen.getByText(/Rewind in progress/i)).toBeInTheDocument();
-    const btn = screen.getByRole('button', { name: /Rewind in progress/i });
-    expect(btn).toBeDisabled();
+  it('calls onClick when clicked in idle state', async () => {
+    const onClick = vi.fn();
+    render(<RewindButton status="idle" onClick={onClick} />);
+    await userEvent.click(screen.getByRole('button'));
+    expect(onClick).toHaveBeenCalledOnce();
   });
 
-  it('calls onRewind when REWIND clicked', async () => {
-    const onRewind = vi.fn();
-    render(<RewindButton status="idle" onRewind={onRewind} onHardRewind={vi.fn()} />);
-    await userEvent.click(screen.getByRole('button', { name: /⟲ Rewind/i }));
-    expect(onRewind).toHaveBeenCalledOnce();
+  it('is disabled when running', () => {
+    render(<RewindButton status="running" onClick={vi.fn()} />);
+    expect(screen.getByRole('button')).toBeDisabled();
   });
 
-  it('calls onHardRewind when Hard Rewind clicked', async () => {
-    const onHardRewind = vi.fn();
-    render(<RewindButton status="idle" onRewind={vi.fn()} onHardRewind={onHardRewind} />);
-    await userEvent.click(screen.getByRole('button', { name: /Hard Rewind/i }));
-    expect(onHardRewind).toHaveBeenCalledOnce();
+  it('shows REWINDING label when running', () => {
+    render(<RewindButton status="running" onClick={vi.fn()} />);
+    expect(screen.getByRole('button')).toHaveTextContent(/REWINDING/i);
   });
 
-  it('re-enables main button when done', () => {
-    render(<RewindButton status="done" onRewind={vi.fn()} onHardRewind={vi.fn()} />);
-    const btn = screen.getByRole('button', { name: /⟲ Rewind/i });
+  it('is disabled when awaiting-agent', () => {
+    render(<RewindButton status="awaiting-agent" onClick={vi.fn()} />);
+    expect(screen.getByRole('button')).toBeDisabled();
+  });
+
+  it('shows COMPLETE label when done', () => {
+    render(<RewindButton status="done" onClick={vi.fn()} />);
+    expect(screen.getByRole('button')).toHaveTextContent(/COMPLETE/i);
+  });
+
+  it('is re-enabled when done', () => {
+    render(<RewindButton status="done" onClick={vi.fn()} />);
+    expect(screen.getByRole('button')).not.toBeDisabled();
+  });
+
+  it('shows FAILED label and is re-enabled on failure', () => {
+    render(<RewindButton status="failed" onClick={vi.fn()} />);
+    const btn = screen.getByRole('button');
+    expect(btn).toHaveTextContent(/FAILED/i);
     expect(btn).not.toBeDisabled();
-  });
-
-  it('hard rewind button is always enabled', () => {
-    render(<RewindButton status="running" onRewind={vi.fn()} onHardRewind={vi.fn()} />);
-    const hardBtn = screen.getByRole('button', { name: /Hard Rewind/i });
-    expect(hardBtn).not.toBeDisabled();
   });
 });

@@ -6,7 +6,7 @@ import { AlbusSprite } from './AlbusSprite';
 import { ApprenticeSprites } from './ApprenticeSprites';
 import { RewindFlash } from './RewindFlash';
 import { SpellbookOverlay } from './SpellbookOverlay';
-import { SpellbookSprite } from './SpellbookSprite';
+import { RewindButton } from './RewindButton';
 import { StatusBars } from './StatusBars';
 import { crystalState, albusState } from './sprite-state';
 import type { RewindStateFile } from '../api/rewind/rewind-state-file';
@@ -179,7 +179,7 @@ export function Room() {
         <AlbusSprite state={aState} app={activity.app} task={activity.task} />
         <ApprenticeSprites count={subagentCount} />
         <RewindFlash status={rewind.status} />
-        <SpellbookSprite status={rewind.status} onClick={handleRewind} />
+        <RewindButton status={rewind.status} onClick={handleRewind} />
       </div>
 
       {showOverlay && (

@@ -1,37 +1,110 @@
 'use client';
 
-import { useCallback } from 'react';
-import type { RewindStateFile } from '../api/rewind/rewind-state-file';
+import type { RewindStateFile, RewindStatus } from '../api/rewind/rewind-state-file';
 
 interface Props {
   status: RewindStateFile['status'];
-  onRewind: () => void;
-  onHardRewind: () => void;
+  onClick: () => void;
 }
 
-export function RewindButton({ status, onRewind, onHardRewind }: Props) {
-  const isIdle = status === 'idle';
-  const isDone = status === 'done' || status === 'failed';
+const IDLE_STATES: RewindStatus[] = ['idle', 'done', 'failed'];
 
-  const handleRewind = useCallback(() => { onRewind(); }, [onRewind]);
-  const handleHardRewind = useCallback(() => { onHardRewind(); }, [onHardRewind]);
+const LABEL: Record<RewindStatus, string> = {
+  'idle':             '⟳  CONTEXT REWIND',
+  'awaiting-agent':   '⏳  AWAITING...',
+  'awaiting-confirm': '⏳  AWAITING...',
+  'running':          '✦  REWINDING...',
+  'done':             '✓  COMPLETE',
+  'failed':           '✗  FAILED — RETRY',
+};
+
+export function RewindButton({ status, onClick }: Props) {
+  const isClickable = IDLE_STATES.includes(status);
+  const isBusy      = status === 'running';
+  const label       = LABEL[status] ?? LABEL['idle'];
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-xs uppercase tracking-widest text-[#E5E5E5]/40">Rewind</h2>
+    <>
+      <style>{`
+        @keyframes rewindPulse {
+          0%, 100% { box-shadow: 0 0 8px 2px rgba(251,191,36,0.5), inset 0 1px 0 rgba(255,255,255,0.15); }
+          50%       { box-shadow: 0 0 18px 6px rgba(251,191,36,0.85), inset 0 1px 0 rgba(255,255,255,0.15); }
+        }
+        @keyframes rewindSpin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+        .rw-btn {
+          position: absolute;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 20;
+          font-family: 'Press Start 2P', monospace;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          padding: 10px 22px;
+          border-radius: 3px;
+          border: 2px solid #92400e;
+          outline: 2px solid #451a03;
+          outline-offset: 2px;
+          background: linear-gradient(180deg, #78350f 0%, #451a03 100%);
+          color: #fbbf24;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+          box-shadow: 0 0 8px 2px rgba(251,191,36,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+          cursor: pointer;
+          user-select: none;
+          transition: filter 0.2s, background 0.2s, color 0.2s;
+          white-space: nowrap;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          animation: rewindPulse 2.5s ease-in-out infinite;
+        }
+        .rw-btn:hover:not(:disabled) {
+          filter: brightness(1.2);
+        }
+        .rw-btn:active:not(:disabled) {
+          filter: brightness(0.85);
+          transform: translateX(-50%) translateY(1px);
+        }
+        .rw-btn:disabled,
+        .rw-btn.busy {
+          cursor: default;
+          color: #a16207;
+          border-color: #57534e;
+          outline-color: #292524;
+          background: linear-gradient(180deg, #292524 0%, #1c1917 100%);
+          box-shadow: none;
+          animation: none;
+          filter: none;
+        }
+        .rw-btn.done {
+          color: #4ade80;
+          border-color: #166534;
+          box-shadow: 0 0 10px 3px rgba(74,222,128,0.4);
+          animation: none;
+        }
+        .rw-btn.failed {
+          color: #f87171;
+          border-color: #991b1b;
+          box-shadow: 0 0 10px 3px rgba(248,113,113,0.4);
+        }
+        .rw-spin {
+          display: inline-block;
+          animation: rewindSpin 1s linear infinite;
+        }
+      `}</style>
+
       <button
-        onClick={handleRewind}
-        disabled={!isIdle && !isDone}
-        className="w-full py-4 font-mono text-lg tracking-widest uppercase rounded border border-[#4ADE80] text-[#4ADE80] hover:bg-[#4ADE80]/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        className={`rw-btn${isBusy ? ' busy' : ''} ${status !== 'idle' && status !== 'awaiting-agent' && status !== 'awaiting-confirm' ? status : ''}`}
+        onClick={isClickable ? onClick : undefined}
+        disabled={!isClickable}
+        title={isClickable ? 'Compress conversation history to free up context' : label}
       >
-        {isIdle || isDone ? '⟲ Rewind' : 'Rewind in progress...'}
+        {isBusy && <span className="rw-spin" aria-hidden>⟳</span>}
+        {label}
       </button>
-      <button
-        onClick={handleHardRewind}
-        className="w-full py-2 font-mono text-sm tracking-widest uppercase rounded border border-[#666] text-[#888] hover:bg-white/5 transition-colors"
-      >
-        ⚡ Hard Rewind
-      </button>
-    </section>
+    </>
   );
 }
