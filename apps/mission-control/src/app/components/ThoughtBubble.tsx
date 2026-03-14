@@ -34,7 +34,7 @@ export function ThoughtBubble({ text, left, top }: Props) {
         <span
           style={{
             fontFamily: "'Press Start 2P', monospace",
-            fontSize: 6,
+            fontSize: 12,
             color: '#1a0a00',
             lineHeight: 1.6,
             display: 'block',
