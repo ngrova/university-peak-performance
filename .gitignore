@@ -1,0 +1,25 @@
+# Dependencies
+node_modules
+
+# Next.js
+.next
+next-env.d.ts
+
+# Turbo
+.turbo
+
+# Build outputs
+dist
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment variables
+.env*.local
+
+# OS
+.DS_Store
+
+# Editor
+.vscode
+.idea

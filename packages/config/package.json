@@ -1,0 +1,14 @@
+{
+  "name": "@upp/config",
+  "version": "0.0.1",
+  "private": true,
+  "files": [
+    "tsconfig.base.json",
+    "eslint-base.js",
+    "tailwind.config.base.ts"
+  ],
+  "devDependencies": {
+    "tailwindcss": "^3.0.0",
+    "typescript": "^5.0.0"
+  }
+}
