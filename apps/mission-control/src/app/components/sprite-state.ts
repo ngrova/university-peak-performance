@@ -30,13 +30,13 @@ export function crystalPulseDuration(state: CrystalState): number {
 }
 
 export function crystalSrc(state: CrystalState): string {
-  return `/sprites/crystal-${state}.webp`;
+  return `/sprites/crystal-${state}.png`;
 }
 
 export function moneyBagSrc(state: MoneyBagState): string {
-  return `/sprites/moneybag-${state}.webp`;
+  return `/sprites/moneybag-${state}.png`;
 }
 
 export function albusSrc(state: AlbusStateSprite): string {
-  return state === 'coding' ? '/sprites/albus-front.webp' : '/sprites/albus-back.webp';
+  return state === 'coding' ? '/sprites/albus-front.png' : '/sprites/albus-back.png';
 }

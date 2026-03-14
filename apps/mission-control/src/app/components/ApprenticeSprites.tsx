@@ -6,10 +6,11 @@ interface Props {
   count: number;
 }
 
+// Apprentices spread around the platform edges
 const SLOTS = [
-  { left: '18%', top: '55%' },
-  { left: '74%', top: '55%' },
-  { left: '46%', top: '70%' },
+  { left: '22%', top: '60%' },
+  { left: '64%', top: '60%' },
+  { left: '42%', top: '65%' },
 ] as const;
 
 export function ApprenticeSprites({ count }: Props) {
@@ -23,14 +24,14 @@ export function ApprenticeSprites({ count }: Props) {
         return (
           <div
             key={i}
-            style={{ position: 'absolute', left: slot.left, top: slot.top, width: '4%' }}
+            style={{ position: 'absolute', left: slot.left, top: slot.top, width: '9%' }}
           >
             <Image
-              src="/sprites/apprentice.webp"
+              src="/sprites/apprentice.png"
               alt="apprentice"
               width={72}
               height={72}
-              style={{ width: '100%', height: 'auto', imageRendering: 'pixelated', display: 'block', mixBlendMode: 'multiply' }}
+              style={{ width: '100%', height: 'auto', imageRendering: 'pixelated', display: 'block' }}
               unoptimized
             />
           </div>
