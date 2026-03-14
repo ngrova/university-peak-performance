@@ -1,11 +1,18 @@
 import React from 'react';
-import { Inter } from 'next/font/google';
+import { Fraunces, Nunito } from 'next/font/google';
 import { Providers } from './providers';
 import './globals.css';
 
-const inter = Inter({
+const fraunces = Fraunces({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-fraunces',
+  display: 'swap',
+  style: ['normal', 'italic'],
+});
+
+const nunito = Nunito({
+  subsets: ['latin'],
+  variable: '--font-nunito',
   display: 'swap',
 });
 
@@ -20,8 +27,8 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps): React.JSX.Element {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="bg-upp-surface text-gray-900 antialiased">
+    <html lang="en" className={`${fraunces.variable} ${nunito.variable}`}>
+      <body className="antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

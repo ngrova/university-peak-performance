@@ -20,11 +20,16 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Life Pillars</h1>
+        <h1
+          className="text-2xl font-bold italic"
+          style={{ fontFamily: 'var(--font-fraunces)', color: 'var(--text-primary)' }}
+        >
+          My Life Pillars
+        </h1>
         <AddPillarButton />
       </div>
       {pillars.length === 0 ? (
-        <div className="text-center py-16 text-gray-500">
+        <div className="text-center py-16" style={{ color: 'var(--text-light)' }}>
           <p className="text-lg mb-2">No pillars yet.</p>
           <p>Create your first one to get started.</p>
         </div>

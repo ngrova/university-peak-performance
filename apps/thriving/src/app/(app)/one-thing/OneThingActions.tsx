@@ -27,14 +27,23 @@ export default function OneThingActions({ taskId, wasPinned }: OneThingActionsPr
       <button
         onClick={handleDone}
         disabled={isPending}
-        className="flex-1 py-3 px-6 rounded-xl bg-indigo-600 text-white font-semibold text-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+        className="flex-1 py-3 px-6 text-white font-semibold text-lg disabled:opacity-50 transition-all"
+        style={{
+          borderRadius: 'var(--radius-xl)',
+          background: 'linear-gradient(135deg, #10B981, #059669)',
+        }}
       >
         {isPending ? 'Saving…' : '✅ Mark Done'}
       </button>
       <button
         onClick={handleSkip}
         disabled={isPending}
-        className="py-3 px-6 rounded-xl border border-gray-300 text-gray-600 font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
+        className="py-3 px-6 font-medium disabled:opacity-50 transition-colors hover:bg-black/5"
+        style={{
+          borderRadius: 'var(--radius-xl)',
+          border: '1px solid var(--border)',
+          color: 'var(--text-secondary)',
+        }}
       >
         Not now
       </button>

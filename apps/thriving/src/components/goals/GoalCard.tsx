@@ -10,10 +10,10 @@ interface GoalCardProps {
   pillarId: string
 }
 
-const STATUS_BADGE: Record<Goal['status'], string> = {
-  active: 'bg-green-100 text-green-800',
-  completed: 'bg-blue-100 text-blue-800',
-  archived: 'bg-gray-100 text-gray-600',
+const STATUS_BADGE: Record<Goal['status'], { bg: string; text: string }> = {
+  active: { bg: 'rgba(16,185,129,0.12)', text: '#10B981' },
+  completed: { bg: 'rgba(100,116,139,0.12)', text: '#64748B' },
+  archived: { bg: 'rgba(155,142,128,0.12)', text: '#9B8E80' },
 }
 
 export default function GoalCard({ goal, pillarId }: GoalCardProps): React.JSX.Element {
@@ -29,38 +29,53 @@ export default function GoalCard({ goal, pillarId }: GoalCardProps): React.JSX.E
     return <GoalForm pillarId={pillarId} goal={goal} onCancel={() => setEditing(false)} />
   }
 
+  const badge = STATUS_BADGE[goal.status]
+
   return (
-    <div className="rounded-lg border bg-white p-4 shadow-sm flex flex-col gap-2">
+    <div
+      className="rounded-2xl p-4 flex flex-col gap-2"
+      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
+    >
       <div className="flex items-start gap-2">
         <div className="flex-1">
-          <h4 className="font-semibold text-gray-900">{goal.title}</h4>
+          <h4 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{goal.title}</h4>
           {goal.description && (
-            <p className="text-sm text-gray-600 mt-1 line-clamp-2">{goal.description}</p>
+            <p className="text-sm mt-1 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
+              {goal.description}
+            </p>
           )}
         </div>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[goal.status]}`}>
+        <span
+          className="text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap"
+          style={{ backgroundColor: badge.bg, color: badge.text }}
+        >
           {goal.status}
         </span>
       </div>
       {goal.target_date && (
-        <p className="text-xs text-gray-500">🗓 {new Date(goal.target_date).toLocaleDateString()}</p>
+        <p className="text-xs" style={{ color: 'var(--text-light)' }}>
+          🗓 {new Date(goal.target_date).toLocaleDateString()}
+        </p>
       )}
       <div className="flex gap-2 mt-1">
         <Link
           href={`/pillars/${pillarId}/goals/${goal.id}`}
-          className="text-xs text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded hover:bg-indigo-50"
+          className="text-xs px-2 py-1 rounded-lg transition-colors hover:opacity-80"
+          style={{ color: 'var(--accent)' }}
         >
           View Tasks
         </Link>
         <button
           onClick={() => setEditing(true)}
-          className="text-xs text-gray-500 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-100"
+          className="text-xs px-2 py-1 rounded-lg transition-colors hover:bg-black/5"
+          style={{ color: 'var(--text-light)' }}
         >
           Edit
         </button>
         <button
           onClick={handleDelete}
-          className="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50"
+          className="text-xs px-2 py-1 rounded-lg transition-colors hover:bg-red-50"
+          style={{ color: '#DC2626' }}
         >
           Delete
         </button>

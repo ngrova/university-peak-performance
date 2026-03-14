@@ -3,9 +3,63 @@
 @tailwind utilities;
 
 :root {
+  /* Typography */
   --font-inter: 'Inter', system-ui, sans-serif;
+
+  /* Warm cream palette */
+  --bg-primary: #FAF7F2;
+  --bg-secondary: #F0EBE3;
+  --bg-dark: #1a1512;
+  --text-primary: #2D2318;
+  --text-secondary: #6B5D4F;
+  --text-light: #9B8E80;
+  --border: #E5DFD6;
+  --accent: #D97706;
+
+  /* Status colors */
+  --status-todo: #64748B;
+  --status-in-progress: #D97706;
+  --status-done: #10B981;
+  --status-blocked: #F59E0B;
+
+  /* Failure cost colors */
+  --cost-critical: #DC2626;
+  --cost-high: #EA580C;
+  --cost-medium: #D97706;
+  --cost-low: #9B8E80;
+
+  /* Border radii */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
 }
 
 * {
   box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+}
+
+/* Blocked status pulse animation */
+@keyframes pulse-blocked {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.status-blocked {
+  animation: pulse-blocked 2s ease-in-out infinite;
+}
+
+/* Amber range slider */
+input[type='range']::-webkit-slider-thumb {
+  background: var(--accent);
+}
+
+input[type='range']::-moz-range-thumb {
+  background: var(--accent);
 }
