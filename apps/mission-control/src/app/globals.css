@@ -3,6 +3,170 @@
 @tailwind utilities;
 
 body {
-  background-color: #0D0D0D;
+  background-color: #2a1a0e;
   color: #E5E5E5;
+  overflow: hidden;
+}
+
+/* ── Pixel font ── */
+.pixel-text {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  image-rendering: pixelated;
+}
+
+/* ── Room background ── */
+.room-wall {
+  background-color: #4a3520;
+  background-image:
+    repeating-linear-gradient(
+      0deg, transparent, transparent 15px,
+      rgba(0,0,0,0.12) 15px, rgba(0,0,0,0.12) 16px
+    ),
+    repeating-linear-gradient(
+      90deg, transparent, transparent 15px,
+      rgba(0,0,0,0.08) 15px, rgba(0,0,0,0.08) 16px
+    );
+}
+
+.room-floor {
+  background-color: #6b4c2a;
+  background-image:
+    repeating-linear-gradient(
+      90deg, transparent, transparent 39px,
+      rgba(0,0,0,0.15) 39px, rgba(0,0,0,0.15) 40px
+    ),
+    repeating-linear-gradient(
+      0deg, transparent, transparent 19px,
+      rgba(0,0,0,0.08) 19px, rgba(0,0,0,0.08) 20px
+    );
+}
+
+/* ── Crystal ball glows ── */
+.crystal-calm {
+  --glow-color: #60a5fa;
+  --glow-spread: 20px;
+  animation: none;
+}
+.crystal-gentle {
+  --glow-color: #2dd4bf;
+  --glow-spread: 24px;
+  animation: pulse-gentle 2.5s ease-in-out infinite;
+}
+.crystal-warm {
+  --glow-color: #f59e0b;
+  --glow-spread: 28px;
+  animation: pulse-warm 1.8s ease-in-out infinite;
+}
+.crystal-hot {
+  --glow-color: #f97316;
+  --glow-spread: 32px;
+  animation: pulse-hot 1s ease-in-out infinite;
+}
+.crystal-danger {
+  --glow-color: #ef4444;
+  --glow-spread: 36px;
+  animation: pulse-danger 0.5s ease-in-out infinite;
+}
+
+@keyframes pulse-gentle {
+  0%, 100% { filter: drop-shadow(0 0 10px var(--glow-color)); }
+  50%       { filter: drop-shadow(0 0 24px var(--glow-color)); }
+}
+@keyframes pulse-warm {
+  0%, 100% { filter: drop-shadow(0 0 12px var(--glow-color)); }
+  50%       { filter: drop-shadow(0 0 30px var(--glow-color)); }
+}
+@keyframes pulse-hot {
+  0%, 100% { filter: drop-shadow(0 0 14px var(--glow-color)); }
+  50%       { filter: drop-shadow(0 0 38px var(--glow-color)); }
+}
+@keyframes pulse-danger {
+  0%, 100% { filter: drop-shadow(0 0 18px var(--glow-color)); }
+  50%       { filter: drop-shadow(0 0 46px var(--glow-color)); }
+}
+
+/* ── Candle flicker ── */
+.candle-flicker .candle-flame {
+  animation: flicker 0.3s ease-in-out infinite alternate;
+}
+@keyframes flicker {
+  0%   { transform: scaleX(1) scaleY(1);   opacity: 1;    }
+  50%  { transform: scaleX(0.8) scaleY(1.2); opacity: 0.9; }
+  100% { transform: scaleX(1.1) scaleY(0.9); opacity: 0.8; }
+}
+
+/* ── Fireplace ── */
+.fire-layer-1 { animation: fire1 0.6s ease-in-out infinite alternate; }
+.fire-layer-2 { animation: fire2 0.4s ease-in-out infinite alternate; }
+.fire-layer-3 { animation: fire3 0.5s ease-in-out infinite alternate; }
+
+@keyframes fire1 {
+  from { transform: scaleY(1)    translateY(0px);  opacity: 0.9; }
+  to   { transform: scaleY(0.85) translateY(-2px); opacity: 1;   }
+}
+@keyframes fire2 {
+  from { transform: scaleY(1.1)  translateY(-1px); opacity: 0.8; }
+  to   { transform: scaleY(0.9)  translateY(2px);  opacity: 1;   }
+}
+@keyframes fire3 {
+  from { transform: scaleY(0.95) translateY(1px);  opacity: 0.7; }
+  to   { transform: scaleY(1.1)  translateY(-2px); opacity: 0.9; }
+}
+
+/* ── Albus wizard bob ── */
+@keyframes bob {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-3px); }
+}
+@keyframes quill {
+  0%   { transform: rotate(-10deg); }
+  50%  { transform: rotate(5deg);   }
+  100% { transform: rotate(-10deg); }
+}
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg);   }
+  25%       { transform: rotate(-15deg); }
+  75%       { transform: rotate(15deg);  }
+}
+
+/* ── Apprentice poof ── */
+@keyframes poof-in {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.apprentice-enter { animation: poof-in 0.4s ease-out forwards; }
+
+/* ── Spellbook overlay ── */
+.rune-idle    { filter: grayscale(1) brightness(0.5); }
+.rune-active  { filter: drop-shadow(0 0 6px #facc15); animation: rune-pulse 1s ease-in-out infinite; }
+.rune-done    { filter: drop-shadow(0 0 8px #4ade80); }
+
+@keyframes rune-pulse {
+  0%, 100% { opacity: 0.8; }
+  50%       { opacity: 1;   }
+}
+
+/* ── Gold coin drop ── */
+@keyframes coin-drop {
+  0%   { transform: translateY(-14px); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(0px);   opacity: 0; }
+}
+.coins-falling .coin-1 { animation: coin-drop 0.9s ease-in infinite; }
+.coins-falling .coin-2 { animation: coin-drop 0.9s ease-in 0.45s infinite; }
+
+/* ── Room darkness at high tokens ── */
+.room-darken { background-color: rgba(0,0,0,0.25); }
+
+/* ── Window light ── */
+.window-light {
+  background: linear-gradient(135deg, #fffde7 0%, #fff59d 40%, transparent 100%);
+  animation: light-shift 8s ease-in-out infinite;
+}
+@keyframes light-shift {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1;   }
 }
