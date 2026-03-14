@@ -83,7 +83,7 @@ function useActivity(intervalMs: number) {
 
 function summarize(raw: string): string {
   if (!raw || raw === 'Idle') return 'Waiting for Nick...';
-  return raw.length > 24 ? raw.slice(0, 22) + '…' : raw;
+  return raw.length > 120 ? raw.slice(0, 118) + '…' : raw;
 }
 
 export function Room() {

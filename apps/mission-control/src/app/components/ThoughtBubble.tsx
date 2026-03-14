@@ -25,9 +25,9 @@ export function ThoughtBubble({ text, left, top }: Props) {
           background: 'rgba(255,255,255,0.92)',
           border: '2px solid #2d1a0e',
           borderRadius: 4,
-          padding: '5px 8px',
-          maxWidth: 140,
-          minWidth: 60,
+          padding: '7px 10px',
+          maxWidth: 320,
+          minWidth: 120,
           textAlign: 'center',
         }}
       >
