@@ -19,6 +19,8 @@ export interface Goal {
   target_date: string | null
   status: 'active' | 'completed' | 'archived'
   sort_order: number
+  color: string
+  priority_rank: number
   created_at: string
   updated_at: string
 }
