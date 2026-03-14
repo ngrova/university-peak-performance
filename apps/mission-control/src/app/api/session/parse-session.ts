@@ -8,6 +8,8 @@ export interface SessionData {
   convoTokens: number;    // fresh tokens this turn
   rewindSavings: number;  // tokens freed by a rewind (tokens - coldStartTokens)
   rewindSavingsPct: number; // rewindSavings as % of cap
+  outputTokens: number;   // total output tokens this session
+  messageCount: number;   // number of exchanges in session
 }
 
 const SESSIONS_DIR = '/Users/openclaw/.openclaw/agents/main/sessions';
@@ -50,29 +52,35 @@ function resolveSessionFile(session: SessionEntry): string | null {
 }
 
 interface UsageBlock { input?: number; output?: number; cacheRead?: number; totalTokens?: number; }
-interface JournalEntry { usage?: UsageBlock; message?: { usage?: UsageBlock } }
+interface JournalEntry { usage?: UsageBlock; message?: { usage?: UsageBlock }; type?: string }
 
 /** Read usage from the session JSONL.
  *  Returns last entry (highest totalTokens in recent lines) plus cold-start total.
  */
-function readUsage(sessionFile: string): { total: number; cached: number; fresh: number; coldStart: number } {
-  const zero = { total: 0, cached: 0, fresh: 0, coldStart: 0 };
+function readUsage(sessionFile: string): { total: number; cached: number; fresh: number; coldStart: number; output: number; messageCount: number } {
+  const zero = { total: 0, cached: 0, fresh: 0, coldStart: 0, output: 0, messageCount: 0 };
   try {
     const content = fs.readFileSync(sessionFile, 'utf-8');
     const lines = content.split('\n').filter((l) => l.trim());
 
     // Find cold-start: first usage entry with totalTokens > 0
     let coldStart = 0;
+    let messageCount = 0;
+    let lastOutput = 0;
     for (const line of lines) {
       try {
         const obj = JSON.parse(line) as JournalEntry;
         const u = obj.usage ?? obj.message?.usage;
-        if (u && (u.totalTokens ?? 0) > 0) { coldStart = u.totalTokens ?? 0; break; }
+        if (u && (u.totalTokens ?? 0) > 0) {
+          if (coldStart === 0) coldStart = u.totalTokens ?? 0;
+          if ((u.output ?? 0) > 0) lastOutput = u.output ?? 0;
+        }
+        if (obj.type === 'user') messageCount++;
       } catch { /* skip */ }
     }
 
     // Find best recent entry (highest totalTokens in last 30 lines)
-    const candidates: Array<{ total: number; cached: number; fresh: number }> = [];
+    const candidates: Array<{ total: number; cached: number; fresh: number; output: number }> = [];
     for (let i = lines.length - 1; i >= Math.max(0, lines.length - 30); i--) {
       try {
         const obj = JSON.parse(lines[i]!) as JournalEntry;
@@ -80,18 +88,18 @@ function readUsage(sessionFile: string): { total: number; cached: number; fresh:
         if (!u) continue;
         const total = u.totalTokens ?? 0;
         const cached = u.cacheRead ?? 0;
-        if (total > 0 && cached > 0) candidates.push({ total, cached, fresh: u.input ?? 0 });
+        if (total > 0 && cached > 0) candidates.push({ total, cached, fresh: u.input ?? 0, output: u.output ?? 0 });
       } catch { /* skip */ }
     }
 
-    if (candidates.length === 0) return { ...zero, coldStart };
+    if (candidates.length === 0) return { ...zero, coldStart, output: lastOutput, messageCount };
     candidates.sort((a, b) => b.total - a.total);
-    return { ...candidates[0]!, coldStart };
+    return { ...candidates[0]!, coldStart, messageCount };
   } catch { /* file missing */ }
   return zero;
 }
 
-const FALLBACK: SessionData = { tokens: 0, cap: TOKEN_CAP, percent: 0, systemTokens: 0, convoTokens: 0, rewindSavings: 0, rewindSavingsPct: 0 };
+const FALLBACK: SessionData = { tokens: 0, cap: TOKEN_CAP, percent: 0, systemTokens: 0, convoTokens: 0, rewindSavings: 0, rewindSavingsPct: 0, outputTokens: 0, messageCount: 0 };
 
 export function parseSessionOutput(rawJson: string): SessionData {
   try {
@@ -112,7 +120,7 @@ export function parseSessionOutput(rawJson: string): SessionData {
     if (!session) return { ...FALLBACK };
 
     const resolvedFile = resolveSessionFile(session);
-    const usage = resolvedFile ? readUsage(resolvedFile) : { total: 0, cached: 0, fresh: 0, coldStart: 0 };
+    const usage = resolvedFile ? readUsage(resolvedFile) : { total: 0, cached: 0, fresh: 0, coldStart: 0, output: 0, messageCount: 0 };
 
     const tokens = usage.total > 0 ? usage.total : tokenCount(session);
     const systemTokens = usage.cached;
@@ -120,8 +128,10 @@ export function parseSessionOutput(rawJson: string): SessionData {
     const rewindSavings = Math.max(0, tokens - usage.coldStart);
     const rewindSavingsPct = Math.min(100, Math.round((rewindSavings / TOKEN_CAP) * 100));
     const percent = Math.min(100, Math.round((tokens / TOKEN_CAP) * 100));
+    const outputTokens = usage.output;
+    const messageCount = usage.messageCount;
 
-    return { tokens, cap: TOKEN_CAP, percent, systemTokens, convoTokens, rewindSavings, rewindSavingsPct };
+    return { tokens, cap: TOKEN_CAP, percent, systemTokens, convoTokens, rewindSavings, rewindSavingsPct, outputTokens, messageCount };
   } catch {
     return { ...FALLBACK };
   }

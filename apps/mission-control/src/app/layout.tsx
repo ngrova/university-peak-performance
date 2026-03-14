@@ -10,8 +10,8 @@ const pressStart2P = Press_Start_2P({
 });
 
 export const metadata: Metadata = {
-  title: 'Mission Control',
-  description: 'OpenClaw HUD — context gauge and session rewind',
+  title: "Albus's Lookout",
+  description: 'Token Command Dashboard — Nick Grover HQ',
 };
 
 export default function RootLayout({
@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`min-h-screen bg-[#0D0D0D] text-[#E5E5E5] antialiased ${pressStart2P.variable}`}>
+      <body className={`min-h-screen bg-[#1a1520] text-[#E5E5E5] antialiased ${pressStart2P.variable}`}>
         {children}
       </body>
     </html>

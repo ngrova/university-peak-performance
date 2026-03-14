@@ -1,134 +1,71 @@
 'use client';
 
+import { contextBarColor, spendBarColor } from '../lib/grades';
+
 interface StatusBarsProps {
   tokens: number;
   cap: number;
   percent: number;
-  systemTokens: number;
-  convoTokens: number;
   rewindSavings: number;
   rewindSavingsPct: number;
-  usage: number;
+  usageToday: number;
+  creditsTotal: number;
 }
 
-const BUDGET_CAP = 200;
+const DAILY_BUDGET = Number(process.env.NEXT_PUBLIC_DAILY_BUDGET ?? 100);
 
-function spendBarColor(remainingPct: number): string {
-  if (remainingPct <= 20) return '#ef4444';
-  if (remainingPct <= 50) return '#facc15';
-  return '#4ade80';
-}
+const WRAP = { background: '#2a2238', border: '2px solid #3a2e50', borderRadius: 4, padding: '10px 12px', fontFamily: "'Press Start 2P', monospace" };
+const TRACK = { background: '#0d0a12', height: 14, borderRadius: 2, overflow: 'hidden' as const };
+const LABEL_ROW = { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#e8dcc8', marginBottom: 5 };
 
-export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, rewindSavings, rewindSavingsPct, usage }: StatusBarsProps) {
+export function StatusBars({ tokens, cap, percent, rewindSavings, rewindSavingsPct, usageToday, creditsTotal }: StatusBarsProps) {
   const capK = Math.round(cap / 1000);
   const totalK = Math.round(tokens / 1000);
   const ctxPct = Math.min(100, Math.max(0, percent));
+  const ctxColor = contextBarColor(ctxPct);
 
-  // Segment percentages relative to cap
-  const baselineTokens = Math.max(0, tokens - rewindSavings - convoTokens);
-  const baselinePct = Math.min(100, Math.round((baselineTokens / cap) * 100));
-  const convoPct = Math.min(100 - baselinePct - rewindSavingsPct, Math.round((convoTokens / cap) * 100));
-  // sysPct kept for reference but bar now uses baseline/savings/convo layout
-  const sysPct = Math.min(100, Math.round((systemTokens / cap) * 100)); void sysPct;
+  const baselinePct = Math.max(0, Math.min(100, ctxPct - rewindSavingsPct));
 
-  const remaining = Math.max(0, BUDGET_CAP - usage);
-  const remainingPct = (remaining / BUDGET_CAP) * 100;
-  const spendFillPct = Math.min(100, Math.max(0, remainingPct));
-  const spendColor = spendBarColor(remainingPct);
+  const spentPct = Math.min(100, (usageToday / DAILY_BUDGET) * 100);
+  const spColor = spendBarColor(spentPct);
+
+  const creditsRemaining = Math.max(0, creditsTotal);
+  const creditsCap = Math.max(creditsTotal, 200);
+  const creditsFillPct = Math.min(100, (creditsRemaining / creditsCap) * 100);
+  const creditsColor = spendBarColor(100 - creditsFillPct);
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 12,
-        left: 12,
-        right: 12,
-        background: 'rgba(0,0,0,0.6)',
-        border: '2px solid #5c3d1e',
-        borderRadius: 2,
-        padding: '8px 10px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-        fontFamily: "'Press Start 2P', monospace",
-        zIndex: 10,
-      }}
-    >
-      {/* Context bar — segmented: system (blue-gray) + convo (green→amber→red) */}
-      <div>
-        <div style={{ fontSize: 12, color: '#e5e7eb', marginBottom: 4, letterSpacing: '0.05em' }}>
-          {`CONTEXT: ${totalK}K / ${capK}K (${ctxPct}%)`}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={WRAP}>
+        <div style={LABEL_ROW}>
+          <span>CONTEXT</span>
+          <span style={{ color: '#8878a0' }}>{`${totalK}K / ${capK}K (${ctxPct}%)`}</span>
         </div>
-        {/* Bar: baseline | savings (green striped) | this msg | empty */}
-        <style>{`
-          @keyframes savingsStripe {
-            0%   { background-position: 0 0; }
-            100% { background-position: 28px 0; }
-          }
-        `}</style>
-        <div style={{ background: '#1a1a1a', height: 14, borderRadius: 2, overflow: 'hidden', display: 'flex', position: 'relative' }}>
-          {/* Baseline — stays after rewind */}
-          {baselinePct > 0 && (
-            <div
-              title={`Baseline (stays after rewind): ~${Math.round((tokens - rewindSavings) / 1000)}K`}
-              style={{ width: `${baselinePct}%`, height: '100%', background: '#4b5563', transition: 'width 0.8s ease', flexShrink: 0 }}
-            />
-          )}
-          {/* Rewind savings — animated green stripes */}
+        <div style={TRACK}>
+          {baselinePct > 0 && <div style={{ width: `${baselinePct}%`, height: '100%', background: ctxColor, display: 'inline-block', transition: 'width 0.8s ease' }} />}
           {rewindSavingsPct > 0 && (
-            <div
-              title={`Rewind frees ${Math.round(rewindSavings / 1000)}K tokens (${rewindSavingsPct}%)`}
-              style={{
-                width: `${rewindSavingsPct}%`,
-                height: '100%',
-                backgroundImage: 'repeating-linear-gradient(90deg, #16a34a 0px, #16a34a 14px, #22c55e 14px, #22c55e 28px)',
-                backgroundSize: '28px 100%',
-                animation: 'savingsStripe 1.2s linear infinite',
-                transition: 'width 0.8s ease',
-                flexShrink: 0,
-              }}
-            />
+            <div style={{ width: `${rewindSavingsPct}%`, height: '100%', background: '#16a34a', opacity: 0.7, display: 'inline-block', transition: 'width 0.8s ease' }} />
           )}
-          {/* This message — small blue sliver */}
-          {convoPct > 0 && (
-            <div
-              title={`This message: ${convoTokens} tokens`}
-              style={{ width: `${convoPct}%`, height: '100%', background: '#38bdf8', transition: 'width 0.8s ease', flexShrink: 0, minWidth: 3 }}
-            />
-          )}
-        </div>
-        {/* Legend */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
-          <div style={{ display: 'flex', gap: 10, fontSize: 8, color: '#9ca3af' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <span style={{ display: 'inline-block', width: 8, height: 8, background: '#4b5563', borderRadius: 1 }} />
-              {`BASE ${Math.round((tokens - rewindSavings) / 1000)}K`}
-            </span>
-            {rewindSavingsPct > 5 && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: '#4ade80' }}>
-                <span style={{ display: 'inline-block', width: 8, height: 8, background: '#22c55e', borderRadius: 1 }} />
-                {`⟳ SAVES ${Math.round(rewindSavings / 1000)}K`}
-              </span>
-            )}
-          </div>
-          <span style={{ fontSize: 8, color: '#6b7280' }}>{`${ctxPct}% USED`}</span>
         </div>
       </div>
 
-      {/* Spend bar */}
-      <div>
-        <div style={{ fontSize: 12, color: '#e5e7eb', marginBottom: 4, letterSpacing: '0.05em' }}>
-          {`CREDITS: $${usage.toFixed(2)}`}
+      <div style={WRAP}>
+        <div style={LABEL_ROW}>
+          <span>DAILY SPEND</span>
+          <span style={{ color: '#8878a0' }}>{`$${usageToday.toFixed(2)} / $${DAILY_BUDGET}`}</span>
         </div>
-        <div style={{ background: '#1a1a1a', height: 14, borderRadius: 2, overflow: 'hidden' }}>
-          <div
-            style={{
-              width: `${spendFillPct}%`,
-              height: '100%',
-              background: spendColor,
-              transition: 'width 0.8s ease',
-            }}
-          />
+        <div style={TRACK}>
+          <div style={{ width: `${spentPct}%`, height: '100%', background: spColor, transition: 'width 0.8s ease' }} />
+        </div>
+      </div>
+
+      <div style={WRAP}>
+        <div style={LABEL_ROW}>
+          <span>CREDITS</span>
+          <span style={{ color: '#8878a0' }}>{`$${creditsRemaining.toFixed(2)} left`}</span>
+        </div>
+        <div style={TRACK}>
+          <div style={{ width: `${creditsFillPct}%`, height: '100%', background: creditsColor, transition: 'width 0.8s ease' }} />
         </div>
       </div>
     </div>
