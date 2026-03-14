@@ -3,17 +3,17 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Room } from './components/Room';
 import { TopBar } from './components/TopBar';
+import { ContextBar } from './components/ContextBar';
 import { LeftPanel } from './components/LeftPanel';
-import { RightPanel } from './components/RightPanel';
+import { ActivityLog } from './components/ActivityLog';
 import { RewindStrip } from './components/RewindStrip';
 import { InfoStrip } from './components/InfoStrip';
 import { AlbusSprite } from './components/AlbusSprite';
-import { ApprenticeSprites } from './components/ApprenticeSprites';
 import { ThoughtBubble } from './components/ThoughtBubble';
 import { albusState } from './components/sprite-state';
-import { calcEfficiency, efficiencyGrade } from './lib/grades';
 import { useMetricsSync } from './hooks/useMetricsSync';
 import type { RewindStateFile } from './api/rewind/rewind-state-file';
+import type { ActivityLogData } from './api/activity-log/route';
 
 const IDLE_REWIND: RewindStateFile = {
   status: 'idle', agentMessage: null, requestedAt: null, confirmedAt: null,
@@ -36,10 +36,9 @@ interface SessionData {
   rewindSavings: number; rewindSavingsPct: number;
 }
 interface SpendData { usage: number; usageToday: number; }
-interface PrsData { prsToday: number; }
+interface ActivityData { app: string; task: string; lastCommitAt?: string; }
 interface MetricsDay { date: string; totalInputTokens: number; totalSpend: number; prsMerged: number; rewindStreak: number; }
 interface MetricsData { days: MetricsDay[] }
-interface ActivityData { app: string; task: string; lastCommitAt?: string; }
 
 export default function LookoutPage() {
   const session = usePoll<SessionData>('/api/session', 30_000, {
@@ -47,21 +46,15 @@ export default function LookoutPage() {
     systemTokens: 0, convoTokens: 0, rewindSavings: 0, rewindSavingsPct: 0,
   });
   const spend = usePoll<SpendData>('/api/spend', 60_000, { usage: 0, usageToday: 0 });
-  const prs = usePoll<PrsData>('/api/github/prs', 300_000, { prsToday: 0 });
   const metrics = usePoll<MetricsData>('/api/metrics', 600_000, { days: [] });
   const activity = usePoll<ActivityData>('/api/activity', 15_000, { app: 'Mission Control', task: '' });
-  const subagents = usePoll<{ count: number }>('/api/subagents', 10_000, { count: 0 });
+  const activityLog = usePoll<ActivityLogData>('/api/activity-log', 60_000, { entries: [] });
   const rewind = usePoll<RewindStateFile>('/api/rewind/state', 5_000, IDLE_REWIND);
 
   const today = new Date().toISOString().slice(0, 10);
-  const todayEntry = metrics.days.find(d => d.date === today);
   const last7 = [...metrics.days].sort((a, b) => a.date.localeCompare(b.date)).slice(-7);
   const tokenTrend = last7.map(d => Math.round(d.totalInputTokens / 1000));
   while (tokenTrend.length < 7) tokenTrend.unshift(0);
-
-  const effPct = calcEfficiency(session.outputTokens, session.tokens);
-  const effGrade = efficiencyGrade(effPct);
-  const costPerPr = prs.prsToday > 0 ? spend.usageToday / prs.prsToday : 0;
 
   const lastRewindAt = useRef<number>(Date.now());
   useEffect(() => { if (rewind.status === 'done') lastRewindAt.current = Date.now(); }, [rewind.status]);
@@ -76,7 +69,7 @@ export default function LookoutPage() {
     totalInputTokens: session.tokens,
     totalOutputTokens: session.outputTokens,
     totalSpend: spend.usageToday,
-    prsMerged: prs.prsToday,
+    prsMerged: 0,
     maxContextPercent: session.percent,
   });
 
@@ -100,24 +93,19 @@ export default function LookoutPage() {
     <>
       <Room>
         <AlbusSprite state={aState} />
-        <ApprenticeSprites count={subagents.count} />
         <ThoughtBubble task={activity.task} />
       </Room>
 
       <TopBar />
-      <LeftPanel session={session} spend={spend} tokenTrend={tokenTrend} />
-      <RightPanel
-        effGrade={effGrade}
-        effPct={effPct}
-        prsToday={prs.prsToday}
-        costPerPr={costPerPr}
-        rewindStreak={todayEntry?.rewindStreak ?? 0}
-        messagesThisSession={session.messageCount}
-        subagentCount={subagents.count}
-        albusState={aState}
-        timeSinceRewindMs={timeSinceRewindMs}
-        contextPercent={session.percent}
+      <ContextBar
+        tokens={session.tokens}
+        cap={session.cap}
+        percent={session.percent}
+        rewindSavings={session.rewindSavings}
+        rewindSavingsPct={session.rewindSavingsPct}
       />
+      <LeftPanel session={session} spend={spend} tokenTrend={tokenTrend} />
+      <ActivityLog entries={activityLog.entries} />
       <RewindStrip
         rewindState={rewind}
         lastRewindMs={timeSinceRewindMs}

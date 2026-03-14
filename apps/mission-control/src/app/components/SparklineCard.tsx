@@ -25,6 +25,8 @@ function trendText(values: number[]): { text: string; color: string } {
   if (values.length < 6) return { text: 'not enough data', color: '#8a78a0' };
   const first3 = values.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
   const last3 = values.slice(-3).reduce((a, b) => a + b, 0) / 3;
+  // Trending DOWN = good (fewer tokens used) → green
+  // Trending UP = bad (more tokens burned) → red
   if (last3 < first3) return { text: 'trending down ↓', color: '#50b050' };
   return { text: 'trending up ↑', color: '#c04848' };
 }
