@@ -71,13 +71,16 @@ export async function runStages(): Promise<void> {
   const stageNames = ['clear', 'restart', 'verify'] as const;
 
   for (let i = 0; i < stageRunners.length; i++) {
+    const runner = stageRunners[i];
+    const stageName = stageNames[i];
+    if (!runner || !stageName) continue;
     try {
-      await stageRunners[i]();
+      await runner();
     } catch (err) {
       const failState = readRewindState();
       const msg = err instanceof Error ? err.message : 'Unknown error';
-      writeRewindState({ ...failState, status: 'failed', stages: { ...failState.stages, [stageNames[i]]: 'failed' } });
-      throw new Error(`Stage ${stageNames[i]} failed: ${msg}`);
+      writeRewindState({ ...failState, status: 'failed', stages: { ...failState.stages, [stageName as string]: 'failed' } });
+      throw new Error(`Stage ${stageName} failed: ${msg}`);
     }
   }
 

@@ -28,7 +28,7 @@ beforeEach(() => {
 
 describe('readSessionData', () => {
   it('returns parsed data when file exists', () => {
-    const expected: SessionData = { tokens: 10000, cap: 200000, percent: 5 };
+    const expected: SessionData = { tokens: 10000, cap: 200000, percent: 5, systemTokens: 0, convoTokens: 0, rewindSavings: 0, rewindSavingsPct: 0 };
     mockReadFileSync.mockReturnValue('{"sessions":[]}');
     mockParseSessionOutput.mockReturnValue(expected);
 
@@ -40,7 +40,7 @@ describe('readSessionData', () => {
     mockReadFileSync.mockImplementation(() => { throw new Error('ENOENT'); });
 
     const result = readSessionData();
-    expect(result).toEqual({ tokens: 0, cap: 200_000, percent: 0 });
+    expect(result).toEqual({ tokens: 0, cap: 200_000, percent: 0, systemTokens: 0, convoTokens: 0, rewindSavings: 0, rewindSavingsPct: 0 });
   });
 });
 
@@ -60,7 +60,7 @@ describe('watchSessionFile', () => {
       return mockWatcher as unknown as fs.FSWatcher;
     });
 
-    const expected: SessionData = { tokens: 5000, cap: 200000, percent: 3 };
+    const expected: SessionData = { tokens: 5000, cap: 200000, percent: 3, systemTokens: 0, convoTokens: 0, rewindSavings: 0, rewindSavingsPct: 0 };
     mockReadFileSync.mockReturnValue('{}');
     mockParseSessionOutput.mockReturnValue(expected);
 

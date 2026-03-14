@@ -10,19 +10,19 @@ interface Props {
   pct: number;
 }
 
+// Crystal sits at the back-center of the platform (the concentric rings)
 export function CrystalSprite({ state, pct }: Props) {
   const duration = crystalPulseDuration(state);
   const src = crystalSrc(state);
 
   return (
     <>
-      <FloatingLabel text="CRYSTAL" left="38%" top="20%" />
       <div
         style={{
           position: 'absolute',
-          left: '42%',
-          top: '28%',
-          width: '9%',
+          left: '43%',
+          top: '40%',
+          width: '12%',
           animation: `crystalPulse ${duration}s ease-in-out infinite`,
           transformOrigin: 'center center',
         }}
@@ -36,7 +36,7 @@ export function CrystalSprite({ state, pct }: Props) {
           unoptimized
         />
       </div>
-      <FloatingLabel text={`${pct}%`} left="43%" top="41%" />
+      <FloatingLabel text={`${pct}%`} left="46%" top="54%" />
     </>
   );
 }

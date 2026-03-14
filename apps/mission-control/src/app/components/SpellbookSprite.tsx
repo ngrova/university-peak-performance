@@ -9,6 +9,7 @@ interface Props {
 
 const IDLE_STATES: RewindStateFile['status'][] = ['idle', 'done', 'failed'];
 
+// Spellbook sits on the left side of the platform
 export function SpellbookSprite({ status, onClick }: Props) {
   const isClickable = IDLE_STATES.includes(status);
 
@@ -33,9 +34,9 @@ export function SpellbookSprite({ status, onClick }: Props) {
       <div
         style={{
           position: 'absolute',
-          left: '22%',
-          top: '60%',
-          width: '9%',
+          left: '26%',
+          top: '54%',
+          width: '11%',
           zIndex: 5,
           cursor: isClickable ? 'pointer' : 'default',
           userSelect: 'none',
@@ -45,7 +46,7 @@ export function SpellbookSprite({ status, onClick }: Props) {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/sprites/spellbook.webp"
+          src="/sprites/spellbook.png"
           alt="Spellbook — click to rewind"
           className={`spellbook-sprite${isClickable ? '' : ' busy'}`}
           style={{

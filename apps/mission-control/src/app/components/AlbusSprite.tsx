@@ -2,27 +2,39 @@
 
 import Image from 'next/image';
 import { FloatingLabel } from './FloatingLabel';
+import { ThoughtBubble } from './ThoughtBubble';
 import { albusSrc } from './sprite-state';
 import type { AlbusStateSprite } from './sprite-state';
 
 interface Props {
   state: AlbusStateSprite;
+  app?: string;
+  task?: string;
 }
 
-const CODING_POS = { left: '44%', top: '50%' };
-const IDLE_POS   = { left: '52%', top: '16%' };
+// Albus stands front-center of the platform
+const CODING_POS = { left: '44%', top: '56%' };
+const IDLE_POS   = { left: '46%', top: '58%' };
 
-export function AlbusSprite({ state }: Props) {
+// Bubble below Albus — triangle points up toward him
+const CODING_BUBBLE = { left: '50%', top: '68%' };
+const IDLE_BUBBLE   = { left: '52%', top: '76%' };
+
+export function AlbusSprite({ state, app, task }: Props) {
   const src = albusSrc(state);
   const pos = state === 'coding' ? CODING_POS : IDLE_POS;
+  const bubblePos = state === 'coding' ? CODING_BUBBLE : IDLE_BUBBLE;
   const labelPos = state === 'coding'
-    ? { left: '41%', top: '61%' }
-    : { left: '48%', top: '28%' };
+    ? { left: '45%', top: '68%' }
+    : { left: '47%', top: '70%' };
   const labelText = state === 'coding' ? 'CODING' : 'IDLE';
 
   return (
     <>
-      <div style={{ position: 'absolute', left: pos.left, top: pos.top, width: '7%', transition: 'left 0.6s, top 0.6s' }}>
+      {(app || task) && (
+        <ThoughtBubble app={app ?? ''} task={task ?? ''} left={bubblePos.left} top={bubblePos.top} />
+      )}
+      <div style={{ position: 'absolute', left: pos.left, top: pos.top, width: '10%', transition: 'left 0.6s, top 0.6s' }}>
         <Image
           src={src}
           alt={`Albus ${state}`}
