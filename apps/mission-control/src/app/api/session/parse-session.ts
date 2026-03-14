@@ -6,30 +6,47 @@ export interface SessionData {
   percent: number;
 }
 
-interface RawSession {
+interface SessionEntry {
+  key?: string;
+  inputTokens?: number | null;
   totalTokens?: number | null;
   totalTokensFresh?: boolean;
-  key?: string;
   updatedAt?: number;
+  spawnDepth?: number;
 }
 
-interface RawSessionsJson {
-  sessions?: RawSession[];
+function tokenCount(s: SessionEntry): number {
+  return s.inputTokens ?? s.totalTokens ?? 0;
 }
 
-function extractTokensFromSessions(sessions: RawSession[]): number {
-  const fresh = sessions.filter((s) => s.totalTokensFresh && s.totalTokens != null);
+function bestFromArray(sessions: SessionEntry[]): number {
+  const fresh = sessions.filter((s) => s.totalTokensFresh && !s.spawnDepth);
   if (fresh.length === 0) return 0;
   const sorted = [...fresh].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
-  return sorted[0]?.totalTokens ?? 0;
+  return tokenCount(sorted[0]!);
+}
+
+function bestFromMap(map: Record<string, SessionEntry>): number {
+  const entries = Object.values(map).filter(
+    (s) => s.totalTokensFresh && !s.spawnDepth
+  );
+  if (entries.length === 0) return 0;
+  const sorted = [...entries].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
+  return tokenCount(sorted[0]!);
 }
 
 export function parseSessionOutput(rawJson: string): SessionData {
   try {
     const parsed: unknown = JSON.parse(rawJson);
-    const data = parsed as RawSessionsJson;
-    const sessions = Array.isArray(data.sessions) ? data.sessions : [];
-    const tokens = extractTokensFromSessions(sessions);
+    if (!parsed || typeof parsed !== 'object') {
+      return { tokens: 0, cap: TOKEN_CAP, percent: 0 };
+    }
+    // CLI format: { sessions: SessionEntry[] }
+    // File format: { [key: string]: SessionEntry }
+    const asObj = parsed as Record<string, unknown>;
+    const tokens = Array.isArray(asObj['sessions'])
+      ? bestFromArray(asObj['sessions'] as SessionEntry[])
+      : bestFromMap(asObj as Record<string, SessionEntry>);
     const percent = Math.min(100, Math.round((tokens / TOKEN_CAP) * 100));
     return { tokens, cap: TOKEN_CAP, percent };
   } catch {

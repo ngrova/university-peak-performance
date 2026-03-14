@@ -1,59 +1,49 @@
-import { describe, it, expect } from 'vitest';
-import { rewindReducer, INITIAL_STATE } from './rewind-state';
-import type { RewindAction } from './rewind-state';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { RewindButton } from './RewindButton';
 
-describe('rewindReducer', () => {
-  it('starts with correct initial state', () => {
-    expect(INITIAL_STATE.running).toBe(false);
-    expect(INITIAL_STATE.stages.memory).toBe('idle');
-    expect(INITIAL_STATE.error).toBeNull();
+describe('RewindButton', () => {
+  it('shows REWIND when idle', () => {
+    render(<RewindButton status="idle" onRewind={vi.fn()} onHardRewind={vi.fn()} />);
+    expect(screen.getByRole('button', { name: /⟲ Rewind/i })).toBeInTheDocument();
   });
 
-  it('START sets running and memoryPrompt', () => {
-    const next = rewindReducer(INITIAL_STATE, { type: 'START' });
-    expect(next.running).toBe(true);
-    expect(next.memoryPrompt).toBe(true);
+  it('shows Hard Rewind secondary button', () => {
+    render(<RewindButton status="idle" onRewind={vi.fn()} onHardRewind={vi.fn()} />);
+    expect(screen.getByRole('button', { name: /Hard Rewind/i })).toBeInTheDocument();
   });
 
-  it('STAGE_RUNNING transitions stage to running', () => {
-    const next = rewindReducer(INITIAL_STATE, { type: 'STAGE_RUNNING', stage: 'memory' });
-    expect(next.stages.memory).toBe('running');
-    expect(next.stages.clear).toBe('idle');
+  it('disables main button and shows in progress when not idle', () => {
+    render(<RewindButton status="awaiting-agent" onRewind={vi.fn()} onHardRewind={vi.fn()} />);
+    expect(screen.getByText(/Rewind in progress/i)).toBeInTheDocument();
+    const btn = screen.getByRole('button', { name: /Rewind in progress/i });
+    expect(btn).toBeDisabled();
   });
 
-  it('STAGE_DONE transitions stage to done', () => {
-    const running = rewindReducer(INITIAL_STATE, { type: 'STAGE_RUNNING', stage: 'clear' });
-    const done = rewindReducer(running, { type: 'STAGE_DONE', stage: 'clear' });
-    expect(done.stages.clear).toBe('done');
+  it('calls onRewind when REWIND clicked', async () => {
+    const onRewind = vi.fn();
+    render(<RewindButton status="idle" onRewind={onRewind} onHardRewind={vi.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: /⟲ Rewind/i }));
+    expect(onRewind).toHaveBeenCalledOnce();
   });
 
-  it('STAGE_FAILED stops sequence and sets error', () => {
-    const mid = rewindReducer(INITIAL_STATE, { type: 'STAGE_RUNNING', stage: 'restart' });
-    const failed = rewindReducer(mid, { type: 'STAGE_FAILED', stage: 'restart', error: 'launchctl died' });
-    expect(failed.stages.restart).toBe('failed');
-    expect(failed.running).toBe(false);
-    expect(failed.error).toBe('launchctl died');
+  it('calls onHardRewind when Hard Rewind clicked', async () => {
+    const onHardRewind = vi.fn();
+    render(<RewindButton status="idle" onRewind={vi.fn()} onHardRewind={onHardRewind} />);
+    await userEvent.click(screen.getByRole('button', { name: /Hard Rewind/i }));
+    expect(onHardRewind).toHaveBeenCalledOnce();
   });
 
-  it('RESET returns to initial state', () => {
-    const mid = rewindReducer(INITIAL_STATE, { type: 'STAGE_DONE', stage: 'verify' });
-    const reset = rewindReducer(mid, { type: 'RESET' });
-    expect(reset).toEqual(INITIAL_STATE);
+  it('re-enables main button when done', () => {
+    render(<RewindButton status="done" onRewind={vi.fn()} onHardRewind={vi.fn()} />);
+    const btn = screen.getByRole('button', { name: /⟲ Rewind/i });
+    expect(btn).not.toBeDisabled();
   });
 
-  it('full happy-path sequence transitions all stages', () => {
-    const actions: RewindAction[] = [
-      { type: 'START' },
-      { type: 'STAGE_RUNNING', stage: 'memory' },
-      { type: 'STAGE_DONE', stage: 'memory' },
-      { type: 'STAGE_RUNNING', stage: 'clear' },
-      { type: 'STAGE_DONE', stage: 'clear' },
-      { type: 'STAGE_RUNNING', stage: 'restart' },
-      { type: 'STAGE_DONE', stage: 'restart' },
-      { type: 'STAGE_RUNNING', stage: 'verify' },
-      { type: 'STAGE_DONE', stage: 'verify' },
-    ];
-    const final = actions.reduce(rewindReducer, INITIAL_STATE);
-    expect(final.stages).toEqual({ memory: 'done', clear: 'done', restart: 'done', verify: 'done' });
+  it('hard rewind button is always enabled', () => {
+    render(<RewindButton status="running" onRewind={vi.fn()} onHardRewind={vi.fn()} />);
+    const hardBtn = screen.getByRole('button', { name: /Hard Rewind/i });
+    expect(hardBtn).not.toBeDisabled();
   });
 });
