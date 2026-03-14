@@ -7,7 +7,7 @@ import { AlbusSprite } from './AlbusSprite';
 import { ApprenticeSprites } from './ApprenticeSprites';
 import { RewindFlash } from './RewindFlash';
 import { SpellbookOverlay } from './SpellbookOverlay';
-import { RewindButton } from './RewindButton';
+import { SpellbookSprite } from './SpellbookSprite';
 import { crystalState, moneyBagState, albusState } from './sprite-state';
 import type { RewindStateFile } from '../api/rewind/rewind-state-file';
 
@@ -83,10 +83,6 @@ export function Room() {
     setShowOverlay(true);
   }, []);
 
-  const handleHardRewind = useCallback(async () => {
-    await fetch('/api/rewind/restart', { method: 'POST' });
-  }, []);
-
   const handleConfirm = useCallback(async () => {
     await fetch('/api/rewind/confirm', { method: 'POST' });
   }, []);
@@ -128,15 +124,7 @@ export function Room() {
         <AlbusSprite state={aState} />
         <ApprenticeSprites count={subagentCount} />
         <RewindFlash status={rewind.status} />
-
-        {/* Rewind button — bottom-right */}
-        <div style={{ position: 'absolute', bottom: 16, right: 16, zIndex: 10 }}>
-          <RewindButton
-            status={rewind.status}
-            onRewind={handleRewind}
-            onHardRewind={handleHardRewind}
-          />
-        </div>
+        <SpellbookSprite status={rewind.status} onClick={handleRewind} />
       </div>
 
       {showOverlay && (
