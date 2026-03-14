@@ -8,7 +8,6 @@ interface SessionData {
   percent: number;
 }
 
-const REFRESH_MS = 30_000;
 const RADIUS = 80;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
@@ -27,22 +26,24 @@ export function ContextGauge() {
   const [data, setData] = useState<SessionData>({ tokens: 0, cap: 200_000, percent: 0 });
   const [error, setError] = useState(false);
 
-  async function fetchSession() {
-    try {
-      const res = await fetch('/api/session');
-      if (!res.ok) throw new Error('fetch failed');
-      const json: SessionData = await res.json() as SessionData;
-      setData(json);
-      setError(false);
-    } catch {
-      setError(true);
-    }
-  }
-
   useEffect(() => {
-    void fetchSession();
-    const id = setInterval(() => void fetchSession(), REFRESH_MS);
-    return () => clearInterval(id);
+    const source = new EventSource('/api/session/stream');
+
+    source.onmessage = (e) => {
+      try {
+        const parsed = JSON.parse(e.data as string) as SessionData;
+        setData(parsed);
+        setError(false);
+      } catch {
+        setError(true);
+      }
+    };
+
+    source.onerror = () => {
+      setError(true);
+    };
+
+    return () => source.close();
   }, []);
 
   const dashOffset = CIRCUMFERENCE * (1 - data.percent / 100);
