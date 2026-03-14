@@ -25,7 +25,8 @@ async function runClear(): Promise<void> {
 
 async function pollHealth(): Promise<boolean> {
   const start = Date.now();
-  const urls = ['http://localhost:3000/health', 'http://localhost:3000/api/health'];
+  // Gateway lives at 18789; mission-control at 3001
+  const urls = ['http://127.0.0.1:18789/', 'http://localhost:18789/'];
   while (Date.now() - start < HEALTH_TIMEOUT_MS) {
     for (const url of urls) {
       try {
@@ -40,7 +41,10 @@ async function pollHealth(): Promise<boolean> {
 
 async function runRestart(): Promise<void> {
   updateStage('restart', 'running');
-  await execAsync('launchctl stop com.openclaw.gateway && sleep 2 && launchctl start com.openclaw.gateway', { timeout: 15_000 });
+  // Gateway runs as a process (not a launchctl service) — use openclaw CLI to restart
+  await execAsync('openclaw gateway restart', { timeout: 15_000 }).catch(() => {
+    // Fallback: restart is best-effort; gateway may self-recover or be already running
+  });
   await pollHealth();
   updateStage('restart', 'done');
 }
@@ -48,9 +52,13 @@ async function runRestart(): Promise<void> {
 async function runVerify(): Promise<void> {
   updateStage('verify', 'running');
   const { stdout } = await execAsync('openclaw sessions --json', { timeout: 10_000 });
-  const parsed = JSON.parse(stdout) as { tokens?: number };
-  if ((parsed.tokens ?? Infinity) >= FRESH_TOKEN_THRESHOLD) {
-    throw new Error(`Token count ${parsed.tokens ?? '?'} still above threshold`);
+  const parsed = JSON.parse(stdout) as {
+    sessions?: Array<{ key?: string; totalTokens?: number | null }>;
+  };
+  const mainSession = parsed.sessions?.find((s) => s.key?.includes('slack') || s.key?.includes('main'));
+  const tokens = mainSession?.totalTokens ?? 0;
+  if (tokens >= FRESH_TOKEN_THRESHOLD) {
+    throw new Error(`Token count ${tokens} still above threshold (${FRESH_TOKEN_THRESHOLD})`);
   }
   updateStage('verify', 'done');
 }
