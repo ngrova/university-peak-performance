@@ -8,11 +8,12 @@ interface Props {
   subagents: SubagentInfo[];
 }
 
-// Up to 3 fixed slots on the terrace platform
+// Up to 3 fixed slots on the inner deck of the terrace platform
+// Pulled inward and upward to sit on the wooden floor, not the outer rail
 const SLOTS = [
-  { left: '22%', top: '60%' },
-  { left: '64%', top: '60%' },
-  { left: '42%', top: '65%' },
+  { left: '28%', top: '48%' },
+  { left: '58%', top: '48%' },
+  { left: '43%', top: '55%' },
 ] as const;
 
 function Poof({ onDone }: { onDone: () => void }) {
@@ -106,7 +107,7 @@ export function ApprenticeSprites({ subagents }: Props) {
               position: 'absolute',
               left: pos.left,
               top: pos.top,
-              width: '9%',
+              width: '13%',
               opacity: isStale ? 0.3 : 1,
               transition: 'opacity 1.5s ease',
             }}
@@ -115,8 +116,8 @@ export function ApprenticeSprites({ subagents }: Props) {
               <Image
                 src="/sprites/apprentice.png"
                 alt={`Apprentice ${i + 1}`}
-                width={72}
-                height={72}
+                width={110}
+                height={110}
                 style={{
                   width: '100%',
                   height: 'auto',
