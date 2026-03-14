@@ -5,13 +5,11 @@ import { Room } from './components/Room';
 import { TopBar } from './components/TopBar';
 import { LeftPanel } from './components/LeftPanel';
 import { RightPanel } from './components/RightPanel';
-import { RewindBar } from './components/RewindBar';
+import { RewindStrip } from './components/RewindStrip';
 import { InfoStrip } from './components/InfoStrip';
 import { AlbusSprite } from './components/AlbusSprite';
 import { ApprenticeSprites } from './components/ApprenticeSprites';
 import { ThoughtBubble } from './components/ThoughtBubble';
-import { RewindFlash } from './components/RewindFlash';
-import { SpellbookOverlay } from './components/SpellbookOverlay';
 import { albusState } from './components/sprite-state';
 import { calcEfficiency, efficiencyGrade } from './lib/grades';
 import { useMetricsSync } from './hooks/useMetricsSync';
@@ -82,26 +80,21 @@ export default function LookoutPage() {
     maxContextPercent: session.percent,
   });
 
-  const [showOverlay, setShowOverlay] = useState(false);
   const handleRewind = useCallback(async () => {
-    await fetch('/api/rewind/request', { method: 'POST' });
-    setShowOverlay(true);
-  }, []);
-  const handleConfirm = useCallback(async () => { await fetch('/api/rewind/confirm', { method: 'POST' }); }, []);
-  const handleCancel = useCallback(async () => {
-    await fetch('/api/rewind/cancel', { method: 'POST' });
-    setShowOverlay(false);
+    await fetch('/api/rewind/confirm', { method: 'POST' });
   }, []);
 
-  useEffect(() => {
-    if (rewind.status === 'done') {
-      const id = setTimeout(async () => {
-        await fetch('/api/rewind/cancel', { method: 'POST' });
-        window.location.reload();
-      }, 2_000);
-      return () => clearTimeout(id);
-    }
-  }, [rewind.status]);
+  const handleCancel = useCallback(async () => {
+    await fetch('/api/rewind/cancel', { method: 'POST' });
+  }, []);
+
+  const handleRetry = useCallback(async () => {
+    await fetch('/api/rewind/confirm', { method: 'POST' });
+  }, []);
+
+  const handleDismiss = useCallback(async () => {
+    await fetch('/api/rewind/cancel', { method: 'POST' });
+  }, []);
 
   return (
     <>
@@ -109,7 +102,6 @@ export default function LookoutPage() {
         <AlbusSprite state={aState} />
         <ApprenticeSprites count={subagents.count} />
         <ThoughtBubble task={activity.task} />
-        <RewindFlash status={rewind.status} />
       </Room>
 
       <TopBar />
@@ -126,17 +118,16 @@ export default function LookoutPage() {
         timeSinceRewindMs={timeSinceRewindMs}
         contextPercent={session.percent}
       />
-      <RewindBar rewindState={rewind} onRewind={handleRewind} />
+      <RewindStrip
+        rewindState={rewind}
+        lastRewindMs={timeSinceRewindMs}
+        contextPercent={session.percent}
+        onRewind={handleRewind}
+        onCancel={handleCancel}
+        onRetry={handleRetry}
+        onDismiss={handleDismiss}
+      />
       <InfoStrip task={activity.task} albusState={aState} lastActivityAt={activity.lastCommitAt} />
-
-      {showOverlay && (
-        <SpellbookOverlay
-          state={rewind}
-          onClose={() => setShowOverlay(false)}
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
-        />
-      )}
     </>
   );
 }
