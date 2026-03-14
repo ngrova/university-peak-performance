@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getPillars, createPillar, deletePillar } from './pillars'
+import { getPillars, createPillar, deletePillar, getPillarsWithProgress } from './pillars'
 import type { LifePillar } from './types'
 
 const mockPillar: LifePillar = {
@@ -69,5 +69,109 @@ describe('deletePillar', () => {
     }
     await deletePillar(deleteClient as never, 'pillar-1')
     expect(eqFn).toHaveBeenCalledWith('id', 'pillar-1')
+  })
+})
+
+describe('getPillarsWithProgress', () => {
+  function makeProgressClient(
+    pillars: LifePillar[],
+    goals: { id: string; pillar_id: string }[],
+    tasks: { goal_id: string; status: string }[],
+  ) {
+    return {
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'life_pillars') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  order: vi.fn().mockResolvedValue({ data: pillars, error: null }),
+                }),
+              }),
+            }),
+          }
+        }
+        if (table === 'goals') {
+          return {
+            select: vi.fn().mockReturnValue({
+              in: vi.fn().mockReturnValue({
+                eq: vi.fn().mockResolvedValue({ data: goals, error: null }),
+              }),
+            }),
+          }
+        }
+        // tasks
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ data: tasks, error: null }),
+          }),
+        }
+      }),
+    }
+  }
+
+  it('returns pillars with zero counts when no goals exist', async () => {
+    const client = makeProgressClient([mockPillar], [], [])
+    const result = await getPillarsWithProgress(client as never, 'user-1')
+    expect(result).toHaveLength(1)
+    expect(result[0].goalCount).toBe(0)
+    expect(result[0].taskCount).toBe(0)
+    expect(result[0].completedTaskCount).toBe(0)
+  })
+
+  it('returns correct counts when goals and tasks exist', async () => {
+    const goals = [
+      { id: 'g1', pillar_id: 'pillar-1' },
+      { id: 'g2', pillar_id: 'pillar-1' },
+    ]
+    const tasks = [
+      { goal_id: 'g1', status: 'done' },
+      { goal_id: 'g1', status: 'todo' },
+      { goal_id: 'g2', status: 'done' },
+    ]
+    const client = makeProgressClient([mockPillar], goals, tasks)
+    const result = await getPillarsWithProgress(client as never, 'user-1')
+    expect(result[0].goalCount).toBe(2)
+    expect(result[0].taskCount).toBe(3)
+    expect(result[0].completedTaskCount).toBe(2)
+  })
+
+  it('returns empty array when user has no pillars', async () => {
+    const client = makeProgressClient([], [], [])
+    const result = await getPillarsWithProgress(client as never, 'user-1')
+    expect(result).toEqual([])
+  })
+
+  it('throws when goals query errors', async () => {
+    const client = {
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'life_pillars') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  order: vi.fn().mockResolvedValue({ data: [mockPillar], error: null }),
+                }),
+              }),
+            }),
+          }
+        }
+        if (table === 'goals') {
+          return {
+            select: vi.fn().mockReturnValue({
+              in: vi.fn().mockReturnValue({
+                eq: vi.fn().mockResolvedValue({ data: null, error: new Error('goals error') }),
+              }),
+            }),
+          }
+        }
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+          }),
+        }
+      }),
+    }
+    await expect(getPillarsWithProgress(client as never, 'user-1')).rejects.toThrow('goals error')
   })
 })

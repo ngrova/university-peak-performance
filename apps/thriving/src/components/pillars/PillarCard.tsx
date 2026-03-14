@@ -1,12 +1,13 @@
 'use client'
 import React, { useState } from 'react'
 import Link from 'next/link'
-import type { LifePillar } from '@upp/db'
+import type { PillarWithProgress } from '@upp/db'
 import { deletePillarAction } from '@/actions/pillar-actions'
 import PillarForm from './PillarForm'
+import PillarProgress from './PillarProgress'
 
 interface PillarCardProps {
-  pillar: LifePillar
+  pillar: PillarWithProgress
 }
 
 export default function PillarCard({ pillar }: PillarCardProps): React.JSX.Element {
@@ -36,6 +37,11 @@ export default function PillarCard({ pillar }: PillarCardProps): React.JSX.Eleme
           aria-label={`Color: ${pillar.color}`}
         />
       </div>
+      <PillarProgress
+        goalCount={pillar.goalCount}
+        taskCount={pillar.taskCount}
+        completedTaskCount={pillar.completedTaskCount}
+      />
       <div className="flex items-center gap-2 mt-auto">
         <Link
           href={`/pillars/${pillar.id}`}
