@@ -62,7 +62,7 @@ export default function AssessmentPage(): React.JSX.Element {
   return (
     <div className="max-w-xl mx-auto">
       <ProgressDots step={step} />
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-6">
+      <div className="rounded-2xl p-6 mt-6" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
         <DomainHeader domain={domain} />
         {isScenario && scenarioQ ? (
           <ScenarioStep
@@ -89,14 +89,16 @@ export default function AssessmentPage(): React.JSX.Element {
           <button
             onClick={() => setStep((s) => Math.max(0, s - 1))}
             disabled={step === 0}
-            className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-30 transition-colors"
+            className="px-4 py-2 text-sm rounded-xl border disabled:opacity-30 transition-colors hover:bg-black/5"
+            style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
           >
             ← Back
           </button>
           <button
             onClick={handleNext}
             disabled={!canProceed || saving}
-            className="px-6 py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white font-semibold rounded-lg transition-colors"
+            className="px-6 py-2 disabled:opacity-40 text-white font-semibold rounded-xl transition-colors"
+              style={{ backgroundColor: 'var(--accent)' }}
           >
             {step === TOTAL_STEPS - 1 ? (saving ? 'Saving…' : 'Finish') : 'Next →'}
           </button>
@@ -127,8 +129,8 @@ function DomainHeader({ domain }: { domain: Domain }): React.JSX.Element {
     <div className="flex items-center gap-2 mb-5">
       <span className="text-3xl">{domain.icon}</span>
       <div>
-        <p className="text-xs text-gray-400 uppercase tracking-wider">{domain.category}</p>
-        <p className="font-bold text-gray-900">{domain.name}</p>
+        <p className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-light)' }}>{domain.category}</p>
+        <p className="font-bold" style={{ color: 'var(--text-primary)' }}>{domain.name}</p>
       </div>
     </div>
   )
