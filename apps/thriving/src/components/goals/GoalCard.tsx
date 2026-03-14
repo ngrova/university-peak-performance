@@ -1,5 +1,6 @@
 'use client'
 import React, { useState } from 'react'
+import Link from 'next/link'
 import type { Goal } from '@upp/db'
 import { deleteGoalAction } from '@/actions/goal-actions'
 import GoalForm from './GoalForm'
@@ -45,6 +46,12 @@ export default function GoalCard({ goal, pillarId }: GoalCardProps): React.JSX.E
         <p className="text-xs text-gray-500">🗓 {new Date(goal.target_date).toLocaleDateString()}</p>
       )}
       <div className="flex gap-2 mt-1">
+        <Link
+          href={`/pillars/${pillarId}/goals/${goal.id}`}
+          className="text-xs text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded hover:bg-indigo-50"
+        >
+          View Tasks
+        </Link>
         <button
           onClick={() => setEditing(true)}
           className="text-xs text-gray-500 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-100"
