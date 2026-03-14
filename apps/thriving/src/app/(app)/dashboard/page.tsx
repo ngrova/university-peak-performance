@@ -1,6 +1,6 @@
 import React from 'react'
 import { cookies } from 'next/headers'
-import { createServerClient, getPillars } from '@upp/db'
+import { createServerClient, getPillarsWithProgress } from '@upp/db'
 import PillarCard from '@/components/pillars/PillarCard'
 import AddPillarButton from '@/components/pillars/AddPillarButton'
 
@@ -15,7 +15,7 @@ export default async function DashboardPage(): Promise<React.JSX.Element> {
   })
 
   const { data: { user } } = await supabase.auth.getUser()
-  const pillars = user ? await getPillars(supabase, user.id) : []
+  const pillars = user ? await getPillarsWithProgress(supabase, user.id) : []
 
   return (
     <div>

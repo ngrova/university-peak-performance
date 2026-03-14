@@ -4,6 +4,57 @@ import type { LifePillar } from './types'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyClient = SupabaseClient<any, any, any>
 
+export type PillarWithProgress = LifePillar & {
+  goalCount: number
+  taskCount: number
+  completedTaskCount: number
+}
+
+export async function getPillarsWithProgress(
+  supabase: AnyClient,
+  userId: string,
+): Promise<PillarWithProgress[]> {
+  const pillars = await getPillars(supabase, userId)
+  if (pillars.length === 0) return []
+
+  const pillarIds = pillars.map((p) => p.id)
+
+  const [goalsRes, tasksRes] = await Promise.all([
+    supabase
+      .from('goals')
+      .select('id, pillar_id')
+      .in('pillar_id', pillarIds)
+      .eq('status', 'active'),
+    supabase
+      .from('tasks')
+      .select('goal_id, status')
+      .eq('user_id', userId),
+  ])
+  if (goalsRes.error) throw goalsRes.error
+  if (tasksRes.error) throw tasksRes.error
+
+  const goals = goalsRes.data ?? []
+  const tasks = tasksRes.data ?? []
+
+  const goalIdsByPillar = new Map<string, string[]>()
+  for (const g of goals) {
+    const list = goalIdsByPillar.get(g.pillar_id) ?? []
+    list.push(g.id)
+    goalIdsByPillar.set(g.pillar_id, list)
+  }
+
+  return pillars.map((pillar) => {
+    const pillarGoalIds = new Set(goalIdsByPillar.get(pillar.id) ?? [])
+    const pillarTasks = tasks.filter((t) => pillarGoalIds.has(t.goal_id))
+    return {
+      ...pillar,
+      goalCount: pillarGoalIds.size,
+      taskCount: pillarTasks.length,
+      completedTaskCount: pillarTasks.filter((t) => t.status === 'done').length,
+    }
+  })
+}
+
 export async function getPillars(
   supabase: AnyClient,
   userId: string,
