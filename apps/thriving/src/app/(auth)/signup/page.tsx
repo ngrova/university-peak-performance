@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@upp/db';
 
 export default function SignupPage(): React.JSX.Element {
@@ -9,8 +10,8 @@ export default function SignupPage(): React.JSX.Element {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
@@ -31,20 +32,7 @@ export default function SignupPage(): React.JSX.Element {
       return;
     }
 
-    setSuccess(true);
-    setLoading(false);
-  }
-
-  if (success) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-md text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h1>
-          <p className="text-gray-600">Check your email to confirm your account.</p>
-          <Link href="/login" className="mt-4 inline-block text-blue-600 hover:underline text-sm">Back to sign in</Link>
-        </div>
-      </main>
-    );
+    router.push('/dashboard');
   }
 
   return (
