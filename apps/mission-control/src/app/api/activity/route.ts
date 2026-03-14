@@ -11,20 +11,23 @@ const SUBAGENT_WINDOW_MS = 2 * 60 * 1000;
 export interface ActivityResponse {
   app: string;
   task: string;
+  lastCommitAt: string | null;
 }
 
-async function gitInfo(): Promise<{ subject: string; files: string }> {
+async function gitInfo(): Promise<{ subject: string; files: string; commitAt: string | null }> {
   try {
-    const [subjectResult, filesResult] = await Promise.all([
+    const [subjectResult, filesResult, dateResult] = await Promise.all([
       execAsync('git log --format="%s" -1 2>/dev/null', { cwd: REPO_DIR, timeout: 5_000 }),
       execAsync('git show --stat --name-only HEAD --pretty=format:"" 2>/dev/null | grep "^apps/" | head -5', { cwd: REPO_DIR, timeout: 5_000 }),
+      execAsync('git log --format="%aI" -1 2>/dev/null', { cwd: REPO_DIR, timeout: 5_000 }),
     ]);
     return {
       subject: subjectResult.stdout.trim(),
       files: filesResult.stdout.trim(),
+      commitAt: dateResult.stdout.trim() || null,
     };
   } catch {
-    return { subject: '', files: '' };
+    return { subject: '', files: '', commitAt: null };
   }
 }
 
@@ -91,7 +94,7 @@ function activeSubagentCount(): number {
 }
 
 export async function GET(): Promise<NextResponse> {
-  const [{ subject, files }] = await Promise.all([gitInfo()]);
+  const { subject, files, commitAt } = await gitInfo();
   const subagents = activeSubagentCount();
 
   const app = detectApp(files) || 'Mission Control';
@@ -101,6 +104,5 @@ export async function GET(): Promise<NextResponse> {
     task += ` (${subagents} agent${subagents > 1 ? 's' : ''} running)`;
   }
 
-  // currentTask kept for backward compat with Room.tsx summarize()
-  return NextResponse.json({ app, task, currentTask: task, lastAction: subject } satisfies ActivityResponse & { currentTask: string; lastAction: string });
+  return NextResponse.json({ app, task, lastCommitAt: commitAt, currentTask: task, lastAction: subject } satisfies ActivityResponse & { currentTask: string; lastAction: string });
 }

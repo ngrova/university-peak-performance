@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { CrystalSprite } from './CrystalSprite';
 import { AlbusSprite } from './AlbusSprite';
 import { ApprenticeSprites } from './ApprenticeSprites';
 import { RewindFlash } from './RewindFlash';
 import { SpellbookOverlay } from './SpellbookOverlay';
 import { RewindButton } from './RewindButton';
 import { StatusBars } from './StatusBars';
-import { crystalState, albusState } from './sprite-state';
+import { InfoStrip } from './InfoStrip';
+import { albusState } from './sprite-state';
 import type { RewindStateFile } from '../api/rewind/rewind-state-file';
 
 const IDLE_REWIND: RewindStateFile = {
@@ -18,6 +18,7 @@ const IDLE_REWIND: RewindStateFile = {
 
 interface SessionData { tokens: number; cap: number; percent: number; systemTokens: number; convoTokens: number; rewindSavings: number; rewindSavingsPct: number; }
 interface SpendData   { usage: number; usageToday: number; }
+interface ActivityData { app: string; task: string; lastCommitAt: string | null; }
 
 function useSession(intervalMs: number) {
   const [data, setData] = useState<SessionData>({ tokens: 0, cap: 200_000, percent: 0, systemTokens: 0, convoTokens: 0, rewindSavings: 0, rewindSavingsPct: 0 });
@@ -63,28 +64,23 @@ function useSubagents(intervalMs: number) {
   return count;
 }
 
-interface ActivityData { app: string; task: string; }
-
 function useActivity(intervalMs: number) {
-  const [activity, setActivity] = useState<ActivityData>({ app: 'Mission Control', task: 'Waiting for Nick...' });
+  const [activity, setActivity] = useState<ActivityData>({ app: 'Mission Control', task: 'Waiting for Nick...', lastCommitAt: null });
   useEffect(() => {
     const fetch_ = () =>
       fetch('/api/activity')
         .then(r => r.json())
-        .then((d: ActivityData) => {
-          setActivity({ app: d.app ?? 'Mission Control', task: d.task ?? 'Waiting for Nick...' });
-        })
+        .then((d: ActivityData) => setActivity({
+          app: d.app ?? 'Mission Control',
+          task: d.task ?? 'Waiting for Nick...',
+          lastCommitAt: d.lastCommitAt ?? null,
+        }))
         .catch(() => {});
     fetch_();
     const id = setInterval(fetch_, intervalMs);
     return () => clearInterval(id);
   }, [intervalMs]);
   return activity;
-}
-
-function summarize(raw: string): string {
-  if (!raw || raw === 'Idle') return 'Waiting for Nick...';
-  return raw.length > 120 ? raw.slice(0, 118) + '…' : raw;
 }
 
 export function Room() {
@@ -95,19 +91,13 @@ export function Room() {
   const prevOutputRef = useRef(0);
   const [outputTokens, setOutputTokens] = useState(0);
 
-  // derive output tokens from session tokens as proxy
-  useEffect(() => {
-    setOutputTokens(session.tokens);
-  }, [session.tokens]);
+  useEffect(() => { setOutputTokens(session.tokens); }, [session.tokens]);
 
-  const aState  = albusState(prevOutputRef.current, outputTokens);
+  const aState = albusState(prevOutputRef.current, outputTokens);
   useEffect(() => { prevOutputRef.current = outputTokens; }, [outputTokens]);
 
-  const cState  = crystalState(session.tokens, session.cap);
-  const pct     = session.percent;
-
   const subagentCount = useSubagents(10_000);
-  const activity = useActivity(15_000);
+  const activity = useActivity(30_000);
 
   const [showOverlay, setShowOverlay] = useState(false);
 
@@ -127,8 +117,6 @@ export function Room() {
 
   const handleClose = useCallback(() => setShowOverlay(false), []);
 
-  // Auto-reload after successful rewind so the UI resets cleanly.
-  // Reset state to idle first so the page doesn't loop on reload.
   useEffect(() => {
     if (rewind.status === 'done') {
       const id = setTimeout(async () => {
@@ -142,10 +130,6 @@ export function Room() {
   return (
     <>
       <style>{`
-        @keyframes crystalPulse {
-          0%, 100% { transform: scale(1); }
-          50%       { transform: scale(1.04); }
-        }
         @keyframes rewindFlash {
           0%   { opacity: 0; }
           30%  { opacity: 1; }
@@ -153,33 +137,43 @@ export function Room() {
         }
       `}</style>
 
-      <div
-        style={{
-          position: 'relative',
-          width: 800,
-          height: 800,
-          overflow: 'hidden',
-          backgroundImage: 'url(/sprites/room.webp)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <StatusBars
-          tokens={session.tokens}
-          cap={session.cap}
-          percent={session.percent}
-          systemTokens={session.systemTokens}
-          convoTokens={session.convoTokens}
-          rewindSavings={session.rewindSavings}
-          rewindSavingsPct={session.rewindSavingsPct}
-          usage={spend.usage}
-          usageToday={spend.usageToday}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {/* Room */}
+        <div
+          style={{
+            position: 'relative',
+            width: 800,
+            height: 800,
+            overflow: 'hidden',
+            backgroundImage: 'url(/sprites/room.webp)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          <StatusBars
+            tokens={session.tokens}
+            cap={session.cap}
+            percent={session.percent}
+            systemTokens={session.systemTokens}
+            convoTokens={session.convoTokens}
+            rewindSavings={session.rewindSavings}
+            rewindSavingsPct={session.rewindSavingsPct}
+            usage={spend.usage}
+            usageToday={spend.usageToday}
+          />
+          <AlbusSprite state={aState} />
+          <ApprenticeSprites count={subagentCount} />
+          <RewindFlash status={rewind.status} />
+          <RewindButton status={rewind.status} onClick={handleRewind} />
+        </div>
+
+        {/* Info strip — below room, full width */}
+        <InfoStrip
+          app={activity.app}
+          task={activity.task}
+          lastCommitAt={activity.lastCommitAt}
+          albusState={aState}
         />
-        <CrystalSprite state={cState} pct={pct} />
-        <AlbusSprite state={aState} app={activity.app} task={activity.task} />
-        <ApprenticeSprites count={subagentCount} />
-        <RewindFlash status={rewind.status} />
-        <RewindButton status={rewind.status} onClick={handleRewind} />
       </div>
 
       {showOverlay && (
