@@ -15,6 +15,19 @@ function updateStage(stage: keyof RewindStateFile['stages'], status: RewindState
   writeRewindState({ ...current, stages: { ...current.stages, [stage]: status } });
 }
 
+async function runMemory(): Promise<void> {
+  updateStage('memory', 'running');
+  const res = await fetch('http://localhost:3001/api/rewind/memory', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(body.error ?? `Memory stage failed (${res.status})`);
+  }
+  updateStage('memory', 'done');
+}
+
 async function runClear(): Promise<void> {
   updateStage('clear', 'running');
   await unlink(SESSIONS_FILE).catch((err: NodeJS.ErrnoException) => {
@@ -67,8 +80,8 @@ export async function runStages(): Promise<void> {
   const startState = readRewindState();
   writeRewindState({ ...startState, status: 'running', confirmedAt: Date.now() });
 
-  const stageRunners = [runClear, runRestart, runVerify] as const;
-  const stageNames = ['clear', 'restart', 'verify'] as const;
+  const stageRunners = [runMemory, runClear, runRestart, runVerify] as const;
+  const stageNames = ['memory', 'clear', 'restart', 'verify'] as const;
 
   for (let i = 0; i < stageRunners.length; i++) {
     const runner = stageRunners[i];
