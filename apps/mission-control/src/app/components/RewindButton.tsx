@@ -37,7 +37,8 @@ export function RewindButton({ status, onClick }: Props) {
         .rw-btn {
           position: absolute;
           bottom: 20px;
-          left: 16px;
+          left: 50%;
+          transform: translateX(-50%);
           z-index: 20;
           font-family: 'Press Start 2P', monospace;
           font-size: 11px;
@@ -65,7 +66,7 @@ export function RewindButton({ status, onClick }: Props) {
         }
         .rw-btn:active:not(:disabled) {
           filter: brightness(0.85);
-          transform: translateY(1px);
+          transform: translateX(-50%) translateY(1px);
         }
         .rw-btn:disabled,
         .rw-btn.busy {
