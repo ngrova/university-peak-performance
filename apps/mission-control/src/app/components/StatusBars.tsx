@@ -13,10 +13,17 @@ interface StatusBarsProps {
 }
 
 const DAILY_CAP = 100;
+const CREDIT_CAP = 200;
 
 function usedTodayColor(usedPct: number): string {
   if (usedPct >= 75) return '#ef4444';
   if (usedPct >= 40) return '#facc15';
+  return '#4ade80';
+}
+
+function creditsRemainingColor(remainingPct: number): string {
+  if (remainingPct <= 20) return '#ef4444';
+  if (remainingPct <= 50) return '#facc15';
   return '#4ade80';
 }
 
@@ -34,7 +41,11 @@ export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, re
 
   const todayPct = Math.min(100, Math.max(0, (usageToday / DAILY_CAP) * 100));
   const todayColor = usedTodayColor(todayPct);
-  void usage;
+
+  const remaining = Math.max(0, CREDIT_CAP - usage);
+  const remainingPct = (remaining / CREDIT_CAP) * 100;
+  const creditsFillPct = Math.min(100, Math.max(0, remainingPct));
+  const creditsColor = creditsRemainingColor(remainingPct);
 
   return (
     <div
@@ -115,20 +126,23 @@ export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, re
         </div>
       </div>
 
-      {/* Credits used today bar — fills left→right, green→red, bad when full */}
+      {/* Credits used today — fills left→right, green→red, bad when full */}
       <div>
         <div style={{ fontSize: 12, color: '#e5e7eb', marginBottom: 4, letterSpacing: '0.05em' }}>
           {`USED TODAY: $${usageToday.toFixed(2)} / $${DAILY_CAP}`}
         </div>
         <div style={{ background: '#1a1a1a', height: 14, borderRadius: 2, overflow: 'hidden' }}>
-          <div
-            style={{
-              width: `${todayPct}%`,
-              height: '100%',
-              background: todayColor,
-              transition: 'width 0.8s ease',
-            }}
-          />
+          <div style={{ width: `${todayPct}%`, height: '100%', background: todayColor, transition: 'width 0.8s ease' }} />
+        </div>
+      </div>
+
+      {/* Credits remaining — fills right→left, green→red, bad when low */}
+      <div>
+        <div style={{ fontSize: 12, color: '#e5e7eb', marginBottom: 4, letterSpacing: '0.05em' }}>
+          {`CREDITS: $${remaining.toFixed(2)} LEFT`}
+        </div>
+        <div style={{ background: '#1a1a1a', height: 14, borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{ width: `${creditsFillPct}%`, height: '100%', background: creditsColor, transition: 'width 0.8s ease' }} />
         </div>
       </div>
     </div>
