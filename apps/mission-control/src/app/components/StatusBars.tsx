@@ -9,7 +9,7 @@ interface StatusBarsProps {
   usage: number;        // credits spent (e.g. 12.47)
 }
 
-const BUDGET_CAP = 50;
+const BUDGET_CAP = 200;
 
 function spendBarColor(remainingPct: number): string {
   if (remainingPct <= 20) return '#ef4444';

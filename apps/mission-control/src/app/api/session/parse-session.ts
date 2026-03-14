@@ -50,27 +50,35 @@ function resolveSessionFile(session: SessionEntry): string | null {
 interface UsageBlock { input?: number; output?: number; cacheRead?: number; totalTokens?: number; }
 interface JournalEntry { usage?: UsageBlock; message?: { usage?: UsageBlock } }
 
-/** Read the last usage entry from the session JSONL.
- *  Returns { total, cached, fresh } where:
- *  - total   = cacheRead + input + output (real context window size)
- *  - cached  = cacheRead (system prompt + prior conversation, all cached)
- *  - fresh   = input (new tokens this turn — Nick's message + any uncached content)
+/** Read usage from the session JSONL.
+ *  Scans last 30 lines, picks the entry with the highest totalTokens
+ *  that has a meaningful cacheRead. This avoids cold-cache turns where
+ *  input dominates (e.g. after a context reset).
  */
 function readLastUsage(sessionFile: string): { total: number; cached: number; fresh: number } {
   const zero = { total: 0, cached: 0, fresh: 0 };
   try {
     const content = fs.readFileSync(sessionFile, 'utf-8');
     const lines = content.split('\n').filter((l) => l.trim());
-    for (let i = lines.length - 1; i >= 0; i--) {
+    const candidates: Array<{ total: number; cached: number; fresh: number }> = [];
+
+    for (let i = lines.length - 1; i >= Math.max(0, lines.length - 30); i--) {
       try {
         const obj = JSON.parse(lines[i]!) as JournalEntry;
         const u = obj.usage ?? obj.message?.usage;
-        if (u && typeof u.cacheRead === 'number' && u.cacheRead > 0) {
-          const total = u.totalTokens ?? (u.cacheRead + (u.input ?? 0) + (u.output ?? 0));
-          return { total, cached: u.cacheRead, fresh: u.input ?? 0 };
+        if (!u) continue;
+        const total = u.totalTokens ?? 0;
+        const cached = u.cacheRead ?? 0;
+        if (total > 0 && cached > 0) {
+          candidates.push({ total, cached, fresh: u.input ?? 0 });
         }
       } catch { /* skip */ }
     }
+
+    if (candidates.length === 0) return zero;
+    // Pick entry with highest totalTokens — most representative of current context
+    candidates.sort((a, b) => b.total - a.total);
+    return candidates[0]!;
   } catch { /* file missing */ }
   return zero;
 }
