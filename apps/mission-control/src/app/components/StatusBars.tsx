@@ -9,17 +9,18 @@ interface StatusBarsProps {
   rewindSavings: number;
   rewindSavingsPct: number;
   usage: number;
+  usageToday: number;
 }
 
-const BUDGET_CAP = 200;
+const DAILY_CAP = 100;
 
-function spendBarColor(remainingPct: number): string {
-  if (remainingPct <= 20) return '#ef4444';
-  if (remainingPct <= 50) return '#facc15';
+function usedTodayColor(usedPct: number): string {
+  if (usedPct >= 75) return '#ef4444';
+  if (usedPct >= 40) return '#facc15';
   return '#4ade80';
 }
 
-export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, rewindSavings, rewindSavingsPct, usage }: StatusBarsProps) {
+export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, rewindSavings, rewindSavingsPct, usage, usageToday }: StatusBarsProps) {
   const capK = Math.round(cap / 1000);
   const totalK = Math.round(tokens / 1000);
   const ctxPct = Math.min(100, Math.max(0, percent));
@@ -31,10 +32,9 @@ export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, re
   // sysPct kept for reference but bar now uses baseline/savings/convo layout
   const sysPct = Math.min(100, Math.round((systemTokens / cap) * 100)); void sysPct;
 
-  const remaining = Math.max(0, BUDGET_CAP - usage);
-  const remainingPct = (remaining / BUDGET_CAP) * 100;
-  const spendFillPct = Math.min(100, Math.max(0, remainingPct));
-  const spendColor = spendBarColor(remainingPct);
+  const todayPct = Math.min(100, Math.max(0, (usageToday / DAILY_CAP) * 100));
+  const todayColor = usedTodayColor(todayPct);
+  void usage;
 
   return (
     <div
@@ -115,17 +115,17 @@ export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, re
         </div>
       </div>
 
-      {/* Spend bar */}
+      {/* Credits used today bar — fills left→right, green→red, bad when full */}
       <div>
         <div style={{ fontSize: 12, color: '#e5e7eb', marginBottom: 4, letterSpacing: '0.05em' }}>
-          {`CREDITS: $${usage.toFixed(2)}`}
+          {`USED TODAY: $${usageToday.toFixed(2)} / $${DAILY_CAP}`}
         </div>
         <div style={{ background: '#1a1a1a', height: 14, borderRadius: 2, overflow: 'hidden' }}>
           <div
             style={{
-              width: `${spendFillPct}%`,
+              width: `${todayPct}%`,
               height: '100%',
-              background: spendColor,
+              background: todayColor,
               transition: 'width 0.8s ease',
             }}
           />

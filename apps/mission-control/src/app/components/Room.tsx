@@ -176,6 +176,7 @@ export function Room() {
           rewindSavings={session.rewindSavings}
           rewindSavingsPct={session.rewindSavingsPct}
           usage={spend.usage}
+          usageToday={spend.usageToday}
         />
         <CrystalSprite state={cState} pct={pct} />
         <MoneyBagSprite state={mState} credits={credits} />
