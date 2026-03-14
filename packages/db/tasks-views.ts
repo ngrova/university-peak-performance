@@ -8,6 +8,7 @@ export interface TaskWithContext extends Task {
   goals: {
     title: string
     pillar_id: string
+    priority_rank: number
     life_pillars: {
       id: string
       name: string
@@ -17,13 +18,44 @@ export interface TaskWithContext extends Task {
   }
 }
 
-const CONTEXT_SELECT = `*, goals(title, pillar_id, life_pillars(id, name, color, icon))`
+const CONTEXT_SELECT = `*, goals(title, pillar_id, priority_rank, life_pillars(id, name, color, icon))`
 
 const FAILURE_COST_ORDER: Record<string, number> = {
   critical: 0,
   high: 1,
   medium: 2,
   low: 3,
+}
+
+const FAILURE_COST_WEIGHT: Record<string, number> = {
+  critical: 40,
+  high: 30,
+  medium: 20,
+  low: 10,
+}
+
+function dueDateUrgency(dueDate: string | null): number {
+  if (!dueDate) return 0
+  const now = new Date()
+  const due = new Date(dueDate)
+  const diffMs = due.getTime() - now.getTime()
+  const diffDays = diffMs / (1000 * 60 * 60 * 24)
+  if (diffDays < 0) return 100
+  if (diffDays < 1) return 90
+  if (diffDays < 3) return 80
+  if (diffDays < 7) return 70
+  if (diffDays < 14) return 50
+  if (diffDays < 30) return 30
+  if (diffDays < 90) return 10
+  return 0
+}
+
+function scoreTask(t: TaskWithContext): number {
+  const costWeight = FAILURE_COST_WEIGHT[t.failure_cost ?? 'low'] ?? 10
+  const goalRank = t.goals?.priority_rank ?? 5
+  const priorityScore = 4 - t.priority + 1
+  const urgency = dueDateUrgency(t.due_date)
+  return costWeight + goalRank + priorityScore + urgency
 }
 
 function sortByCost(a: TaskWithContext, b: TaskWithContext): number {
@@ -54,7 +86,7 @@ export async function getOneThingTask(
     (t) => t.status === 'todo' || t.status === 'in_progress',
   )
   if (active.length === 0) return null
-  return active.sort(sortByCost)[0] ?? null
+  return active.sort((a, b) => scoreTask(b) - scoreTask(a))[0] ?? null
 }
 
 export async function getTasksWithDeadlines(

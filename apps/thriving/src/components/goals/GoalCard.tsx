@@ -31,10 +31,16 @@ export default function GoalCard({ goal, pillarId }: GoalCardProps): React.JSX.E
 
   const badge = STATUS_BADGE[goal.status]
 
+  const goalColor = goal.color ?? '#6366f1'
+
   return (
     <div
       className="rounded-2xl p-4 flex flex-col gap-2"
-      style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
+      style={{
+        backgroundColor: 'var(--bg-secondary)',
+        border: `2px solid ${goalColor}`,
+        borderLeftWidth: '4px',
+      }}
     >
       <div className="flex items-start gap-2">
         <div className="flex-1">

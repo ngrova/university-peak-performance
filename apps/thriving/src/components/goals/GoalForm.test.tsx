@@ -40,6 +40,8 @@ describe('GoalForm', () => {
       target_date: null,
       status: 'active' as const,
       sort_order: 0,
+      color: '#6366f1',
+      priority_rank: 5,
       created_at: '',
       updated_at: '',
     }

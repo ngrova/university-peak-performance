@@ -92,7 +92,7 @@ export default async function OneThingPage(): Promise<React.JSX.Element> {
         )}
       </div>
 
-      <OneThingActions taskId={task.id} wasPinned={task.is_one_thing} />
+      <OneThingActions taskId={task.id} taskTitle={task.title} wasPinned={task.is_one_thing} />
     </div>
   )
 }

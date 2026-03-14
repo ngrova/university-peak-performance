@@ -11,6 +11,8 @@ const mockGoal: Goal = {
   target_date: null,
   status: 'active',
   sort_order: 1,
+  color: '#6366f1',
+  priority_rank: 5,
   created_at: '2026-03-13T00:00:00Z',
   updated_at: '2026-03-13T00:00:00Z',
 }
