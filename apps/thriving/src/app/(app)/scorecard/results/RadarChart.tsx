@@ -11,6 +11,7 @@ const SIZE = 340
 const CENTER = SIZE / 2
 const RADIUS = 120
 const RINGS = [2, 4, 6, 8, 10]
+const ICON_OFFSET = 20 // px beyond RADIUS
 
 function angleFor(i: number): number {
   return (Math.PI * 2 * i) / DOMAINS.length - Math.PI / 2
@@ -20,6 +21,15 @@ function point(value: number, i: number): [number, number] {
   const angle = angleFor(i)
   const r = (value / 10) * RADIUS
   return [CENTER + r * Math.cos(angle), CENTER + r * Math.sin(angle)]
+}
+
+function iconPosition(i: number): { left: number; top: number } {
+  const angle = angleFor(i)
+  const r = RADIUS + ICON_OFFSET
+  return {
+    left: CENTER + r * Math.cos(angle),
+    top: CENTER + r * Math.sin(angle),
+  }
 }
 
 export default function RadarChart({ domainAverages }: Props): React.JSX.Element {
@@ -84,18 +94,18 @@ export default function RadarChart({ domainAverages }: Props): React.JSX.Element
   }, [domainAverages])
 
   return (
-    <div className="relative">
-      <canvas ref={canvasRef} width={SIZE} height={SIZE} className="mx-auto block" />
+    <div
+      className="relative mx-auto"
+      style={{ width: SIZE, height: SIZE }}
+    >
+      <canvas ref={canvasRef} width={SIZE} height={SIZE} className="block" />
       {DOMAINS.map((d, i) => {
-        const angle = angleFor(i)
-        const labelR = RADIUS + 32
-        const lx = CENTER + labelR * Math.cos(angle)
-        const ly = CENTER + labelR * Math.sin(angle)
+        const { left, top } = iconPosition(i)
         return (
           <span
             key={d.key}
             className="absolute text-base leading-none select-none pointer-events-none"
-            style={{ left: lx, top: ly, transform: 'translate(-50%,-50%)' }}
+            style={{ left, top, transform: 'translate(-50%,-50%)' }}
             title={d.name}
           >
             {d.icon}
