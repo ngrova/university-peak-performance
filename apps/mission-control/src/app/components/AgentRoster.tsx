@@ -1,12 +1,13 @@
 'use client';
 
 import type { AlbusStateSprite } from './sprite-state';
+import type { SubagentInfo } from '../api/subagents/route';
 
-const MAX_APPRENTICES = 2;
+const MAX_SLOTS = 3;
 
 interface AgentRosterProps {
   albusState: AlbusStateSprite;
-  subagentCount: number;
+  subagents: SubagentInfo[];
 }
 
 interface AgentRowProps {
@@ -17,14 +18,7 @@ interface AgentRowProps {
 
 function AgentRow({ dotColor, label, dim }: AgentRowProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        marginBottom: 4,
-      }}
-    >
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
       <div
         style={{
           width: 8,
@@ -39,10 +33,12 @@ function AgentRow({ dotColor, label, dim }: AgentRowProps) {
   );
 }
 
-export function AgentRoster({ albusState, subagentCount }: AgentRosterProps) {
+export function AgentRoster({ albusState, subagents }: AgentRosterProps) {
   const albusDot = albusState === 'coding' ? '#50b050' : '#f0c860';
   const albusLabel = albusState === 'coding' ? 'Albus — coding' : 'Albus — idle';
-  const activeCount = Math.min(subagentCount, MAX_APPRENTICES);
+
+  // Show up to MAX_SLOTS slots; fill from active subagents first, then stale, then empty
+  const visible = subagents.slice(0, MAX_SLOTS);
 
   return (
     <div
@@ -56,13 +52,25 @@ export function AgentRoster({ albusState, subagentCount }: AgentRosterProps) {
     >
       <div style={{ fontSize: 7, color: '#8a78a0', marginBottom: 6 }}>AGENTS</div>
       <AgentRow dotColor={albusDot} label={albusLabel} />
-      {Array.from({ length: MAX_APPRENTICES }).map((_, i) => {
-        const active = i < activeCount;
+
+      {Array.from({ length: MAX_SLOTS }).map((_, i) => {
+        const agent = visible[i];
+        if (!agent) {
+          return (
+            <AgentRow
+              key={i}
+              dotColor="#3a2e50"
+              label={`Apprentice ${i + 1} — empty`}
+              dim
+            />
+          );
+        }
+        const active = agent.active;
         return (
           <AgentRow
-            key={i}
-            dotColor={active ? '#f0c860' : '#3a2e50'}
-            label={active ? `Apprentice ${i + 1} — active` : `Apprentice ${i + 1} — empty`}
+            key={agent.id}
+            dotColor={active ? '#f0c860' : '#5a4870'}
+            label={active ? `Apprentice ${i + 1} — active` : `Apprentice ${i + 1} — idle`}
             dim={!active}
           />
         );

@@ -1,20 +1,18 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { parseSubagentsOutput } from './parse-subagents';
 
-const SESSIONS_FILE = '/Users/openclaw/.openclaw/agents/main/sessions/sessions.json';
-const SUBAGENT_WINDOW_MS = 2 * 60 * 1000;
+export type { SubagentInfo, SubagentsData } from './parse-subagents';
+
+const execAsync = promisify(exec);
+const FALLBACK = { count: 0, subagents: [] };
 
 export async function GET() {
   try {
-    const raw = fs.readFileSync(SESSIONS_FILE, 'utf-8');
-    const parsed = JSON.parse(raw) as { sessions?: Array<{ key?: string; updatedAt?: number }> };
-    const now = Date.now();
-    const sessions = parsed.sessions ?? [];
-    const count = sessions.filter(
-      (s) => s.key?.includes('subagent') && (now - (s.updatedAt ?? 0)) < SUBAGENT_WINDOW_MS
-    ).length;
-    return NextResponse.json({ count });
+    const { stdout } = await execAsync('openclaw sessions --json', { timeout: 10_000 });
+    return NextResponse.json(parseSubagentsOutput(stdout));
   } catch {
-    return NextResponse.json({ count: 0 });
+    return NextResponse.json(FALLBACK);
   }
 }

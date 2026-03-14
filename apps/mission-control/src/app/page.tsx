@@ -11,6 +11,7 @@ import { AlbusSprite } from './components/AlbusSprite';
 import { ApprenticeSprites } from './components/ApprenticeSprites';
 import { ThoughtBubble } from './components/ThoughtBubble';
 import { albusState } from './components/sprite-state';
+import type { SubagentsData } from './api/subagents/route';
 import { calcEfficiency, efficiencyGrade } from './lib/grades';
 import { useMetricsSync } from './hooks/useMetricsSync';
 import type { RewindStateFile } from './api/rewind/rewind-state-file';
@@ -50,7 +51,7 @@ export default function LookoutPage() {
   const prs = usePoll<PrsData>('/api/github/prs', 300_000, { prsToday: 0 });
   const metrics = usePoll<MetricsData>('/api/metrics', 600_000, { days: [] });
   const activity = usePoll<ActivityData>('/api/activity', 15_000, { app: 'Mission Control', task: '' });
-  const subagents = usePoll<{ count: number }>('/api/subagents', 10_000, { count: 0 });
+  const subagentsData = usePoll<SubagentsData>('/api/subagents', 10_000, { count: 0, subagents: [] });
   const rewind = usePoll<RewindStateFile>('/api/rewind/state', 5_000, IDLE_REWIND);
 
   const today = new Date().toISOString().slice(0, 10);
@@ -100,7 +101,7 @@ export default function LookoutPage() {
     <>
       <Room>
         <AlbusSprite state={aState} />
-        <ApprenticeSprites count={subagents.count} />
+        <ApprenticeSprites subagents={subagentsData.subagents} />
         <ThoughtBubble task={activity.task} />
       </Room>
 
@@ -113,7 +114,7 @@ export default function LookoutPage() {
         costPerPr={costPerPr}
         rewindStreak={todayEntry?.rewindStreak ?? 0}
         messagesThisSession={session.messageCount}
-        subagentCount={subagents.count}
+        subagents={subagentsData.subagents}
         albusState={aState}
         timeSinceRewindMs={timeSinceRewindMs}
         contextPercent={session.percent}

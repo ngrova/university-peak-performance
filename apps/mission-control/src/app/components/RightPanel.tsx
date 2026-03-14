@@ -4,6 +4,7 @@ import { StatGrid } from './StatGrid';
 import { AgentRoster } from './AgentRoster';
 import { LastRewindCard } from './LastRewindCard';
 import type { AlbusStateSprite } from './sprite-state';
+import type { SubagentInfo } from '../api/subagents/route';
 
 interface RightPanelProps {
   effGrade: string;
@@ -12,7 +13,7 @@ interface RightPanelProps {
   costPerPr: number;
   rewindStreak: number;
   messagesThisSession: number;
-  subagentCount: number;
+  subagents: SubagentInfo[];
   albusState: AlbusStateSprite;
   timeSinceRewindMs: number;
   contextPercent: number;
@@ -20,7 +21,7 @@ interface RightPanelProps {
 
 export function RightPanel({
   effGrade, effPct, prsToday, costPerPr,
-  rewindStreak, messagesThisSession, subagentCount,
+  rewindStreak, messagesThisSession, subagents,
   albusState, timeSinceRewindMs, contextPercent,
 }: RightPanelProps) {
   return (
@@ -64,7 +65,7 @@ export function RightPanel({
         messagesThisSession={messagesThisSession}
       />
 
-      <AgentRoster albusState={albusState} subagentCount={subagentCount} />
+      <AgentRoster albusState={albusState} subagents={subagents} />
 
       <LastRewindCard
         timeSinceRewindMs={timeSinceRewindMs}
