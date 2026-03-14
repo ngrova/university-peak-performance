@@ -21,7 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`min-h-screen bg-[#1a1520] text-[#E5E5E5] antialiased ${pressStart2P.variable}`}>
+      <body
+        className={`text-[#E5E5E5] antialiased ${pressStart2P.variable}`}
+        style={{ margin: 0, padding: 0, overflow: 'hidden' }}
+      >
         {children}
       </body>
     </html>

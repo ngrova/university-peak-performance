@@ -8,6 +8,7 @@ export function calcEfficiency(outputTokens: number, inputTokens: number): numbe
 export function efficiencyGrade(pct: number): string {
   if (pct > 8) return 'A+';
   if (pct >= 5) return 'A';
+  if (pct >= 4) return 'B+';
   if (pct >= 3) return 'B';
   if (pct >= 1) return 'C';
   return 'D';

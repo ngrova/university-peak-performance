@@ -1,39 +1,61 @@
 'use client';
 
-interface Props {
-  app: string;
-  task: string;
-  lastCommitAt?: string;
+import type { AlbusStateSprite } from './sprite-state';
+
+function timeSince(isoString?: string): string {
+  if (!isoString) return '';
+  const diff = Date.now() - new Date(isoString).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  return `${Math.floor(mins / 60)}h ago`;
 }
 
-export function InfoStrip({ app, task, lastCommitAt }: Props) {
+interface InfoStripProps {
+  task: string;
+  albusState: AlbusStateSprite;
+  lastActivityAt?: string | undefined;
+}
+
+export function InfoStrip({ task, albusState, lastActivityAt }: InfoStripProps) {
+  const isCoding = albusState === 'coding';
+  const truncated = task.length > 60 ? task.slice(0, 57) + '...' : task;
+
   return (
     <div
       style={{
-        background: '#2a2238',
-        border: '2px solid #3a2e50',
-        borderRadius: 4,
-        padding: '8px 12px',
-        fontFamily: "'Press Start 2P', monospace",
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 20,
+        height: 36,
+        background: 'rgba(10,6,16,0.88)',
+        borderTop: '1px solid rgba(100,72,140,0.4)',
         display: 'flex',
-        flexDirection: 'column',
-        gap: 6,
+        alignItems: 'center',
+        padding: '0 16px',
+        justifyContent: 'space-between',
+        fontFamily: "'Press Start 2P', monospace",
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 9, color: '#f0c860', letterSpacing: '0.08em' }}>
-          ALBUS&apos;S LOOKOUT
-        </span>
-        <span style={{ fontSize: 7, color: '#8878a0' }}>{app}</span>
+      <span style={{ fontSize: 8, color: '#6a5880', minWidth: 56 }}>
+        {timeSince(lastActivityAt)}
+      </span>
+      <span style={{ fontSize: 9, color: '#c0b0d0', flex: 1, textAlign: 'center', padding: '0 8px', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+        {truncated}
+      </span>
+      <div
+        style={{
+          fontSize: 8,
+          padding: '3px 8px',
+          borderRadius: 2,
+          background: isCoding ? 'rgba(60,160,60,0.3)' : 'rgba(60,100,160,0.3)',
+          color: isCoding ? '#60c860' : '#6090c0',
+        }}
+      >
+        {isCoding ? 'CODING' : 'IDLE'}
       </div>
-      <div style={{ fontSize: 7, color: '#e8dcc8', opacity: 0.8, lineHeight: 1.6 }}>
-        {task}
-      </div>
-      {lastCommitAt && (
-        <div style={{ fontSize: 6, color: '#8878a0' }}>
-          Last commit: {lastCommitAt}
-        </div>
-      )}
     </div>
   );
 }

@@ -18,7 +18,8 @@ describe('calcEfficiency', () => {
 describe('efficiencyGrade', () => {
   it('gives A+ above 8%', () => expect(efficiencyGrade(9)).toBe('A+'));
   it('gives A at 5-8%', () => expect(efficiencyGrade(6)).toBe('A'));
-  it('gives B at 3-4%', () => expect(efficiencyGrade(4)).toBe('B'));
+  it('gives B+ at 4-5%', () => expect(efficiencyGrade(4.5)).toBe('B+'));
+  it('gives B at 3-4%', () => expect(efficiencyGrade(3.5)).toBe('B'));
   it('gives C at 1-2%', () => expect(efficiencyGrade(2)).toBe('C'));
   it('gives D below 1%', () => expect(efficiencyGrade(0.5)).toBe('D'));
 });
