@@ -8,6 +8,7 @@ import { ApprenticeSprites } from './ApprenticeSprites';
 import { RewindFlash } from './RewindFlash';
 import { SpellbookOverlay } from './SpellbookOverlay';
 import { SpellbookSprite } from './SpellbookSprite';
+import { StatusBars } from './StatusBars';
 import { crystalState, moneyBagState, albusState } from './sprite-state';
 import type { RewindStateFile } from '../api/rewind/rewind-state-file';
 
@@ -131,6 +132,12 @@ export function Room() {
           backgroundPosition: 'center',
         }}
       >
+        <StatusBars
+          tokens={session.tokens}
+          cap={session.cap}
+          percent={session.percent}
+          usage={spend.usage}
+        />
         <CrystalSprite state={cState} pct={pct} />
         <MoneyBagSprite state={mState} credits={credits} />
         <AlbusSprite state={aState} />

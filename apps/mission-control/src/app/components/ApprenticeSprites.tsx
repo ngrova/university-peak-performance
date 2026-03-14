@@ -23,14 +23,14 @@ export function ApprenticeSprites({ count }: Props) {
         return (
           <div
             key={i}
-            style={{ position: 'absolute', left: slot.left, top: slot.top, width: '7%' }}
+            style={{ position: 'absolute', left: slot.left, top: slot.top, width: '4%' }}
           >
             <Image
               src="/sprites/apprentice.webp"
               alt="apprentice"
               width={72}
               height={72}
-              style={{ width: '100%', height: 'auto', imageRendering: 'pixelated', display: 'block' }}
+              style={{ width: '100%', height: 'auto', imageRendering: 'pixelated', display: 'block', mixBlendMode: 'multiply' }}
               unoptimized
             />
           </div>

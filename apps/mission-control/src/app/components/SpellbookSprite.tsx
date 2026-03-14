@@ -34,8 +34,8 @@ export function SpellbookSprite({ status, onClick }: Props) {
         style={{
           position: 'absolute',
           left: '22%',
-          top: '60%',
-          width: '9%',
+          top: '62%',
+          width: '5%',
           zIndex: 5,
           cursor: isClickable ? 'pointer' : 'default',
           userSelect: 'none',
@@ -52,6 +52,7 @@ export function SpellbookSprite({ status, onClick }: Props) {
             width: '100%',
             imageRendering: 'pixelated',
             display: 'block',
+            mixBlendMode: 'multiply',
           }}
         />
         <div

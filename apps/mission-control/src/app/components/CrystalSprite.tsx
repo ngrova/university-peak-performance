@@ -16,13 +16,13 @@ export function CrystalSprite({ state, pct }: Props) {
 
   return (
     <>
-      <FloatingLabel text="CRYSTAL" left="38%" top="20%" />
+      <FloatingLabel text="CRYSTAL" left="38%" top="47%" />
       <div
         style={{
           position: 'absolute',
           left: '42%',
-          top: '28%',
-          width: '9%',
+          top: '55%',
+          width: '5%',
           animation: `crystalPulse ${duration}s ease-in-out infinite`,
           transformOrigin: 'center center',
         }}
@@ -32,11 +32,11 @@ export function CrystalSprite({ state, pct }: Props) {
           alt={`crystal ${state}`}
           width={92}
           height={92}
-          style={{ width: '100%', height: 'auto', imageRendering: 'pixelated', display: 'block' }}
+          style={{ width: '100%', height: 'auto', imageRendering: 'pixelated', display: 'block', mixBlendMode: 'multiply' }}
           unoptimized
         />
       </div>
-      <FloatingLabel text={`${pct}%`} left="43%" top="41%" />
+      <FloatingLabel text={`${pct}%`} left="43%" top="62%" />
     </>
   );
 }

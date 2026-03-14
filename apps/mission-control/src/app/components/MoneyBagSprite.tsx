@@ -23,13 +23,13 @@ export function MoneyBagSprite({ state, credits }: Props) {
   return (
     <>
       <FloatingLabel text={label} left="70%" top="64%" />
-      <div style={{ position: 'absolute', left: '74%', top: '68%', width: '9%' }}>
+      <div style={{ position: 'absolute', left: '74%', top: '68%', width: '5%' }}>
         <Image
           src={src}
           alt={`money bag ${state}`}
           width={92}
           height={92}
-          style={{ width: '100%', height: 'auto', imageRendering: 'pixelated', display: 'block' }}
+          style={{ width: '100%', height: 'auto', imageRendering: 'pixelated', display: 'block', mixBlendMode: 'multiply' }}
           unoptimized
         />
       </div>
