@@ -239,6 +239,24 @@ function selectOneThing(tasks: Task[]): Task | null {
 
 These are NOT to be built yet. Listed for architectural awareness only.
 
+### 🎙️ TOP PRIORITY: Voice Task Capture
+> Added 2026-03-14 by Nick
+
+Microphone input → AI transcription → AI understands the user's pillars, goals, and context → automatically creates and organizes tasks. The user talks, the app thinks, tasks appear in the right place.
+
+**Concept**: User holds a button and says something like *"I need to call the insurance company about the dock claim and also schedule a dentist appointment."* The AI:
+1. Transcribes the audio (Whisper or similar)
+2. Understands the user's existing pillar/goal structure
+3. Creates tasks in the correct places (dock claim → Finances or Home; dentist → Health)
+4. Confirms with the user before committing
+
+**Architectural implications to keep in mind now**:
+- Task creation must be abstracted cleanly (Server Actions are already the right pattern)
+- Pillar/goal context must be fetchable server-side for AI to reason about
+- Will need an OpenAI/Anthropic API route for transcription + structured output
+- UI will need a persistent "capture" button accessible from anywhere in the app
+
+### Other Post-MVP Features
 - **Recurring tasks**: Weekly/monthly task templates
 - **Collaboration**: Share pillars/goals with accountability partner (Erin)
 - **Analytics**: Progress over time, completion streaks
