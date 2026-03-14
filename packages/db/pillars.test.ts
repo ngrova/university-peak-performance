@@ -114,9 +114,9 @@ describe('getPillarsWithProgress', () => {
     const client = makeProgressClient([mockPillar], [], [])
     const result = await getPillarsWithProgress(client as never, 'user-1')
     expect(result).toHaveLength(1)
-    expect(result[0].goalCount).toBe(0)
-    expect(result[0].taskCount).toBe(0)
-    expect(result[0].completedTaskCount).toBe(0)
+    expect(result[0]!.goalCount).toBe(0)
+    expect(result[0]!.taskCount).toBe(0)
+    expect(result[0]!.completedTaskCount).toBe(0)
   })
 
   it('returns correct counts when goals and tasks exist', async () => {
@@ -131,9 +131,9 @@ describe('getPillarsWithProgress', () => {
     ]
     const client = makeProgressClient([mockPillar], goals, tasks)
     const result = await getPillarsWithProgress(client as never, 'user-1')
-    expect(result[0].goalCount).toBe(2)
-    expect(result[0].taskCount).toBe(3)
-    expect(result[0].completedTaskCount).toBe(2)
+    expect(result[0]!.goalCount).toBe(2)
+    expect(result[0]!.taskCount).toBe(3)
+    expect(result[0]!.completedTaskCount).toBe(2)
   })
 
   it('returns empty array when user has no pillars', async () => {
