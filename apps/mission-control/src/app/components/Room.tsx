@@ -17,11 +17,11 @@ const IDLE_REWIND: RewindStateFile = {
   stages: { memory: 'idle', clear: 'idle', restart: 'idle', verify: 'idle' },
 };
 
-interface SessionData { tokens: number; cap: number; percent: number; systemTokens: number; convoTokens: number; }
+interface SessionData { tokens: number; cap: number; percent: number; systemTokens: number; convoTokens: number; rewindSavings: number; rewindSavingsPct: number; }
 interface SpendData   { usage: number; usageToday: number; }
 
 function useSession(intervalMs: number) {
-  const [data, setData] = useState<SessionData>({ tokens: 0, cap: 200_000, percent: 0, systemTokens: 0, convoTokens: 0 });
+  const [data, setData] = useState<SessionData>({ tokens: 0, cap: 200_000, percent: 0, systemTokens: 0, convoTokens: 0, rewindSavings: 0, rewindSavingsPct: 0 });
   useEffect(() => {
     const fetch_ = () => fetch('/api/session').then(r => r.json()).then(setData).catch(() => {});
     fetch_();
@@ -173,6 +173,8 @@ export function Room() {
           percent={session.percent}
           systemTokens={session.systemTokens}
           convoTokens={session.convoTokens}
+          rewindSavings={session.rewindSavings}
+          rewindSavingsPct={session.rewindSavingsPct}
           usage={spend.usage}
         />
         <CrystalSprite state={cState} pct={pct} />

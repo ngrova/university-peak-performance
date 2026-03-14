@@ -40,7 +40,7 @@ describe('readSessionData', () => {
     mockReadFileSync.mockImplementation(() => { throw new Error('ENOENT'); });
 
     const result = readSessionData();
-    expect(result).toEqual({ tokens: 0, cap: 200_000, percent: 0, systemTokens: 0, convoTokens: 0 });
+    expect(result).toEqual({ tokens: 0, cap: 200_000, percent: 0, systemTokens: 0, convoTokens: 0, rewindSavings: 0, rewindSavingsPct: 0 });
   });
 });
 

@@ -1,12 +1,14 @@
 'use client';
 
 interface StatusBarsProps {
-  tokens: number;       // total token count
-  cap: number;          // token cap (e.g. 200000)
-  percent: number;      // 0-100
-  systemTokens: number; // system prompt + cached workspace files
-  convoTokens: number;  // conversation added by user + assistant
-  usage: number;        // credits spent (e.g. 12.47)
+  tokens: number;
+  cap: number;
+  percent: number;
+  systemTokens: number;
+  convoTokens: number;
+  rewindSavings: number;
+  rewindSavingsPct: number;
+  usage: number;
 }
 
 const BUDGET_CAP = 200;
@@ -17,7 +19,7 @@ function spendBarColor(remainingPct: number): string {
   return '#4ade80';
 }
 
-export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, usage }: StatusBarsProps) {
+export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, rewindSavings, rewindSavingsPct, usage }: StatusBarsProps) {
   const capK = Math.round(cap / 1000);
   const totalK = Math.round(tokens / 1000);
   const ctxPct = Math.min(100, Math.max(0, percent));
@@ -81,16 +83,23 @@ export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, us
             />
           )}
         </div>
-        {/* Legend */}
-        <div style={{ display: 'flex', gap: 12, marginTop: 3, fontSize: 8, color: '#9ca3af' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <span style={{ display: 'inline-block', width: 8, height: 8, background: '#4b5563', borderRadius: 1 }} />
-            {`CACHED ${Math.round(systemTokens / 1000)}K`}
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <span style={{ display: 'inline-block', width: 8, height: 8, background: '#38bdf8', borderRadius: 1 }} />
-            {`THIS MSG ${convoTokens}`}
-          </span>
+        {/* Legend + rewind savings */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 3 }}>
+          <div style={{ display: 'flex', gap: 10, fontSize: 8, color: '#9ca3af' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <span style={{ display: 'inline-block', width: 8, height: 8, background: '#4b5563', borderRadius: 1 }} />
+              {`CACHED ${Math.round(systemTokens / 1000)}K`}
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <span style={{ display: 'inline-block', width: 8, height: 8, background: '#38bdf8', borderRadius: 1 }} />
+              {`THIS MSG ${convoTokens}`}
+            </span>
+          </div>
+          {rewindSavingsPct > 5 && (
+            <span style={{ fontSize: 8, color: '#4ade80', whiteSpace: 'nowrap' }}>
+              {`⟳ REWIND SAVES ${Math.round(rewindSavings / 1000)}K (${rewindSavingsPct}%)`}
+            </span>
+          )}
         </div>
       </div>
 
