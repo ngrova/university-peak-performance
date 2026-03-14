@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { createServerClient, getAssessmentHistory } from '@upp/db'
 import type { Assessment } from '@upp/db'
 import { DOMAINS } from '@/lib/scorecard-constants'
+import DeleteAssessmentButton from '@/components/scorecard/DeleteAssessmentButton'
 
 export default async function ScorecardPage(): Promise<React.JSX.Element> {
   const cookieStore = await cookies()
@@ -74,10 +75,13 @@ function AssessmentCard({ assessment }: { assessment: Assessment }): React.JSX.E
     <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm text-gray-500">{date}</span>
-        <span className="text-2xl font-bold text-amber-600">
-          {assessment.overall_score.toFixed(1)}
-          <span className="text-sm font-normal text-gray-400">/10</span>
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-bold text-amber-600">
+            {assessment.overall_score.toFixed(1)}
+            <span className="text-sm font-normal text-gray-400">/10</span>
+          </span>
+          <DeleteAssessmentButton id={assessment.id} />
+        </div>
       </div>
       <div className="flex flex-wrap gap-2">
         {DOMAINS.map((d) => {

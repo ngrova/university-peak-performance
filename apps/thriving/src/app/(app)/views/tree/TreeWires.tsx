@@ -11,25 +11,24 @@ interface Props {
   hasSelection: boolean
 }
 
-function WirePaths({ parent, nodeChildren, cardW, cardH, gapX, chainIds, hasSelection }: {
+function WirePaths({ parent, nodeChildren, cardW, cardH, chainIds, hasSelection }: {
   parent: TreeNode
   nodeChildren: TreeNode[]
   cardW: number
   cardH: number
-  gapX: number
   chainIds: Set<string>
   hasSelection: boolean
 }): React.JSX.Element {
-  const px = parent.x + cardW
-  const py = parent.y + cardH / 2
-  const cpOffset = gapX * 0.5
+  const sx = parent.x + cardW
+  const sy = parent.y + cardH / 2
   const isRoot2Pillar = parent.depth === 0
 
   return (
     <>
       {nodeChildren.map((child) => {
-        const cx = child.x
-        const cy = child.y + cardH / 2
+        const tx = child.x
+        const ty = child.y + cardH / 2
+        const dx = (tx - sx) * 0.5
         const inChain = chainIds.has(parent.id) && chainIds.has(child.id)
         const dimmed = hasSelection && !inChain
         const color = parent.pillarColor ?? child.pillarColor ?? '#9B8E80'
@@ -39,7 +38,7 @@ function WirePaths({ parent, nodeChildren, cardW, cardH, gapX, chainIds, hasSele
         return (
           <path
             key={`${parent.id}-${child.id}`}
-            d={`M ${px} ${py} C ${px + cpOffset} ${py}, ${cx - cpOffset} ${cy}, ${cx} ${cy}`}
+            d={`M ${sx} ${sy} C ${sx + dx} ${sy}, ${tx - dx} ${ty}, ${tx} ${ty}`}
             fill="none"
             stroke={stroke}
             strokeWidth={strokeW}
@@ -62,7 +61,6 @@ export default function TreeWires({ nodes, cardW, cardH, gapX, chainIds, hasSele
             nodeChildren={node.children}
             cardW={cardW}
             cardH={cardH}
-            gapX={gapX}
             chainIds={chainIds}
             hasSelection={hasSelection}
           />
