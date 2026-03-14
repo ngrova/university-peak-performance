@@ -94,6 +94,14 @@ export function Room() {
 
   const handleClose = useCallback(() => setShowOverlay(false), []);
 
+  // Auto-reload after successful rewind so the UI resets cleanly
+  useEffect(() => {
+    if (rewind.status === 'done') {
+      const id = setTimeout(() => window.location.reload(), 2_000);
+      return () => clearTimeout(id);
+    }
+  }, [rewind.status]);
+
   return (
     <>
       <style>{`
