@@ -1,72 +1,152 @@
 'use client';
 
-import { Fireplace } from './Fireplace';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { CrystalSprite } from './CrystalSprite';
+import { MoneyBagSprite } from './MoneyBagSprite';
+import { AlbusSprite } from './AlbusSprite';
+import { ApprenticeSprites } from './ApprenticeSprites';
+import { RewindFlash } from './RewindFlash';
+import { SpellbookOverlay } from './SpellbookOverlay';
+import { RewindButton } from './RewindButton';
+import { crystalState, moneyBagState, albusState } from './sprite-state';
+import type { RewindStateFile } from '../api/rewind/rewind-state-file';
 
-interface Props {
-  isDark?: boolean;
-  children: React.ReactNode;
+const IDLE_REWIND: RewindStateFile = {
+  status: 'idle', agentMessage: null, requestedAt: null, confirmedAt: null,
+  stages: { memory: 'idle', clear: 'idle', restart: 'idle', verify: 'idle' },
+};
+
+interface SessionData { tokens: number; cap: number; percent: number; }
+interface SpendData   { usage: number; usageToday: number; }
+
+function useSession(intervalMs: number) {
+  const [data, setData] = useState<SessionData>({ tokens: 0, cap: 200_000, percent: 0 });
+  useEffect(() => {
+    const fetch_ = () => fetch('/api/session').then(r => r.json()).then(setData).catch(() => {});
+    fetch_();
+    const id = setInterval(fetch_, intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return data;
 }
 
-function Candle({ x, y }: { x: number; y: number }) {
-  return (
-    <div style={{ position: 'absolute', left: x, top: y, width: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div className="candle-flame" style={{ width: 6, height: 10, background: 'radial-gradient(ellipse at 50% 80%, #fef08a, #f97316)', borderRadius: '50% 50% 0 0' }} />
-      <div style={{ width: 6, height: 18, background: '#e5d5b0', borderRadius: 1 }} />
-    </div>
-  );
+function useSpend(intervalMs: number) {
+  const [data, setData] = useState<SpendData>({ usage: 0, usageToday: 0 });
+  useEffect(() => {
+    const fetch_ = () => fetch('/api/spend').then(r => r.json()).then(setData).catch(() => {});
+    fetch_();
+    const id = setInterval(fetch_, intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return data;
 }
 
-function Bookshelf({ books }: { books: string[] }) {
-  return (
-    <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 52, padding: '4px 6px', background: '#3a2415', borderRadius: 2, border: '2px solid #2a1a0e' }}>
-      {books.map((color, i) => (
-        <div key={i} style={{ width: 8 + (i % 3), height: 32 + (i % 5) * 3, background: color, borderRadius: 1 }} />
-      ))}
-    </div>
-  );
+function useRewindState() {
+  const [state, setState] = useState<RewindStateFile>(IDLE_REWIND);
+  useEffect(() => {
+    const poll = () => fetch('/api/rewind/state').then(r => r.json()).then(setState).catch(() => {});
+    poll();
+    const id = setInterval(poll, 5_000);
+    return () => clearInterval(id);
+  }, []);
+  return state;
 }
 
-const LEFT_BOOKS = ['#c0392b','#2980b9','#27ae60','#8e44ad','#e67e22','#2c3e50','#16a085','#d35400','#7f8c8d','#1abc9c'];
-const RIGHT_BOOKS = ['#e74c3c','#3498db','#2ecc71','#9b59b6','#f39c12','#34495e','#1abc9c','#e67e22','#95a5a6','#27ae60'];
+export function Room() {
+  const session = useSession(30_000);
+  const spend   = useSpend(60_000);
+  const rewind  = useRewindState();
 
-export function Room({ isDark, children }: Props) {
+  const prevOutputRef = useRef(0);
+  const [outputTokens, setOutputTokens] = useState(0);
+
+  // derive output tokens from session tokens as proxy
+  useEffect(() => {
+    setOutputTokens(session.tokens);
+  }, [session.tokens]);
+
+  const aState  = albusState(prevOutputRef.current, outputTokens);
+  useEffect(() => { prevOutputRef.current = outputTokens; }, [outputTokens]);
+
+  const cState  = crystalState(session.tokens, session.cap);
+  const mState  = moneyBagState(spend.usage);
+  const credits = spend.usage;
+  const pct     = session.percent;
+
+  // sub-agent count — not in current session API, default 0
+  const subagentCount = 0;
+
+  const [showOverlay, setShowOverlay] = useState(false);
+
+  const handleRewind = useCallback(async () => {
+    await fetch('/api/rewind/request', { method: 'POST' });
+    setShowOverlay(true);
+  }, []);
+
+  const handleHardRewind = useCallback(async () => {
+    await fetch('/api/rewind/restart', { method: 'POST' });
+  }, []);
+
+  const handleConfirm = useCallback(async () => {
+    await fetch('/api/rewind/confirm', { method: 'POST' });
+  }, []);
+
+  const handleCancel = useCallback(async () => {
+    await fetch('/api/rewind/cancel', { method: 'POST' });
+    setShowOverlay(false);
+  }, []);
+
+  const handleClose = useCallback(() => setShowOverlay(false), []);
+
   return (
-    <div className="room-wall" style={{ position: 'relative', width: 640, height: 480, overflow: 'hidden', margin: '0 auto' }}>
-      {/* dark overlay at high token % */}
-      {isDark && <div className="room-darken" style={{ position: 'absolute', inset: 0, zIndex: 20, pointerEvents: 'none' }} />}
+    <>
+      <style>{`
+        @keyframes crystalPulse {
+          0%, 100% { transform: scale(1); }
+          50%       { transform: scale(1.04); }
+        }
+        @keyframes rewindFlash {
+          0%   { opacity: 0; }
+          30%  { opacity: 1; }
+          100% { opacity: 0; }
+        }
+      `}</style>
 
-      {/* Top wall (stone) */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 100, background: '#3d2b1a', borderBottom: '4px solid #2a1a0e' }}>
-        {/* Bookshelves top-left */}
-        <div style={{ position: 'absolute', left: 20, top: 24 }}><Bookshelf books={LEFT_BOOKS} /></div>
-        <div style={{ position: 'absolute', left: 140, top: 24 }}><Bookshelf books={RIGHT_BOOKS} /></div>
-        {/* Arched window */}
-        <div style={{ position: 'absolute', right: 60, top: 12, width: 80, height: 70 }}>
-          <div className="window-light" style={{ width: 80, height: 56, borderRadius: '40px 40px 0 0', border: '3px solid #2a1a0e' }} />
-          <div style={{ position: 'absolute', top: 0, left: '50%', width: 3, height: 56, background: '#2a1a0e', transform: 'translateX(-50%)' }} />
-          <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 3, background: '#2a1a0e', transform: 'translateY(-50%)' }} />
+      <div
+        style={{
+          position: 'relative',
+          width: 800,
+          height: 800,
+          overflow: 'hidden',
+          backgroundImage: 'url(/sprites/room.webp)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <CrystalSprite state={cState} pct={pct} />
+        <MoneyBagSprite state={mState} credits={credits} />
+        <AlbusSprite state={aState} />
+        <ApprenticeSprites count={subagentCount} />
+        <RewindFlash status={rewind.status} />
+
+        {/* Rewind button — bottom-right */}
+        <div style={{ position: 'absolute', bottom: 16, right: 16, zIndex: 10 }}>
+          <RewindButton
+            status={rewind.status}
+            onRewind={handleRewind}
+            onHardRewind={handleHardRewind}
+          />
         </div>
-        {/* Candles on wall sconces */}
-        <Candle x={310} y={30} />
-        <Candle x={340} y={30} />
       </div>
 
-      {/* Floor */}
-      <div className="room-floor" style={{ position: 'absolute', top: 100, left: 0, right: 0, bottom: 0 }} />
-
-      {/* Fireplace bottom-left */}
-      <div style={{ position: 'absolute', bottom: 16, left: 24 }}>
-        <Fireplace />
-      </div>
-
-      {/* Plants bottom-center */}
-      <div style={{ position: 'absolute', bottom: 20, left: 310, display: 'flex', gap: 4 }}>
-        <div style={{ width: 16, height: 32, background: '#2d6a2d', borderRadius: '40% 40% 0 0', border: '2px solid #1a4a1a' }} />
-        <div style={{ width: 12, height: 24, background: '#3a8a3a', borderRadius: '40% 40% 0 0', border: '2px solid #1a4a1a' }} />
-        <div style={{ width: 14, height: 28, background: '#2d6a2d', borderRadius: '40% 40% 0 0', border: '2px solid #1a4a1a' }} />
-      </div>
-
-      {children}
-    </div>
+      {showOverlay && (
+        <SpellbookOverlay
+          state={rewind}
+          onClose={handleClose}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
+      )}
+    </>
   );
 }

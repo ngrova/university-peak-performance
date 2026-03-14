@@ -161,6 +161,18 @@ body {
 /* ── Room darkness at high tokens ── */
 .room-darken { background-color: rgba(0,0,0,0.25); }
 
+/* ── Sprite animations ── */
+@keyframes crystalPulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.04); }
+}
+
+@keyframes rewindFlash {
+  0%   { opacity: 0; }
+  30%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 /* ── Window light ── */
 .window-light {
   background: linear-gradient(135deg, #fffde7 0%, #fff59d 40%, transparent 100%);
