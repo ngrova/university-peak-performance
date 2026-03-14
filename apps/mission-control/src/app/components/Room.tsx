@@ -2,14 +2,13 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { CrystalSprite } from './CrystalSprite';
-import { MoneyBagSprite } from './MoneyBagSprite';
 import { AlbusSprite } from './AlbusSprite';
 import { ApprenticeSprites } from './ApprenticeSprites';
 import { RewindFlash } from './RewindFlash';
 import { SpellbookOverlay } from './SpellbookOverlay';
 import { SpellbookSprite } from './SpellbookSprite';
 import { StatusBars } from './StatusBars';
-import { crystalState, moneyBagState, albusState } from './sprite-state';
+import { crystalState, albusState } from './sprite-state';
 import type { RewindStateFile } from '../api/rewind/rewind-state-file';
 
 const IDLE_REWIND: RewindStateFile = {
@@ -105,8 +104,6 @@ export function Room() {
   useEffect(() => { prevOutputRef.current = outputTokens; }, [outputTokens]);
 
   const cState  = crystalState(session.tokens, session.cap);
-  const mState  = moneyBagState(spend.usage);
-  const credits = spend.usage;
   const pct     = session.percent;
 
   const subagentCount = useSubagents(10_000);
@@ -179,7 +176,6 @@ export function Room() {
           usageToday={spend.usageToday}
         />
         <CrystalSprite state={cState} pct={pct} />
-        <MoneyBagSprite state={mState} credits={credits} />
         <AlbusSprite state={aState} app={activity.app} task={activity.task} />
         <ApprenticeSprites count={subagentCount} />
         <RewindFlash status={rewind.status} />
