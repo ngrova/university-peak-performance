@@ -1,26 +1,26 @@
 import type { DomainKey, DomainScores, DomainAverages } from '@upp/db'
-import { DOMAINS } from './scorecard-constants'
 
-export function computeQ2Score(sliderValue: number, multiplier: number): number {
-  const raw = sliderValue * multiplier
-  return Math.min(10, Math.max(0, raw))
+export interface ScoreResult {
+  scores: DomainScores
+  domainAverages: DomainAverages
+  overallScore: number
 }
 
-export function computeDomainAverage(q1: number, q2: number): number {
-  return Math.round(((q1 + q2) / 2) * 10) / 10
-}
+// Each domain score = slider value directly (1.0–10.0)
+export function computeScores(values: Record<string, number>): ScoreResult {
+  const scores = {} as DomainScores
+  const domainAverages = {} as DomainAverages
 
-export function computeOverallScore(domainAverages: DomainAverages): number {
-  const keys = Object.keys(domainAverages) as DomainKey[]
-  const total = keys.reduce((sum, key) => sum + domainAverages[key], 0)
-  return Math.round((total / keys.length) * 100) / 100
-}
-
-export function buildDomainAverages(scores: DomainScores): DomainAverages {
-  const result = {} as DomainAverages
-  for (const domain of DOMAINS) {
-    const [q1, q2] = scores[domain.key]
-    result[domain.key] = computeDomainAverage(q1, q2)
+  for (const [key, value] of Object.entries(values)) {
+    const rounded = Math.round(value * 10) / 10
+    // DomainScores requires [number, number] tuple — store value twice for compatibility
+    scores[key as DomainKey] = [rounded, rounded]
+    domainAverages[key as DomainKey] = rounded
   }
-  return result
+
+  const vals = Object.values(domainAverages)
+  const overallScore =
+    Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 100) / 100
+
+  return { scores, domainAverages, overallScore }
 }
