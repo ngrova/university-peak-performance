@@ -1,8 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Goal } from './types'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyClient = SupabaseClient<any, any, any>
+
 export async function getGoals(
-  supabase: SupabaseClient,
+  supabase: AnyClient,
   pillarId: string,
 ): Promise<Goal[]> {
   const { data, error } = await supabase
@@ -24,7 +27,7 @@ export interface CreateGoalInput {
 }
 
 export async function createGoal(
-  supabase: SupabaseClient,
+  supabase: AnyClient,
   userId: string,
   input: CreateGoalInput,
 ): Promise<Goal> {
@@ -38,7 +41,7 @@ export async function createGoal(
 }
 
 export async function updateGoal(
-  supabase: SupabaseClient,
+  supabase: AnyClient,
   id: string,
   updates: Partial<Pick<Goal, 'title' | 'description' | 'target_date' | 'status' | 'sort_order'>>,
 ): Promise<Goal> {
@@ -53,7 +56,7 @@ export async function updateGoal(
 }
 
 export async function deleteGoal(
-  supabase: SupabaseClient,
+  supabase: AnyClient,
   id: string,
 ): Promise<void> {
   const { error } = await supabase

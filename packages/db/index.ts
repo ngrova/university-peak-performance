@@ -4,4 +4,6 @@ export { createClient, createBrowserClient, createServerClient } from './clients
 export type { LifePillar, Goal, Task } from './types'
 // Query helpers
 export { getPillars, createPillar, updatePillar, deletePillar } from './pillars'
+export type { CreatePillarInput } from './pillars'
 export { getGoals, createGoal, updateGoal, deleteGoal } from './goals'
+export type { CreateGoalInput } from './goals'

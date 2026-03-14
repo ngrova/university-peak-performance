@@ -1,8 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { LifePillar } from './types'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyClient = SupabaseClient<any, any, any>
+
 export async function getPillars(
-  supabase: SupabaseClient,
+  supabase: AnyClient,
   userId: string,
 ): Promise<LifePillar[]> {
   const { data, error } = await supabase
@@ -23,7 +26,7 @@ export interface CreatePillarInput {
 }
 
 export async function createPillar(
-  supabase: SupabaseClient,
+  supabase: AnyClient,
   userId: string,
   input: CreatePillarInput,
 ): Promise<LifePillar> {
@@ -37,7 +40,7 @@ export async function createPillar(
 }
 
 export async function updatePillar(
-  supabase: SupabaseClient,
+  supabase: AnyClient,
   id: string,
   updates: Partial<Pick<LifePillar, 'name' | 'icon' | 'color' | 'sort_order' | 'is_archived'>>,
 ): Promise<LifePillar> {
@@ -52,7 +55,7 @@ export async function updatePillar(
 }
 
 export async function deletePillar(
-  supabase: SupabaseClient,
+  supabase: AnyClient,
   id: string,
 ): Promise<void> {
   const { error } = await supabase

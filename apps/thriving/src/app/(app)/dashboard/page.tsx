@@ -1,25 +1,40 @@
-import React from 'react';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@upp/db';
+import React from 'react'
+import { cookies } from 'next/headers'
+import { createServerClient, getPillars } from '@upp/db'
+import PillarCard from '@/components/pillars/PillarCard'
+import AddPillarButton from '@/components/pillars/AddPillarButton'
 
 // Server Component — user is already validated by AppLayout
 export default async function DashboardPage(): Promise<React.JSX.Element> {
-  const cookieStore = await cookies();
+  const cookieStore = await cookies()
 
   const supabase = createServerClient({
     get: (name) => cookieStore.get(name)?.value,
     set: () => {},
     remove: () => {},
-  });
+  })
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser()
+  const pillars = user ? await getPillars(supabase, user.id) : []
 
   return (
-    <main className="p-8">
-      <h1 className="text-3xl font-bold mb-2">Welcome to Thriving</h1>
-      {user?.email && (
-        <p className="text-gray-600">Signed in as {user.email}</p>
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">My Life Pillars</h1>
+        <AddPillarButton />
+      </div>
+      {pillars.length === 0 ? (
+        <div className="text-center py-16 text-gray-500">
+          <p className="text-lg mb-2">No pillars yet.</p>
+          <p>Create your first one to get started.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {pillars.map((pillar) => (
+            <PillarCard key={pillar.id} pillar={pillar} />
+          ))}
+        </div>
       )}
-    </main>
-  );
+    </div>
+  )
 }
