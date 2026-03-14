@@ -1,7 +1,7 @@
 // Client exports (keep existing)
 export { createClient, createBrowserClient, createServerClient } from './clients'
 // Type exports
-export type { LifePillar, Goal, Task } from './types'
+export type { LifePillar, Goal, Task, FailureCost, TaskAssignee } from './types'
 // Query helpers
 export { getPillars, createPillar, updatePillar, deletePillar, getPillarsWithProgress } from './pillars'
 export type { CreatePillarInput, PillarWithProgress } from './pillars'

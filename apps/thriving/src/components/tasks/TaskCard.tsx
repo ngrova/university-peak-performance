@@ -25,6 +25,7 @@ const STATUS_ICON: Record<Task['status'], string> = {
   todo: '○',
   in_progress: '◑',
   done: '●',
+  blocked: '⊘',
 }
 
 export default function TaskCard({ task, goalId, pillarId }: TaskCardProps): React.JSX.Element {

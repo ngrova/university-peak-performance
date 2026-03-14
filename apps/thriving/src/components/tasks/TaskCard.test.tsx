@@ -20,6 +20,8 @@ const mockTask: Task = {
   status: 'todo',
   is_one_thing: false,
   sort_order: 0,
+  assignee: null,
+  failure_cost: null,
   created_at: '2026-03-14T00:00:00Z',
   completed_at: null,
   updated_at: '2026-03-14T00:00:00Z',
