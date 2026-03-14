@@ -85,11 +85,11 @@ export function StatusBars({ tokens, cap, percent, systemTokens, convoTokens, us
         <div style={{ display: 'flex', gap: 12, marginTop: 3, fontSize: 8, color: '#9ca3af' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <span style={{ display: 'inline-block', width: 8, height: 8, background: '#4b5563', borderRadius: 1 }} />
-            {`SYS ~${Math.round(systemTokens / 1000)}K`}
+            {`CACHED ${Math.round(systemTokens / 1000)}K`}
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <span style={{ display: 'inline-block', width: 8, height: 8, background: '#38bdf8', borderRadius: 1 }} />
-            {`CONVO ~${Math.round(convoTokens / 1000)}K`}
+            {`THIS MSG ${convoTokens}`}
           </span>
         </div>
       </div>
