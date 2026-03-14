@@ -3,7 +3,7 @@ import { parseSessionOutput } from './parse-session';
 import type { SessionData } from './parse-session';
 
 const SESSIONS_FILE = '/Users/openclaw/.openclaw/agents/main/sessions/sessions.json';
-const FALLBACK: SessionData = { tokens: 0, cap: 200_000, percent: 0 };
+const FALLBACK: SessionData = { tokens: 0, cap: 200_000, percent: 0, systemTokens: 0, convoTokens: 0 };
 
 export function readSessionData(): SessionData {
   try {
