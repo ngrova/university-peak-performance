@@ -16,20 +16,29 @@ interface SessionEntry {
 }
 
 function tokenCount(s: SessionEntry): number {
-  return s.inputTokens ?? s.totalTokens ?? 0;
+  // totalTokens is the cumulative context window usage — prefer it over inputTokens
+  return s.totalTokens ?? s.inputTokens ?? 0;
+}
+
+function isMainSession(s: SessionEntry): boolean {
+  const key = s.key ?? '';
+  // Exclude subagent sessions and the bare main session (no tokens)
+  return !key.includes('subagent') && key !== 'agent:main:main';
 }
 
 function bestFromArray(sessions: SessionEntry[]): number {
-  const fresh = sessions.filter((s) => s.totalTokensFresh && !s.spawnDepth);
-  if (fresh.length === 0) return 0;
-  const sorted = [...fresh].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
+  const candidates = sessions.filter(
+    (s) => s.totalTokensFresh && isMainSession(s)
+  );
+  if (candidates.length === 0) return 0;
+  const sorted = [...candidates].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
   return tokenCount(sorted[0]!);
 }
 
 function bestFromMap(map: Record<string, SessionEntry>): number {
-  const entries = Object.values(map).filter(
-    (s) => s.totalTokensFresh && !s.spawnDepth
-  );
+  const entries = Object.entries(map)
+    .map(([key, val]) => ({ ...val, key }))
+    .filter((s) => s.totalTokensFresh && isMainSession(s));
   if (entries.length === 0) return 0;
   const sorted = [...entries].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
   return tokenCount(sorted[0]!);
