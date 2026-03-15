@@ -26,9 +26,9 @@ export interface LayoutConfig {
 export const DEFAULT_LAYOUT: LayoutConfig = {
   cardW: 130,
   cardH: 56,
-  gapX: 152,
-  gapY: 52,
-  pillarGap: 40,
+  gapX: 180,
+  gapY: 68,
+  pillarGap: 48,
 }
 
 const MAX_DEPTH = 4

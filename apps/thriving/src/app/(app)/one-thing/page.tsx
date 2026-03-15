@@ -34,7 +34,15 @@ export default async function OneThingPage(): Promise<React.JSX.Element> {
   const pillar = goal.life_pillars
 
   return (
-    <div className="max-w-xl mx-auto py-16 px-4">
+    <div className="max-w-xl mx-auto py-8 md:py-16 px-4">
+      {/* Breadcrumb: Pillar › Goal */}
+      <p className="text-xs mb-3" style={{ color: 'var(--text-light)' }}>
+        <span style={{ color: pillar.color }}>{pillar.icon}</span>
+        {' '}{pillar.name}
+        <span className="mx-1" style={{ color: 'var(--text-light)' }}>›</span>
+        <span style={{ color: 'var(--text-secondary)' }}>{goal.title}</span>
+      </p>
+
       <p
         className="text-xs font-semibold uppercase tracking-wider mb-1"
         style={{ color: 'var(--accent)' }}
@@ -52,13 +60,6 @@ export default async function OneThingPage(): Promise<React.JSX.Element> {
         className="rounded-2xl p-6 space-y-4"
         style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
       >
-        <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-          <span style={{ color: pillar.color }}>{pillar.icon}</span>
-          <span>{pillar.name}</span>
-          <span style={{ color: 'var(--text-light)' }}>›</span>
-          <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{goal.title}</span>
-        </div>
-
         <div className="flex flex-wrap gap-2">
           <FailureCostBadge cost={task.failure_cost} />
           {task.assignee && (

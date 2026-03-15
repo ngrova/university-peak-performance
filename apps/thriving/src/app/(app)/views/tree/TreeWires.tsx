@@ -19,16 +19,21 @@ function WirePaths({ parent, nodeChildren, cardW, cardH, chainIds, hasSelection 
   chainIds: Set<string>
   hasSelection: boolean
 }): React.JSX.Element {
-  const sx = parent.x + cardW
-  const sy = parent.y + cardH / 2
+  // In RTL layout: children are to the LEFT of parents.
+  // Wire: child's RIGHT edge → parent's LEFT edge (child exits right, enters parent left)
+  const x2 = parent.x          // parent left edge (wire arrives here)
+  const y2 = parent.y + cardH / 2
   const isRoot2Pillar = parent.depth === 0
 
   return (
     <>
       {nodeChildren.map((child) => {
-        const tx = child.x
-        const ty = child.y + cardH / 2
-        const dx = (tx - sx) * 0.5
+        const x1 = child.x + cardW  // child right edge (wire starts here)
+        const y1 = child.y + cardH / 2
+        const horizDist = x2 - x1  // positive: x2 > x1 in RTL (parent is to the right)
+        // Root→pillar edges bow more gracefully (75%); all others 50%
+        const cpRatio = isRoot2Pillar ? 0.75 : 0.5
+        const cpOff = horizDist * cpRatio
         const inChain = chainIds.has(parent.id) && chainIds.has(child.id)
         const dimmed = hasSelection && !inChain
         const color = parent.pillarColor ?? child.pillarColor ?? '#9B8E80'
@@ -38,7 +43,7 @@ function WirePaths({ parent, nodeChildren, cardW, cardH, chainIds, hasSelection 
         return (
           <path
             key={`${parent.id}-${child.id}`}
-            d={`M ${sx} ${sy} C ${sx + dx} ${sy}, ${tx - dx} ${ty}, ${tx} ${ty}`}
+            d={`M ${x1} ${y1} C ${x1 + cpOff} ${y1}, ${x2 - cpOff} ${y2}, ${x2} ${y2}`}
             fill="none"
             stroke={stroke}
             strokeWidth={strokeW}

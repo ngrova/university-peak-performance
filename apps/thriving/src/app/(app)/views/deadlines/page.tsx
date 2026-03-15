@@ -9,30 +9,30 @@ type DeadlineGroup = 'Overdue' | 'This Week' | 'This Month' | 'Later'
 
 function classifyTask(dueDate: string, today: string): DeadlineGroup {
   if (dueDate < today) return 'Overdue'
-  const dayMs = 86400000
-  const diffDays = (new Date(dueDate).getTime() - new Date(today).getTime()) / dayMs
+  const diffDays = (new Date(dueDate).getTime() - new Date(today).getTime()) / 86400000
   if (diffDays <= 7) return 'This Week'
   if (diffDays <= 30) return 'This Month'
   return 'Later'
 }
 
 const GROUP_ORDER: DeadlineGroup[] = ['Overdue', 'This Week', 'This Month', 'Later']
-
 const GROUP_STYLES: Record<DeadlineGroup, string> = {
   Overdue: 'text-red-600',
   'This Week': 'text-orange-600',
   'This Month': 'text-yellow-700',
   Later: 'text-gray-600',
 }
+const OVERDUE_ROW = 'border-l-4 border-red-400 bg-red-50'
 
-function TaskRow({ task }: { task: TaskWithContext }): React.JSX.Element {
+function TaskRow({ task, isOverdue }: { task: TaskWithContext; isOverdue: boolean }): React.JSX.Element {
   const goal = task.goals
-  const goalDetailHref = `/pillars/${goal.pillar_id}/goals/${task.goal_id}`
+  const href = `/pillars/${goal.pillar_id}/goals/${task.goal_id}`
+  const dateStr = new Date(`${task.due_date}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   return (
     <Link
-      href={goalDetailHref}
-      className="flex items-center gap-3 p-3 rounded-lg border bg-white hover:bg-indigo-50 transition-colors"
+      href={href}
+      className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 p-3 rounded-lg border bg-white hover:bg-indigo-50 transition-colors ${isOverdue ? OVERDUE_ROW : ''}`}
     >
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">{task.title}</p>
@@ -43,9 +43,7 @@ function TaskRow({ task }: { task: TaskWithContext }): React.JSX.Element {
         {task.assignee && (
           <span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">{task.assignee}</span>
         )}
-        <span className="text-xs text-gray-500 whitespace-nowrap">
-          {new Date(`${task.due_date}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-        </span>
+        <span className="text-xs text-gray-500 whitespace-nowrap">{dateStr}</span>
       </div>
     </Link>
   )
@@ -58,26 +56,19 @@ export default async function DeadlinesPage(): Promise<React.JSX.Element> {
     set: () => {},
     remove: () => {},
   })
-
   const { data: { user } } = await supabase.auth.getUser()
   const tasks = user ? await getTasksWithDeadlines(supabase, user.id) : []
   const today = new Date().toISOString().slice(0, 10)
 
   const grouped = tasks.reduce<Record<DeadlineGroup, TaskWithContext[]>>(
-    (acc, task) => {
-      const group = classifyTask(task.due_date!, today)
-      acc[group].push(task)
-      return acc
-    },
+    (acc, task) => { const g = classifyTask(task.due_date!, today); acc[g].push(task); return acc },
     { Overdue: [], 'This Week': [], 'This Month': [], Later: [] },
   )
-
-  const hasAny = tasks.length > 0
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">📅 Deadlines</h1>
-      {!hasAny ? (
+      {tasks.length === 0 ? (
         <div className="text-center py-16 text-gray-500">
           <p className="text-lg mb-2">No tasks with deadlines.</p>
           <p>Assign due dates to tasks to see them here.</p>
@@ -94,7 +85,7 @@ export default async function DeadlinesPage(): Promise<React.JSX.Element> {
                 </h2>
                 <div className="space-y-2">
                   {groupTasks.map((task) => (
-                    <TaskRow key={task.id} task={task} />
+                    <TaskRow key={task.id} task={task} isOverdue={group === 'Overdue'} />
                   ))}
                 </div>
               </section>
