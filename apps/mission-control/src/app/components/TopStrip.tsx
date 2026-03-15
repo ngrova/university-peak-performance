@@ -109,19 +109,19 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
       >
         {/* Row 1 — Title */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 14, color: '#f0c860', letterSpacing: '3px' }}>
+          <span style={{ fontSize: 18, color: '#f0c860', letterSpacing: '3px' }}>
             ALBUS&apos;S LOOKOUT
           </span>
-          <span style={{ fontSize: 9, color: '#6a5880' }}>Nick Grover HQ — Token Command</span>
+          <span style={{ fontSize: 14, color: '#6a5880' }}>Nick Grover HQ — Token Command</span>
         </div>
 
         {/* Row 2 — Context bar */}
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <span
             style={{
-              fontSize: 8,
+              fontSize: 14,
               color: '#8a78a0',
-              width: 68,
+              width: 80,
               textAlign: 'right',
               flexShrink: 0,
             }}
@@ -133,7 +133,7 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
           <div
             style={{
               flex: 1,
-              height: 18,
+              height: 22,
               borderRadius: 3,
               background: 'rgba(20,14,30,0.9)',
               border: '1px solid #2a2040',
@@ -168,16 +168,16 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
           </div>
           <div style={{ width: 8, flexShrink: 0 }} />
           {/* Values */}
-          <span style={{ fontSize: 11, color: '#f0c860', fontWeight: 'bold', flexShrink: 0 }}>
+          <span style={{ fontSize: 15, color: '#f0c860', fontWeight: 'bold', flexShrink: 0 }}>
             {Math.round(percent)}%
           </span>
-          <span style={{ fontSize: 9, color: '#6a5880', flexShrink: 0, marginLeft: 5 }}>
+          <span style={{ fontSize: 13, color: '#6a5880', flexShrink: 0, marginLeft: 6 }}>
             {usedK}K / {capK}K
           </span>
           {savingsK > 2 && (
             <>
-              <div style={{ width: 10, flexShrink: 0 }} />
-              <span style={{ fontSize: 8, color: '#40b0a0', flexShrink: 0 }}>
+              <div style={{ width: 12, flexShrink: 0 }} />
+              <span style={{ fontSize: 13, color: '#40b0a0', flexShrink: 0 }}>
                 rewind saves ~{savingsK}K
               </span>
             </>
@@ -198,7 +198,7 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
               borderRadius: 5,
               padding: '6px 16px',
               fontFamily: PIXEL,
-              fontSize: 9,
+              fontSize: 13,
               color: hovered ? '#f0d8ff' : '#d8b8ff',
               letterSpacing: '2px',
               cursor: 'pointer',
@@ -218,11 +218,11 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
         <div style={{ display: 'flex', gap: 16 }}>
           {/* Credits (left half) */}
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 8, color: '#8a78a0', flexShrink: 0, width: 68, textAlign: 'right' }}>CREDITS</span>
+            <span style={{ fontSize: 13, color: '#8a78a0', flexShrink: 0, width: 80, textAlign: 'right' }}>CREDITS</span>
             <div
               style={{
                 flex: 1,
-                height: 12,
+                height: 16,
                 borderRadius: 2,
                 background: 'rgba(20,14,30,0.9)',
                 border: '1px solid #2a2040',
@@ -238,19 +238,19 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
                 }}
               />
             </div>
-            <span style={{ fontSize: 10, color: '#f0c860', fontWeight: 'bold', flexShrink: 0 }}>
+            <span style={{ fontSize: 14, color: '#f0c860', fontWeight: 'bold', flexShrink: 0 }}>
               ${creditsRemaining.toFixed(0)}
             </span>
-            <span style={{ fontSize: 8, color: '#6a5880', flexShrink: 0 }}>/ $200</span>
+            <span style={{ fontSize: 13, color: '#6a5880', flexShrink: 0 }}>/ $200</span>
           </div>
 
           {/* Daily Spend (right half) */}
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 8, color: '#8a78a0', flexShrink: 0, width: 52, textAlign: 'right' }}>DAILY $</span>
+            <span style={{ fontSize: 13, color: '#8a78a0', flexShrink: 0, width: 70, textAlign: 'right' }}>DAILY $</span>
             <div
               style={{
                 flex: 1,
-                height: 12,
+                height: 16,
                 borderRadius: 2,
                 background: 'rgba(20,14,30,0.9)',
                 border: '1px solid #2a2040',
@@ -268,7 +268,7 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
             </div>
             <span
               style={{
-                fontSize: 10,
+                fontSize: 14,
                 color: dailyValueColor(dailySpend, dailyCap),
                 fontWeight: 'bold',
                 flexShrink: 0,
@@ -288,7 +288,7 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
                 }}
               />
             )}
-            <span style={{ fontSize: 8, color: '#6a5880', flexShrink: 0 }}>/ $100 cap</span>
+            <span style={{ fontSize: 13, color: '#6a5880', flexShrink: 0 }}>/ $100 cap</span>
           </div>
         </div>
       </div>

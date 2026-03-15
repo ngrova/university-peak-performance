@@ -110,18 +110,18 @@ export function ActivityStrip({ entries, albusState: _albusState }: ActivityStri
         {/* Color legend */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           {legendTypes.map((type) => (
-            <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span
                 style={{
                   display: 'inline-block',
-                  width: 7,
-                  height: 7,
+                  width: 10,
+                  height: 10,
                   borderRadius: '50%',
                   background: DOT_COLOR[type] ?? '#5a4870',
                   flexShrink: 0,
                 }}
               />
-              <span style={{ fontSize: 8, color: '#5a4870', fontFamily: PIXEL }}>
+              <span style={{ fontSize: 12, color: '#5a4870', fontFamily: PIXEL }}>
                 {DOT_LABEL[type] ?? type}
               </span>
             </div>
@@ -129,10 +129,10 @@ export function ActivityStrip({ entries, albusState: _albusState }: ActivityStri
           {/* Always show at least a static mini legend if no entries yet */}
           {legendTypes.length === 0 && (
             <>
-              {[['merge','#60c860'],['coding','#f0c860'],['test','#40b0d0'],['reading','#8a68c0'],['agent','#d08040']] .map(([label, color]) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 8, color: '#5a4870', fontFamily: PIXEL }}>{label}</span>
+              {[['merge','#60c860'],['coding','#f0c860'],['test','#40b0d0'],['reading','#8a68c0'],['agent','#d08040']].map(([label, color]) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: '#5a4870', fontFamily: PIXEL }}>{label}</span>
                 </div>
               ))}
             </>
