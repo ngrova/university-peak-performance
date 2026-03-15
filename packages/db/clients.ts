@@ -12,16 +12,10 @@ export interface Database {
   };
 }
 
-function getEnvVar(key: string): string {
-  const value = process.env[key];
-  if (!value) throw new Error(`Missing environment variable: ${key}`);
-  return value;
-}
-
 export function createClient(): ReturnType<typeof createSupabaseClient<Database>> {
   return createSupabaseClient<Database>(
-    getEnvVar('NEXT_PUBLIC_SUPABASE_URL'),
-    getEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 }
 
@@ -35,15 +29,15 @@ export function createServerClient(
   cookies: CookieHandler,
 ): ReturnType<typeof createSupabaseServerClient<Database>> {
   return createSupabaseServerClient<Database>(
-    getEnvVar('NEXT_PUBLIC_SUPABASE_URL'),
-    getEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { cookies },
   );
 }
 
 export function createBrowserClient(): ReturnType<typeof createSupabaseBrowserClient<Database>> {
   return createSupabaseBrowserClient<Database>(
-    getEnvVar('NEXT_PUBLIC_SUPABASE_URL'),
-    getEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 }
