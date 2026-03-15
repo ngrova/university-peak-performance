@@ -100,17 +100,16 @@ describe('TopStrip', () => {
     expect(screen.queryByText(/rewind saves/)).not.toBeInTheDocument();
   });
 
-  it('shows CREDITS and DAILY $ labels', () => {
+  it('shows CREDITS and SPENT labels', () => {
     renderStrip();
     expect(screen.getByText('CREDITS')).toBeInTheDocument();
-    expect(screen.getByText('DAILY $')).toBeInTheDocument();
+    expect(screen.getByText('SPENT')).toBeInTheDocument();
   });
 
-  it('shows pulsing dot when daily spend exceeds cap', () => {
+  it('shows pulsing dot when total spend exceeds $200 budget', () => {
     const { container } = renderStrip({
-      spend: { usage: 80, usageToday: 120 },
+      spend: { usage: 210, usageToday: 210 },
     });
-    // Pulse animation style will be present on an element
     const pulsers = container.querySelectorAll('[style*="pulse-dot"]');
     expect(pulsers.length).toBeGreaterThan(0);
   });

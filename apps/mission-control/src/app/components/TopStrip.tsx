@@ -78,11 +78,12 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
   const creditsRemaining = Math.max(0, 200 - totalUsage);
   const creditsPct = Math.min((creditsRemaining / 200) * 100, 100);
 
-  // Daily spend
-  const dailyCap = 100;
-  const dailySpend = spend.usageToday;
-  const dailyPct = Math.min((dailySpend / dailyCap) * 100, 100);
-  const dailyOver = dailySpend > dailyCap;
+  // Total spend (usage_daily from OpenRouter resets at UTC midnight, not Pacific — unreliable for "today")
+  // Show total spend against full $200 budget instead
+  const totalCap = 200;
+  const totalSpend = spend.usage;
+  const spentPct = Math.min((totalSpend / totalCap) * 100, 100);
+  const totalOver = totalSpend > totalCap;
 
   return (
     <>
@@ -246,7 +247,7 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
 
           {/* Daily Spend (right half) */}
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 13, color: '#8a78a0', flexShrink: 0, width: 70, textAlign: 'right' }}>DAILY $</span>
+            <span style={{ fontSize: 13, color: '#8a78a0', flexShrink: 0, width: 70, textAlign: 'right' }}>SPENT</span>
             <div
               style={{
                 flex: 1,
@@ -260,8 +261,8 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
               <div
                 style={{
                   height: '100%',
-                  width: dailyOver ? '100%' : `${dailyPct}%`,
-                  background: dailyBarColor(dailyPct),
+                  width: totalOver ? '100%' : `${spentPct}%`,
+                  background: dailyBarColor(spentPct),
                   transition: 'width 0.5s',
                 }}
               />
@@ -269,14 +270,14 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
             <span
               style={{
                 fontSize: 14,
-                color: dailyValueColor(dailySpend, dailyCap),
+                color: dailyValueColor(totalSpend, totalCap),
                 fontWeight: 'bold',
                 flexShrink: 0,
               }}
             >
-              ${dailySpend.toFixed(2)}
+              ${totalSpend.toFixed(2)}
             </span>
-            {dailyOver && (
+            {totalOver && (
               <div
                 style={{
                   width: 7,
@@ -288,7 +289,7 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
                 }}
               />
             )}
-            <span style={{ fontSize: 13, color: '#6a5880', flexShrink: 0 }}>/ $100 cap</span>
+            <span style={{ fontSize: 13, color: '#6a5880', flexShrink: 0 }}>/ $200 budget</span>
           </div>
         </div>
       </div>
