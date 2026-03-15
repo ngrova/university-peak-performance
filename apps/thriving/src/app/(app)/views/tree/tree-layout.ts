@@ -45,7 +45,7 @@ function measureSubtreeHeight(node: TreeNode, cfg: LayoutConfig): number {
 
 function positionNode(node: TreeNode, topY: number, cfg: LayoutConfig): void {
   const subtreeH = measureSubtreeHeight(node, cfg)
-  node.x = node.depth * cfg.gapX
+  node.x = (MAX_DEPTH - node.depth) * cfg.gapX
   node.y = topY + subtreeH / 2 - cfg.cardH / 2
 
   let curY = topY
