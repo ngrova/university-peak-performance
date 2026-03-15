@@ -110,9 +110,19 @@ export default function LoginPage(): React.JSX.Element {
           >
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
+
+          <div className="text-center">
+            <Link
+              href="/forgot-password"
+              className="text-sm"
+              style={{ color: 'var(--text-secondary)', minHeight: '44px', display: 'inline-flex', alignItems: 'center' }}
+            >
+              Forgot your password?
+            </Link>
+          </div>
         </form>
 
-        <p className="mt-6 text-sm text-center" style={{ color: 'var(--text-muted)' }}>
+        <p className="mt-4 text-sm text-center" style={{ color: 'var(--text-muted)' }}>
           Don&apos;t have an account?{' '}
           <Link
             href="/signup"
