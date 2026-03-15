@@ -19,18 +19,18 @@ function WirePaths({ parent, nodeChildren, cardW, cardH, chainIds, hasSelection 
   chainIds: Set<string>
   hasSelection: boolean
 }): React.JSX.Element {
-  // Start: right edge of parent, vertically centered
-  const x1 = parent.x + cardW
-  const y1 = parent.y + cardH / 2
+  // In RTL layout: children are to the LEFT of parents.
+  // Wire: child's RIGHT edge → parent's LEFT edge (child exits right, enters parent left)
+  const x2 = parent.x          // parent left edge (wire arrives here)
+  const y2 = parent.y + cardH / 2
   const isRoot2Pillar = parent.depth === 0
 
   return (
     <>
       {nodeChildren.map((child) => {
-        // End: left edge of child, vertically centered
-        const x2 = child.x
-        const y2 = child.y + cardH / 2
-        const horizDist = x2 - x1
+        const x1 = child.x + cardW  // child right edge (wire starts here)
+        const y1 = child.y + cardH / 2
+        const horizDist = x2 - x1  // positive: x2 > x1 in RTL (parent is to the right)
         // Root→pillar edges bow more gracefully (75%); all others 50%
         const cpRatio = isRoot2Pillar ? 0.75 : 0.5
         const cpOff = horizDist * cpRatio
