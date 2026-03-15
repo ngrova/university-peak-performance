@@ -14,7 +14,7 @@ export default function QueueFilters(): React.JSX.Element {
   const current = searchParams.get('assignee') ?? ''
 
   return (
-    <div className="flex gap-2 mb-6">
+    <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1">
       {FILTERS.map(({ label, value }) => {
         const href = value ? `/views/queue?assignee=${value}` : '/views/queue'
         const active = current === value
@@ -22,7 +22,7 @@ export default function QueueFilters(): React.JSX.Element {
           <Link
             key={label}
             href={href}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               active
                 ? 'bg-indigo-600 text-white border-indigo-600'
                 : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400'
