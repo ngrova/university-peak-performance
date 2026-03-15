@@ -28,9 +28,9 @@ function EntryCell({ entry }: { entry: LogEntry }) {
     <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
       <span
         style={{
-          fontSize: 8,
+          fontSize: 10,
           color: '#5a4870',
-          width: 28,
+          width: 32,
           textAlign: 'right',
           flexShrink: 0,
           fontFamily: PIXEL,
@@ -41,17 +41,17 @@ function EntryCell({ entry }: { entry: LogEntry }) {
       <span
         style={{
           display: 'inline-block',
-          width: 7,
-          height: 7,
+          width: 8,
+          height: 8,
           borderRadius: '50%',
           background: dotColor(entry.type),
-          margin: '0 6px',
+          margin: '0 7px',
           flexShrink: 0,
         }}
       />
       <span
         style={{
-          fontSize: 9,
+          fontSize: 11,
           color: '#c0b0d0',
           fontFamily: PIXEL,
           overflow: 'hidden',
@@ -81,27 +81,8 @@ export function ActivityStrip({ entries, albusState }: ActivityStripProps) {
       }}
     >
       {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 4,
-        }}
-      >
-        <span style={{ fontSize: 9, color: '#8a78a0', letterSpacing: '1px' }}>ACTIVITY LOG</span>
-        <span
-          style={{
-            fontSize: 8,
-            fontWeight: 'bold',
-            padding: '3px 8px',
-            borderRadius: 2,
-            background: isCoding ? 'rgba(60,160,60,0.25)' : 'rgba(60,100,160,0.25)',
-            color: isCoding ? '#60c860' : '#6090c0',
-          }}
-        >
-          {isCoding ? 'CODING' : 'IDLE'}
-        </span>
+      <div style={{ marginBottom: 4 }}>
+        <span style={{ fontSize: 11, color: '#8a78a0', letterSpacing: '1px' }}>ACTIVITY LOG</span>
       </div>
 
       {/* 2-column grid */}

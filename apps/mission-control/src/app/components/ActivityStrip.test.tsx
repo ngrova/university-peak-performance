@@ -20,14 +20,14 @@ describe('ActivityStrip', () => {
     expect(screen.getByText('ACTIVITY LOG')).toBeInTheDocument();
   });
 
-  it('shows IDLE badge when albusState is idle', () => {
-    render(<ActivityStrip entries={[]} albusState="idle" />);
-    expect(screen.getByText('IDLE')).toBeInTheDocument();
+  // CODING/IDLE badge is now rendered in AlbusSprite, not ActivityStrip.
+  // ActivityStrip still receives albusState as a prop for future use.
+  it('accepts albusState prop without error (idle)', () => {
+    expect(() => render(<ActivityStrip entries={[]} albusState="idle" />)).not.toThrow();
   });
 
-  it('shows CODING badge when albusState is coding', () => {
-    render(<ActivityStrip entries={[makeEntry()]} albusState="coding" />);
-    expect(screen.getByText('CODING')).toBeInTheDocument();
+  it('accepts albusState prop without error (coding)', () => {
+    expect(() => render(<ActivityStrip entries={[makeEntry()]} albusState="coding" />)).not.toThrow();
   });
 
   it('renders entry action text', () => {
