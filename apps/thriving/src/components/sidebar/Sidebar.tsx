@@ -24,22 +24,14 @@ export default function Sidebar(): React.JSX.Element {
   return (
     <aside className="w-56 flex-shrink-0 flex flex-col h-full" style={{ backgroundColor: '#2D2318' }}>
       <div className="px-4 py-5 border-b border-white/10">
-        <span
-          className="font-bold italic text-lg"
-          style={{ fontFamily: 'var(--font-fraunces)', color: '#FAF7F2' }}
-        >
+        <span className="font-bold italic text-lg" style={{ fontFamily: 'var(--font-fraunces)', color: '#FAF7F2' }}>
           🌱 Thriving
         </span>
       </div>
       <nav className="flex-1 px-2 py-4 space-y-1">
-        <Link href="/dashboard" className={navClass('/dashboard')}>
-          📊 Dashboard
-        </Link>
+        <Link href="/dashboard" className={navClass('/dashboard')}>📊 Dashboard</Link>
         <div className="pt-2">
-          <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider"
-            style={{ color: '#9B8E80' }}>
-            Views
-          </p>
+          <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider" style={{ color: '#9B8E80' }}>Views</p>
           <Link href="/one-thing" className={navClass('/one-thing')}>🎯 One Thing</Link>
           <Link href="/views/deadlines" className={navClass('/views/deadlines')}>📅 Deadlines</Link>
           <Link href="/views/queue" className={navClass('/views/queue')}>📋 Queue</Link>
@@ -48,7 +40,7 @@ export default function Sidebar(): React.JSX.Element {
         <Link href="/scorecard" className={navClass('/scorecard')}>📊 Scorecard</Link>
         <Link href="/settings" className={navClass('/settings')}>⚙️ Settings</Link>
       </nav>
-      <div className="px-2 py-4 border-t border-white/10">
+      <div className="px-2 py-4 border-t border-white/10 space-y-1">
         <button
           onClick={handleSignOut}
           className="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors hover:bg-white/5"
@@ -56,6 +48,9 @@ export default function Sidebar(): React.JSX.Element {
         >
           🚪 Sign out
         </button>
+        <p className="px-3 text-xs" style={{ color: '#4B4540' }}>
+          v{process.env.NEXT_PUBLIC_BUILD_SHA ?? 'dev'}
+        </p>
       </div>
     </aside>
   )
