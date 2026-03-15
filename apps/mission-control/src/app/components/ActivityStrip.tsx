@@ -44,9 +44,9 @@ function EntryRow({ entry }: { entry: LogEntry }) {
     >
       <span
         style={{
-          fontSize: 10,
+          fontSize: 14,
           color: '#5a4870',
-          width: 26,
+          width: 36,
           textAlign: 'right',
           flexShrink: 0,
           fontFamily: PIXEL,
@@ -58,17 +58,17 @@ function EntryRow({ entry }: { entry: LogEntry }) {
       <span
         style={{
           display: 'inline-block',
-          width: 8,
-          height: 8,
+          width: 10,
+          height: 10,
           borderRadius: '50%',
           background: dotColor(entry.type),
-          margin: '0 8px',
+          margin: '0 10px',
           flexShrink: 0,
         }}
       />
       <span
         style={{
-          fontSize: 11,
+          fontSize: 14,
           color: '#c0b0d0',
           fontFamily: PIXEL,
           whiteSpace: 'nowrap',
@@ -105,7 +105,7 @@ export function ActivityStrip({ entries, albusState: _albusState }: ActivityStri
           marginBottom: 6,
         }}
       >
-        <span style={{ fontSize: 11, color: '#8a78a0', letterSpacing: '1px' }}>ACTIVITY LOG</span>
+        <span style={{ fontSize: 13, color: '#8a78a0', letterSpacing: '1px' }}>ACTIVITY LOG</span>
 
         {/* Color legend */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
