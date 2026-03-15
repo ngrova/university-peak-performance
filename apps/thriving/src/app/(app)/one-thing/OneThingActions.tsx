@@ -15,31 +15,23 @@ export default function OneThingActions({ taskId, taskTitle, wasPinned }: OneThi
 
   function handleDone() {
     setShowCelebration(true)
-    startTransition(async () => {
-      await markOneThingDoneAction(taskId)
-    })
+    startTransition(async () => { await markOneThingDoneAction(taskId) })
   }
 
   function handleSkip() {
-    startTransition(async () => {
-      await skipOneThingAction(taskId, wasPinned)
-    })
-  }
-
-  function handleDismiss() {
-    setShowCelebration(false)
+    startTransition(async () => { await skipOneThingAction(taskId, wasPinned) })
   }
 
   return (
     <>
       {showCelebration && (
-        <CelebrationOverlay taskTitle={taskTitle} onDismiss={handleDismiss} />
+        <CelebrationOverlay taskTitle={taskTitle} onDismiss={() => setShowCelebration(false)} />
       )}
-      <div className="flex gap-4 mt-8">
+      <div className="flex flex-col sm:flex-row gap-3 mt-8">
         <button
           onClick={handleDone}
           disabled={isPending}
-          className="flex-1 py-3 px-6 text-white font-semibold text-lg disabled:opacity-50 transition-all"
+          className="flex-1 py-4 sm:py-3 px-6 text-white font-semibold text-lg disabled:opacity-50 transition-all min-h-[48px]"
           style={{
             borderRadius: 'var(--radius-xl)',
             background: 'linear-gradient(135deg, #10B981, #059669)',
@@ -50,7 +42,7 @@ export default function OneThingActions({ taskId, taskTitle, wasPinned }: OneThi
         <button
           onClick={handleSkip}
           disabled={isPending}
-          className="py-3 px-6 font-medium disabled:opacity-50 transition-colors hover:bg-black/5"
+          className="py-4 sm:py-3 px-6 font-medium disabled:opacity-50 transition-colors hover:bg-black/5 min-h-[48px]"
           style={{
             borderRadius: 'var(--radius-xl)',
             border: '1px solid var(--border)',

@@ -14,7 +14,6 @@ const STATUS_STYLES: Record<string, string> = {
   in_progress: 'bg-blue-100 text-blue-700',
   blocked: 'bg-red-100 text-red-700',
 }
-
 const STATUS_LABEL: Record<string, string> = {
   todo: 'To do',
   in_progress: 'In progress',
@@ -23,7 +22,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 function TaskRow({ task }: { task: TaskWithContext }): React.JSX.Element {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg border bg-white">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 p-3 rounded-lg border bg-white">
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">{task.title}</p>
         <p className="text-xs text-gray-500">{task.goals.title}</p>
@@ -59,10 +58,8 @@ export default async function QueuePage({ searchParams }: QueuePageProps): Promi
     set: () => {},
     remove: () => {},
   })
-
   const { data: { user } } = await supabase.auth.getUser()
   const tasks = user ? await getTasksForQueue(supabase, user.id, assignee) : []
-
   const showGroups = !assignee
   const grouped = showGroups
     ? tasks.reduce<Record<string, TaskWithContext[]>>((acc, task) => {
@@ -78,7 +75,6 @@ export default async function QueuePage({ searchParams }: QueuePageProps): Promi
       <Suspense>
         <QueueFilters />
       </Suspense>
-
       {tasks.length === 0 ? (
         <div className="text-center py-16 text-gray-500">
           <p className="text-lg mb-2">Nothing in the queue.</p>
