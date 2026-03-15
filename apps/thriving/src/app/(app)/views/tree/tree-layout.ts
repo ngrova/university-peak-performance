@@ -26,9 +26,9 @@ export interface LayoutConfig {
 export const DEFAULT_LAYOUT: LayoutConfig = {
   cardW: 130,
   cardH: 56,
-  gapX: 152,
-  gapY: 52,
-  pillarGap: 40,
+  gapX: 180,
+  gapY: 68,
+  pillarGap: 48,
 }
 
 const MAX_DEPTH = 4
@@ -45,7 +45,7 @@ function measureSubtreeHeight(node: TreeNode, cfg: LayoutConfig): number {
 
 function positionNode(node: TreeNode, topY: number, cfg: LayoutConfig): void {
   const subtreeH = measureSubtreeHeight(node, cfg)
-  node.x = (MAX_DEPTH - node.depth) * cfg.gapX
+  node.x = node.depth * cfg.gapX
   node.y = topY + subtreeH / 2 - cfg.cardH / 2
 
   let curY = topY
