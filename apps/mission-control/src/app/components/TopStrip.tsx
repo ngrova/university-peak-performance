@@ -100,28 +100,28 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
           right: 0,
           zIndex: 30,
           background: 'rgba(10,6,16,0.95)',
-          padding: '6px 12px',
+          padding: '8px 16px',
           fontFamily: PIXEL,
           display: 'flex',
           flexDirection: 'column',
-          gap: 5,
+          gap: 8,
         }}
       >
         {/* Row 1 — Title */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 11, color: '#f0c860', letterSpacing: '2px' }}>
+          <span style={{ fontSize: 14, color: '#f0c860', letterSpacing: '3px' }}>
             ALBUS&apos;S LOOKOUT
           </span>
-          <span style={{ fontSize: 8, color: '#6a5880' }}>Nick Grover HQ — Token Command</span>
+          <span style={{ fontSize: 9, color: '#6a5880' }}>Nick Grover HQ — Token Command</span>
         </div>
 
         {/* Row 2 — Context bar */}
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <span
             style={{
-              fontSize: 7,
+              fontSize: 8,
               color: '#8a78a0',
-              width: 58,
+              width: 68,
               textAlign: 'right',
               flexShrink: 0,
             }}
@@ -133,7 +133,7 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
           <div
             style={{
               flex: 1,
-              height: 14,
+              height: 18,
               borderRadius: 3,
               background: 'rgba(20,14,30,0.9)',
               border: '1px solid #2a2040',
@@ -168,53 +168,61 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
           </div>
           <div style={{ width: 8, flexShrink: 0 }} />
           {/* Values */}
-          <span style={{ fontSize: 10, color: '#f0c860', fontWeight: 'bold', flexShrink: 0 }}>
+          <span style={{ fontSize: 11, color: '#f0c860', fontWeight: 'bold', flexShrink: 0 }}>
             {Math.round(percent)}%
           </span>
-          <span style={{ fontSize: 8, color: '#6a5880', flexShrink: 0, marginLeft: 4 }}>
+          <span style={{ fontSize: 9, color: '#6a5880', flexShrink: 0, marginLeft: 5 }}>
             {usedK}K / {capK}K
           </span>
           {savingsK > 2 && (
             <>
-              <div style={{ width: 8, flexShrink: 0 }} />
-              <span style={{ fontSize: 7, color: '#40b0a0', flexShrink: 0 }}>
+              <div style={{ width: 10, flexShrink: 0 }} />
+              <span style={{ fontSize: 8, color: '#40b0a0', flexShrink: 0 }}>
                 rewind saves ~{savingsK}K
               </span>
             </>
           )}
-          <div style={{ width: 8, flexShrink: 0 }} />
-          {/* REWIND button */}
+          <div style={{ width: 12, flexShrink: 0 }} />
+          {/* RPG REWIND button */}
           <button
             onClick={isRewindActive ? onCancel : onRewind}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             style={{
-              background: hovered ? 'rgba(100,50,150,0.85)' : 'rgba(80,40,120,0.7)',
-              border: `1.5px solid ${hovered ? '#b078f0' : '#9058d0'}`,
-              borderRadius: 4,
-              padding: '3px 10px',
+              position: 'relative',
+              background: hovered
+                ? 'linear-gradient(to bottom, #6a3090 0%, #3a1060 100%)'
+                : 'linear-gradient(to bottom, #4a2070 0%, #2a0850 100%)',
+              border: `2px solid ${hovered ? '#c080ff' : '#8040c0'}`,
+              borderBottom: `3px solid ${hovered ? '#7030a0' : '#501080'}`,
+              borderRadius: 5,
+              padding: '6px 16px',
               fontFamily: PIXEL,
-              fontSize: 8,
-              color: '#d8b8ff',
-              letterSpacing: '1px',
+              fontSize: 9,
+              color: hovered ? '#f0d8ff' : '#d8b8ff',
+              letterSpacing: '2px',
               cursor: 'pointer',
               flexShrink: 0,
-              transition: 'background 0.15s, border-color 0.15s',
+              transition: 'background 0.12s, border-color 0.12s, color 0.12s',
+              textShadow: '0 0 8px rgba(200,140,255,0.8)',
+              boxShadow: hovered
+                ? '0 0 12px rgba(160,80,255,0.5), inset 0 1px 0 rgba(255,255,255,0.15)'
+                : '0 0 6px rgba(120,60,200,0.4), inset 0 1px 0 rgba(255,255,255,0.08)',
             }}
           >
-            {isRewindActive ? 'CANCEL' : 'REWIND'}
+            {isRewindActive ? '✕ CANCEL' : '↺ REWIND'}
           </button>
         </div>
 
         {/* Row 3 — Credits + Daily Spend */}
         <div style={{ display: 'flex', gap: 16 }}>
           {/* Credits (left half) */}
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 7, color: '#8a78a0', flexShrink: 0 }}>CREDITS</span>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 8, color: '#8a78a0', flexShrink: 0, width: 68, textAlign: 'right' }}>CREDITS</span>
             <div
               style={{
                 flex: 1,
-                height: 10,
+                height: 12,
                 borderRadius: 2,
                 background: 'rgba(20,14,30,0.9)',
                 border: '1px solid #2a2040',
@@ -230,19 +238,19 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
                 }}
               />
             </div>
-            <span style={{ fontSize: 9, color: '#f0c860', fontWeight: 'bold', flexShrink: 0 }}>
+            <span style={{ fontSize: 10, color: '#f0c860', fontWeight: 'bold', flexShrink: 0 }}>
               ${creditsRemaining.toFixed(0)}
             </span>
-            <span style={{ fontSize: 7, color: '#6a5880', flexShrink: 0 }}>/ $200</span>
+            <span style={{ fontSize: 8, color: '#6a5880', flexShrink: 0 }}>/ $200</span>
           </div>
 
           {/* Daily Spend (right half) */}
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 7, color: '#8a78a0', flexShrink: 0 }}>DAILY $</span>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 8, color: '#8a78a0', flexShrink: 0, width: 52, textAlign: 'right' }}>DAILY $</span>
             <div
               style={{
                 flex: 1,
-                height: 10,
+                height: 12,
                 borderRadius: 2,
                 background: 'rgba(20,14,30,0.9)',
                 border: '1px solid #2a2040',
@@ -260,7 +268,7 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
             </div>
             <span
               style={{
-                fontSize: 9,
+                fontSize: 10,
                 color: dailyValueColor(dailySpend, dailyCap),
                 fontWeight: 'bold',
                 flexShrink: 0,
@@ -271,8 +279,8 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
             {dailyOver && (
               <div
                 style={{
-                  width: 6,
-                  height: 6,
+                  width: 7,
+                  height: 7,
                   borderRadius: '50%',
                   background: '#c04848',
                   flexShrink: 0,
@@ -280,7 +288,7 @@ export function TopStrip({ session, spend, rewindState, onRewind, onCancel }: To
                 }}
               />
             )}
-            <span style={{ fontSize: 7, color: '#6a5880', flexShrink: 0 }}>/ $100 cap</span>
+            <span style={{ fontSize: 8, color: '#6a5880', flexShrink: 0 }}>/ $100 cap</span>
           </div>
         </div>
       </div>

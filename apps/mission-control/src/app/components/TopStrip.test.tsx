@@ -46,7 +46,7 @@ describe('TopStrip', () => {
 
   it('shows REWIND button when rewind state is idle', () => {
     renderStrip();
-    expect(screen.getByText('REWIND')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /rewind/i })).toBeInTheDocument();
   });
 
   it('shows CANCEL button when rewind is running', () => {
@@ -57,13 +57,13 @@ describe('TopStrip', () => {
         stages: { memory: 'running', clear: 'idle', restart: 'idle', verify: 'idle' },
       },
     });
-    expect(screen.getByText('CANCEL')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
   });
 
   it('calls onRewind when REWIND button is clicked', () => {
     const onRewind = vi.fn();
     renderStrip({ onRewind });
-    fireEvent.click(screen.getByText('REWIND'));
+    fireEvent.click(screen.getByRole('button', { name: /rewind/i }));
     expect(onRewind).toHaveBeenCalledOnce();
   });
 
@@ -77,7 +77,7 @@ describe('TopStrip', () => {
         stages: { memory: 'running', clear: 'idle', restart: 'idle', verify: 'idle' },
       },
     });
-    fireEvent.click(screen.getByText('CANCEL'));
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
