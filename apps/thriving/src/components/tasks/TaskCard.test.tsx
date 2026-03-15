@@ -34,15 +34,17 @@ describe('TaskCard', () => {
     expect(screen.getByText('P2')).toBeDefined()
   })
 
-  it('shows status icon for todo', () => {
+  it('shows status toggle button with aria-label', () => {
     render(<TaskCard task={mockTask} goalId="goal-1" pillarId="pillar-1" />)
-    expect(screen.getByTitle('Status: todo')).toBeDefined()
+    expect(screen.getByLabelText('Status: todo')).toBeDefined()
   })
 
-  it('switches to edit form when Edit is clicked', () => {
+  it('opens detail sheet when card is clicked', () => {
     render(<TaskCard task={mockTask} goalId="goal-1" pillarId="pillar-1" />)
-    fireEvent.click(screen.getByText('Edit'))
-    expect(screen.getByLabelText('Title')).toBeDefined()
+    const card = screen.getByRole('button', { name: /Task: Write tests/i })
+    fireEvent.click(card)
+    // Sheet should open — Mark Complete button visible
+    expect(screen.getByText('✓ Mark Complete')).toBeDefined()
   })
 
   it('applies line-through style when status is done', () => {
