@@ -11,7 +11,8 @@ interface Props {
   onClick: (id: string) => void
 }
 
-const DEPTH_SCALE = [1.2, 1.05, 0.95, 0.88, 0.78]
+// Font sizes per depth — no CSS scale transform so wire endpoints stay accurate
+const DEPTH_FONT_SIZE = [13, 12, 11, 10, 9]
 
 function truncate(s: string, max = 45): string {
   return s.length > max ? s.slice(0, max - 1) + '…' : s
@@ -35,7 +36,7 @@ function getBg(node: TreeNode): React.CSSProperties {
 }
 
 export default function TreeNodeCard({ node, cardW, cardH, dimmed, selected, onClick }: Props): React.JSX.Element {
-  const scale = DEPTH_SCALE[node.depth] ?? 1
+  const fontSize = DEPTH_FONT_SIZE[node.depth] ?? 10
   const style = getBg(node)
   const isTask = node.depth >= 3
   const isDone = node.status === 'done'
@@ -50,8 +51,6 @@ export default function TreeNodeCard({ node, cardW, cardH, dimmed, selected, onC
         top: node.y,
         width: cardW,
         height: cardH,
-        transform: `scale(${scale})`,
-        transformOrigin: 'center center',
         opacity: dimmed ? 0.08 : 1,
         cursor: 'pointer',
         borderRadius: 8,
@@ -76,7 +75,7 @@ export default function TreeNodeCard({ node, cardW, cardH, dimmed, selected, onC
       <div style={{
         position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '6px 10px', textAlign: 'center',
-        fontSize: 11,
+        fontSize,
         fontFamily: isFraunces ? 'var(--font-fraunces)' : 'var(--font-nunito, system-ui)',
         fontStyle: isFraunces ? 'italic' : 'normal',
         fontWeight: node.depth === 0 ? 700 : 600,
