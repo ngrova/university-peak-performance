@@ -1,8 +1,8 @@
 'use client'
 import React, { useState } from 'react'
 import type { Task } from '@upp/db'
-import { deleteTaskAction, updateTaskStatusAction } from '@/actions/task-actions'
-import TaskForm from './TaskForm'
+import { updateTaskStatusAction } from '@/actions/task-actions'
+import TaskDetailSheet from './TaskDetailSheet'
 import CelebrationOverlay from '@/components/ui/CelebrationOverlay'
 
 interface TaskCardProps {
@@ -11,109 +11,96 @@ interface TaskCardProps {
   pillarId: string
 }
 
-const PRIORITY_BADGE: Record<number, { bg: string; text: string }> = {
-  1: { bg: 'rgba(220,38,38,0.12)', text: '#DC2626' },
-  2: { bg: 'rgba(234,88,12,0.12)', text: '#EA580C' },
-  3: { bg: 'rgba(217,119,6,0.12)', text: '#D97706' },
-  4: { bg: 'rgba(155,142,128,0.12)', text: '#9B8E80' },
+const PRIORITY_COLOR: Record<number, string> = {
+  1: 'var(--danger)', 2: 'var(--warning)', 3: 'var(--accent)', 4: 'var(--text-muted)',
 }
-
 const PRIORITY_LABEL: Record<number, string> = { 1: 'P1', 2: 'P2', 3: 'P3', 4: 'P4' }
 
-const STATUS_ICON: Record<Task['status'], string> = {
-  todo: '○', in_progress: '◑', done: '●', blocked: '⊘',
-}
-
-const STATUS_COLOR: Record<Task['status'], string> = {
-  todo: '#64748B', in_progress: '#D97706', done: '#10B981', blocked: '#F59E0B',
-}
-
-function nextStatus(current: Task['status']): Task['status'] {
-  if (current === 'todo') return 'in_progress'
-  if (current === 'in_progress') return 'done'
-  return 'todo'
+function StatusIcon({ status }: { status: Task['status'] }): React.JSX.Element {
+  const configs = {
+    todo: { color: 'var(--text-muted)', d: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Z' },
+    in_progress: { color: 'var(--accent)', d: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm0 16V6a6 6 0 0 1 0 12Z' },
+    done: { color: 'var(--success)', d: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm-1 14.4-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4-7 7Z' },
+    blocked: { color: 'var(--danger)', d: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm1 14h-2v-2h2v2Zm0-4h-2V7h2v5Z' },
+  }
+  const cfg = configs[status] ?? configs.todo
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill={cfg.color}>
+      <path d={cfg.d} />
+    </svg>
+  )
 }
 
 export default function TaskCard({ task, goalId, pillarId }: TaskCardProps): React.JSX.Element {
-  const [editing, setEditing] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
   const [showCelebration, setShowCelebration] = useState(false)
 
-  async function handleDelete() {
-    if (confirm(`Delete "${task.title}"?`)) {
-      await deleteTaskAction(task.id, goalId, pillarId)
+  async function handleStatusToggle(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (task.status !== 'done') {
+      const next = task.status === 'todo' ? 'in_progress' : 'done'
+      if (next === 'done') setShowCelebration(true)
     }
-  }
-
-  async function handleStatusToggle() {
-    const next = nextStatus(task.status)
-    if (next === 'done') setShowCelebration(true)
     await updateTaskStatusAction({ id: task.id, status: task.status }, goalId, pillarId)
   }
 
-  if (editing) {
-    return <TaskForm goalId={goalId} pillarId={pillarId} task={task} onCancel={() => setEditing(false)} />
-  }
-
-  const pb = PRIORITY_BADGE[task.priority] ?? PRIORITY_BADGE[4]!
-  const isBlocked = task.status === 'blocked'
+  const pb = { color: PRIORITY_COLOR[task.priority] ?? 'var(--text-muted)' }
 
   return (
     <>
       {showCelebration && (
         <CelebrationOverlay taskTitle={task.title} onDismiss={() => setShowCelebration(false)} />
       )}
+
+      <TaskDetailSheet
+        task={task}
+        goalId={goalId}
+        pillarId={pillarId}
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+      />
+
       <div
-        className={`rounded-xl p-3 flex items-start gap-3 ${isBlocked ? 'status-blocked' : ''}`}
-        style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
+        className="rounded-xl flex items-center gap-3 cursor-pointer transition-opacity active:opacity-70"
+        style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)', padding: '12px 14px', minHeight: '60px' }}
+        onClick={() => setSheetOpen(true)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && setSheetOpen(true)}
+        aria-label={`Task: ${task.title}`}
       >
+        {/* Status toggle — large tap target */}
         <button
           onClick={handleStatusToggle}
-          className="mt-0.5 text-xl flex-shrink-0 transition-colors hover:opacity-70"
-          style={{ color: STATUS_COLOR[task.status] }}
-          title={`Status: ${task.status}`}
+          className="flex-shrink-0 flex items-center justify-center transition-opacity hover:opacity-70"
+          style={{ width: 44, height: 44, margin: -10 }}
+          aria-label={`Status: ${task.status}`}
         >
-          {STATUS_ICON[task.status]}
+          <StatusIcon status={task.status} />
         </button>
+
+        {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span
-              className="text-xs px-1.5 py-0.5 rounded font-medium"
-              style={{ backgroundColor: pb.bg, color: pb.text }}
-            >
-              {PRIORITY_LABEL[task.priority]}
-            </span>
-            <p
-              className={`text-sm font-medium ${task.status === 'done' ? 'line-through' : ''}`}
-              style={{ color: task.status === 'done' ? 'var(--text-light)' : 'var(--text-primary)' }}
-            >
-              {task.title}
-            </p>
-          </div>
+          <p
+            className={`text-sm font-medium leading-snug ${task.status === 'done' ? 'line-through' : ''}`}
+            style={{ color: task.status === 'done' ? 'var(--text-muted)' : 'var(--text-primary)' }}
+          >
+            {task.title}
+          </p>
           {task.due_date && (
-            <p className="text-xs mt-1" style={{ color: 'var(--text-light)' }}>
-              🗓 {new Date(task.due_date).toLocaleDateString()}
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              🗓 {new Date(`${task.due_date}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </p>
           )}
-          {task.notes && (
-            <p className="text-xs mt-1 line-clamp-1" style={{ color: 'var(--text-light)' }}>{task.notes}</p>
-          )}
         </div>
-        <div className="flex gap-1 flex-shrink-0">
-          <button
-            onClick={() => setEditing(true)}
-            className="text-xs px-2 py-1 rounded-lg transition-colors hover:bg-black/5"
-            style={{ color: 'var(--text-light)' }}
-          >
-            Edit
-          </button>
-          <button
-            onClick={handleDelete}
-            className="text-xs px-2 py-1 rounded-lg transition-colors hover:bg-red-50"
-            style={{ color: '#DC2626' }}
-          >
-            Delete
-          </button>
-        </div>
+
+        {/* Priority badge */}
+        <span
+          className="text-xs font-semibold flex-shrink-0 rounded px-1.5 py-0.5"
+          style={{ color: pb.color, backgroundColor: `color-mix(in srgb, ${pb.color} 15%, transparent)` }}
+        >
+          {PRIORITY_LABEL[task.priority] ?? 'P4'}
+        </span>
       </div>
     </>
   )

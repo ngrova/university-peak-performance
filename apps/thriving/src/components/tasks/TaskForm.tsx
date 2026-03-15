@@ -10,6 +10,21 @@ interface TaskFormProps {
   onCancel: () => void
 }
 
+const labelStyle: React.CSSProperties = { color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500, display: 'block', marginBottom: '6px' }
+const inputStyle: React.CSSProperties = {
+  backgroundColor: 'var(--bg-input)',
+  border: '1px solid var(--border)',
+  color: 'var(--text-primary)',
+  borderRadius: '10px',
+  padding: '0 14px',
+  height: '44px',
+  fontSize: '15px',
+  width: '100%',
+  outline: 'none',
+}
+const selectStyle: React.CSSProperties = { ...inputStyle }
+const textareaStyle: React.CSSProperties = { ...inputStyle, height: 'auto', padding: '12px 14px' }
+
 export default function TaskForm({ goalId, pillarId, task, onCancel }: TaskFormProps): React.JSX.Element {
   const [pending, setPending] = useState(false)
 
@@ -25,91 +40,87 @@ export default function TaskForm({ goalId, pillarId, task, onCancel }: TaskFormP
   }
 
   return (
-    <form action={handleSubmit} className="space-y-3 p-4 bg-slate-50 rounded-lg border">
+    <form action={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
+        <label style={labelStyle}>Title</label>
         <input
-          id="title"
           name="title"
           type="text"
           required
           defaultValue={task?.title}
-          className="mt-1 block w-full rounded border-gray-300 shadow-sm px-3 py-2 border text-sm"
           placeholder="Task title"
+          style={inputStyle}
         />
       </div>
-      <div>
-        <label htmlFor="priority" className="block text-sm font-medium text-gray-700">Priority</label>
-        <select
-          id="priority"
-          name="priority"
-          defaultValue={task?.priority ?? 4}
-          className="mt-1 block w-full rounded border-gray-300 shadow-sm px-3 py-2 border text-sm"
-        >
-          <option value={1}>1 — Critical</option>
-          <option value={2}>2 — High</option>
-          <option value={3}>3 — Medium</option>
-          <option value={4}>4 — Low</option>
-        </select>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label style={labelStyle}>Priority</label>
+          <select name="priority" defaultValue={task?.priority ?? 4} style={selectStyle}>
+            <option value={1}>P1 — Critical</option>
+            <option value={2}>P2 — High</option>
+            <option value={3}>P3 — Medium</option>
+            <option value={4}>P4 — Low</option>
+          </select>
+        </div>
+        <div>
+          <label style={labelStyle}>Assignee</label>
+          <select name="assignee" defaultValue={task?.assignee ?? ''} style={selectStyle}>
+            <option value="">Unassigned</option>
+            <option value="Nick">Nick</option>
+            <option value="Erin">Erin</option>
+          </select>
+        </div>
       </div>
-      <div>
-        <label htmlFor="assignee" className="block text-sm font-medium text-gray-700">Assignee</label>
-        <select
-          id="assignee"
-          name="assignee"
-          defaultValue={task?.assignee ?? ''}
-          className="mt-1 block w-full rounded border-gray-300 shadow-sm px-3 py-2 border text-sm"
-        >
-          <option value="">Unassigned</option>
-          <option value="Nick">Nick</option>
-          <option value="Erin">Erin</option>
-        </select>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label style={labelStyle}>Failure Cost</label>
+          <select name="failure_cost" defaultValue={task?.failure_cost ?? ''} style={selectStyle}>
+            <option value="">None</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
+        <div>
+          <label style={labelStyle}>Due Date</label>
+          <input
+            name="due_date"
+            type="date"
+            defaultValue={task?.due_date ?? ''}
+            style={{ ...inputStyle, colorScheme: 'dark' }}
+          />
+        </div>
       </div>
+
       <div>
-        <label htmlFor="failure_cost" className="block text-sm font-medium text-gray-700">Failure Cost</label>
-        <select
-          id="failure_cost"
-          name="failure_cost"
-          defaultValue={task?.failure_cost ?? ''}
-          className="mt-1 block w-full rounded border-gray-300 shadow-sm px-3 py-2 border text-sm"
-        >
-          <option value="">— None —</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-          <option value="critical">Critical</option>
-        </select>
-      </div>
-      <div>
-        <label htmlFor="due_date" className="block text-sm font-medium text-gray-700">Due Date</label>
-        <input
-          id="due_date"
-          name="due_date"
-          type="date"
-          defaultValue={task?.due_date ?? ''}
-          className="mt-1 block w-full rounded border-gray-300 shadow-sm px-3 py-2 border text-sm"
-        />
-      </div>
-      <div>
-        <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes</label>
+        <label style={labelStyle}>Notes</label>
         <textarea
-          id="notes"
           name="notes"
           defaultValue={task?.notes ?? ''}
           rows={3}
-          className="mt-1 block w-full rounded border-gray-300 shadow-sm px-3 py-2 border text-sm"
-          placeholder="Optional notes..."
+          placeholder="Optional notes…"
+          style={textareaStyle}
         />
       </div>
-      <div className="flex gap-2">
+
+      <div className="flex flex-col gap-2 pt-1">
         <button
           type="submit"
           disabled={pending}
-          className="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 disabled:opacity-50"
+          className="w-full font-semibold rounded-xl disabled:opacity-50 transition-colors"
+          style={{ backgroundColor: 'var(--accent)', color: '#1A1410', height: '48px', fontSize: '15px' }}
         >
-          {task ? 'Save' : 'Create'}
+          {pending ? 'Saving…' : task ? 'Save changes' : 'Create task'}
         </button>
-        <button type="button" onClick={onCancel} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="w-full font-medium rounded-xl transition-colors"
+          style={{ backgroundColor: 'transparent', border: '1px solid var(--border)', color: 'var(--text-secondary)', height: '44px' }}
+        >
           Cancel
         </button>
       </div>
