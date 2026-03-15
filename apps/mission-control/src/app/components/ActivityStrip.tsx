@@ -40,8 +40,6 @@ function EntryRow({ entry }: { entry: LogEntry }) {
         alignItems: 'center',
         gap: 0,
         minWidth: 0,
-        flexShrink: 0,
-        paddingRight: 32,
       }}
     >
       <span
@@ -83,7 +81,7 @@ function EntryRow({ entry }: { entry: LogEntry }) {
 }
 
 export function ActivityStrip({ entries, albusState: _albusState }: ActivityStripProps) {
-  const recent = entries.slice(0, 8);
+  const recent = entries.slice(0, 10);
 
   // Unique types present in recent entries — for legend
   const legendTypes = Array.from(new Set(recent.map((e) => e.type))).slice(0, 5);
@@ -149,9 +147,8 @@ export function ActivityStrip({ entries, albusState: _albusState }: ActivityStri
         <div
           style={{
             display: 'flex',
-            flexDirection: 'row',
-            overflow: 'hidden',
-            alignItems: 'center',
+            flexDirection: 'column',
+            gap: 4,
           }}
         >
           {recent.map((entry) => (

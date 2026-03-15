@@ -41,20 +41,20 @@ describe('ActivityStrip', () => {
     expect(screen.getByText('no activity yet')).toBeInTheDocument();
   });
 
-  it('shows up to 8 most recent entries in a single row', () => {
-    const entries = Array.from({ length: 10 }, (_, i) =>
+  it('shows up to 10 most recent entries in a single column', () => {
+    const entries = Array.from({ length: 12 }, (_, i) =>
       makeEntry({ id: `e${i}`, action: `action ${i}`, timestamp: Date.now() - i * 1000 })
     );
     render(<ActivityStrip entries={entries} albusState="idle" />);
     expect(screen.getByText('action 0')).toBeInTheDocument();
-    expect(screen.getByText('action 7')).toBeInTheDocument();
-    expect(screen.queryByText('action 8')).not.toBeInTheDocument();
+    expect(screen.getByText('action 9')).toBeInTheDocument();
+    expect(screen.queryByText('action 10')).not.toBeInTheDocument();
   });
 
-  it('renders entries in a single horizontal row (flex row)', () => {
+  it('renders entries in a single vertical column (flex column)', () => {
     const entries = [makeEntry({ id: 'a', action: 'alpha' }), makeEntry({ id: 'b', action: 'beta' })];
     const { container } = render(<ActivityStrip entries={entries} albusState="idle" />);
-    const row = container.querySelector('[style*="flex-direction: row"]');
-    expect(row).toBeTruthy();
+    const col = container.querySelector('[style*="flex-direction: column"]');
+    expect(col).toBeTruthy();
   });
 });
