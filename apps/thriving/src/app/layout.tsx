@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Viewport } from 'next';
 import { Fraunces, Nunito } from 'next/font/google';
 import { Providers } from './providers';
 import './globals.css';
@@ -19,6 +20,13 @@ const nunito = Nunito({
 export const metadata = {
   title: 'Thriving | University of Peak Performance',
   description: 'Goal and task management organized around your life pillars.',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 interface RootLayoutProps {
