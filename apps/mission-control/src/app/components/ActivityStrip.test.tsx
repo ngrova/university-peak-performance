@@ -41,21 +41,20 @@ describe('ActivityStrip', () => {
     expect(screen.getByText('no activity yet')).toBeInTheDocument();
   });
 
-  it('only shows the 6 most recent entries', () => {
+  it('shows up to 8 most recent entries in a single row', () => {
     const entries = Array.from({ length: 10 }, (_, i) =>
       makeEntry({ id: `e${i}`, action: `action ${i}`, timestamp: Date.now() - i * 1000 })
     );
     render(<ActivityStrip entries={entries} albusState="idle" />);
-    // Only first 6 of the provided array should be shown
     expect(screen.getByText('action 0')).toBeInTheDocument();
-    expect(screen.getByText('action 5')).toBeInTheDocument();
-    expect(screen.queryByText('action 6')).not.toBeInTheDocument();
+    expect(screen.getByText('action 7')).toBeInTheDocument();
+    expect(screen.queryByText('action 8')).not.toBeInTheDocument();
   });
 
-  it('renders 2 columns (grid)', () => {
+  it('renders entries in a single horizontal row (flex row)', () => {
     const entries = [makeEntry({ id: 'a', action: 'alpha' }), makeEntry({ id: 'b', action: 'beta' })];
     const { container } = render(<ActivityStrip entries={entries} albusState="idle" />);
-    const grid = container.querySelector('[style*="grid-template-columns"]');
-    expect(grid).toBeTruthy();
+    const row = container.querySelector('[style*="flex-direction: row"]');
+    expect(row).toBeTruthy();
   });
 });

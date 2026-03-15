@@ -7,11 +7,20 @@ const PIXEL = "'Press Start 2P', monospace";
 
 const DOT_COLOR: Record<string, string> = {
   merge: '#60c860',
-  push: '#60c860',
-  work: '#f0c860',
-  test: '#40b0d0',
-  read: '#8a68c0',
+  push:  '#60c860',
+  work:  '#f0c860',
+  test:  '#40b0d0',
+  read:  '#8a68c0',
   spawn: '#d08040',
+};
+
+const DOT_LABEL: Record<string, string> = {
+  merge: 'merge',
+  push:  'push',
+  work:  'coding',
+  test:  'test',
+  read:  'reading',
+  spawn: 'agent',
 };
 
 function dotColor(type: LogEntry['type']): string {
@@ -23,17 +32,27 @@ interface ActivityStripProps {
   albusState: AlbusStateSprite;
 }
 
-function EntryCell({ entry }: { entry: LogEntry }) {
+function EntryRow({ entry }: { entry: LogEntry }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0,
+        minWidth: 0,
+        flexShrink: 0,
+        paddingRight: 32,
+      }}
+    >
       <span
         style={{
           fontSize: 10,
           color: '#5a4870',
-          width: 32,
+          width: 26,
           textAlign: 'right',
           flexShrink: 0,
           fontFamily: PIXEL,
+          whiteSpace: 'nowrap',
         }}
       >
         {entry.ago}
@@ -45,7 +64,7 @@ function EntryCell({ entry }: { entry: LogEntry }) {
           height: 8,
           borderRadius: '50%',
           background: dotColor(entry.type),
-          margin: '0 7px',
+          margin: '0 8px',
           flexShrink: 0,
         }}
       />
@@ -54,10 +73,7 @@ function EntryCell({ entry }: { entry: LogEntry }) {
           fontSize: 11,
           color: '#c0b0d0',
           fontFamily: PIXEL,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
-          flex: 1,
         }}
       >
         {entry.action}
@@ -66,9 +82,11 @@ function EntryCell({ entry }: { entry: LogEntry }) {
   );
 }
 
-export function ActivityStrip({ entries, albusState }: ActivityStripProps) {
-  const recent = entries.slice(0, 6);
-  const isCoding = albusState === 'coding';
+export function ActivityStrip({ entries, albusState: _albusState }: ActivityStripProps) {
+  const recent = entries.slice(0, 8);
+
+  // Unique types present in recent entries — for legend
+  const legendTypes = Array.from(new Set(recent.map((e) => e.type))).slice(0, 5);
 
   return (
     <div
@@ -80,24 +98,64 @@ export function ActivityStrip({ entries, albusState }: ActivityStripProps) {
         flexShrink: 0,
       }}
     >
-      {/* Header */}
-      <div style={{ marginBottom: 4 }}>
+      {/* Header row: label left, color legend right */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 6,
+        }}
+      >
         <span style={{ fontSize: 11, color: '#8a78a0', letterSpacing: '1px' }}>ACTIVITY LOG</span>
+
+        {/* Color legend */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          {legendTypes.map((type) => (
+            <div key={type} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  background: DOT_COLOR[type] ?? '#5a4870',
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: 8, color: '#5a4870', fontFamily: PIXEL }}>
+                {DOT_LABEL[type] ?? type}
+              </span>
+            </div>
+          ))}
+          {/* Always show at least a static mini legend if no entries yet */}
+          {legendTypes.length === 0 && (
+            <>
+              {[['merge','#60c860'],['coding','#f0c860'],['test','#40b0d0'],['reading','#8a68c0'],['agent','#d08040']] .map(([label, color]) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                  <span style={{ fontSize: 8, color: '#5a4870', fontFamily: PIXEL }}>{label}</span>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
       </div>
 
-      {/* 2-column grid */}
+      {/* Single scrolling row of entries */}
       {recent.length === 0 ? (
-        <div style={{ fontSize: 7, color: '#3a2e50', textAlign: 'center' }}>no activity yet</div>
+        <div style={{ fontSize: 10, color: '#3a2e50' }}>no activity yet</div>
       ) : (
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '3px 24px',
+            display: 'flex',
+            flexDirection: 'row',
+            overflow: 'hidden',
+            alignItems: 'center',
           }}
         >
           {recent.map((entry) => (
-            <EntryCell key={entry.id + entry.timestamp} entry={entry} />
+            <EntryRow key={entry.id + entry.timestamp} entry={entry} />
           ))}
         </div>
       )}
