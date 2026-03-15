@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import type { RewindStateFile, StageStatus } from '../api/rewind/rewind-state-file';
 
-export interface RewindStripProps {
+const PIXEL = "'Press Start 2P', monospace";
+
+export interface RewindPanelProps {
   rewindState: RewindStateFile;
-  lastRewindMs: number;
-  contextPercent: number;
-  onRewind: () => void;
   onCancel: () => void;
   onRetry: () => void;
   onDismiss: () => void;
@@ -19,8 +18,6 @@ const STAGES = [
   { key: 'restart' as const, name: 'RESTART', activeWord: 'restarting...', doneWord: 'healthy' },
   { key: 'verify'  as const, name: 'VERIFY',  activeWord: 'checking...',   doneWord: 'fresh'   },
 ];
-
-const PIXEL = "'Press Start 2P', monospace";
 
 type CardStatus = 'pending' | 'active' | 'done' | 'failed' | 'skipped';
 
@@ -138,24 +135,10 @@ function StageCard({
           background: dotColor,
         }}
       />
-      <span
-        style={{
-          fontSize: 7,
-          color: '#a898b8',
-          letterSpacing: '0.5px',
-          fontFamily: PIXEL,
-        }}
-      >
+      <span style={{ fontSize: 7, color: '#a898b8', letterSpacing: '0.5px', fontFamily: PIXEL }}>
         {name}
       </span>
-      <span
-        style={{
-          fontSize: 6,
-          fontWeight: 'bold',
-          color: statusWordColor,
-          fontFamily: PIXEL,
-        }}
-      >
+      <span style={{ fontSize: 6, fontWeight: 'bold', color: statusWordColor, fontFamily: PIXEL }}>
         {statusWord}
       </span>
       <div
@@ -177,83 +160,6 @@ function StageCard({
           }}
         />
       </div>
-    </div>
-  );
-}
-
-function IdleRow({
-  lastRewindMs,
-  contextPercent,
-  onRewind,
-}: {
-  lastRewindMs: number;
-  contextPercent: number;
-  onRewind: () => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-
-  let dotColor = '#60c860';
-  let statusText = '';
-  const minutes = Math.round(lastRewindMs / 60_000);
-  const hours = Math.round(lastRewindMs / 3_600_000);
-
-  if (contextPercent > 75) {
-    dotColor = '#c04848';
-    statusText = `Context at ${Math.round(contextPercent)}% — rewind strongly recommended`;
-  } else if (lastRewindMs > 4 * 60 * 60 * 1000) {
-    dotColor = '#f0c860';
-    statusText = `Last rewind: ${hours}h ago — rewind recommended`;
-  } else {
-    dotColor = '#60c860';
-    statusText =
-      minutes < 1
-        ? 'Last rewind: just now — session healthy'
-        : `Last rewind: ${minutes}m ago — session healthy`;
-  }
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: '8px 16px',
-      }}
-    >
-      <button
-        onClick={onRewind}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{
-          background: hovered ? 'rgba(100,60,150,0.85)' : 'rgba(80,40,120,0.7)',
-          border: `1.5px solid ${hovered ? '#b078f0' : '#9058d0'}`,
-          borderRadius: 5,
-          padding: '6px 20px',
-          fontFamily: PIXEL,
-          fontSize: 10,
-          color: '#d8b8ff',
-          letterSpacing: '1.5px',
-          cursor: 'pointer',
-          transition: 'background 0.15s, border-color 0.15s',
-          flexShrink: 0,
-        }}
-      >
-        REWIND
-      </button>
-      <span style={{ fontSize: 8, color: '#6a5880', fontFamily: PIXEL }}>
-        <span
-          style={{
-            display: 'inline-block',
-            width: 6,
-            height: 6,
-            borderRadius: '50%',
-            background: dotColor,
-            marginRight: 6,
-            verticalAlign: 'middle',
-          }}
-        />
-        {statusText}
-      </span>
     </div>
   );
 }
@@ -291,25 +197,19 @@ function StageCards({
   );
 }
 
-export function RewindStrip({
-  rewindState,
-  lastRewindMs,
-  contextPercent,
-  onRewind,
-  onCancel,
-  onRetry,
-  onDismiss,
-}: RewindStripProps) {
+export function RewindPanel({ rewindState, onCancel, onRetry, onDismiss }: RewindPanelProps) {
   const { status } = rewindState;
 
+  // Never render when idle
+  if (status === 'idle') return null;
+
   // Auto-dismiss after 10s when done
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (status !== 'done') return;
     const id = setTimeout(onDismiss, 10_000);
     return () => clearTimeout(id);
   }, [status, onDismiss]);
-
-  const isExpanded = status === 'running' || status === 'done' || status === 'failed';
 
   return (
     <>
@@ -324,24 +224,13 @@ export function RewindStrip({
       `}</style>
       <div
         style={{
-          position: 'fixed',
-          bottom: 36,
-          left: 0,
-          right: 0,
-          zIndex: 20,
-          background: 'rgba(10,6,20,0.85)',
-          borderTop: '1px solid rgba(100,72,140,0.25)',
-          padding: isExpanded ? '8px 12px' : 0,
+          background: 'rgba(10,6,16,0.95)',
+          borderTop: '1px solid rgba(100,72,140,0.2)',
+          padding: '4px 12px',
+          flexShrink: 0,
+          fontFamily: PIXEL,
         }}
       >
-        {status === 'idle' && (
-          <IdleRow
-            lastRewindMs={lastRewindMs}
-            contextPercent={contextPercent}
-            onRewind={onRewind}
-          />
-        )}
-
         {status === 'running' && (
           <>
             <div
@@ -349,27 +238,21 @@ export function RewindStrip({
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: 6,
+                marginBottom: 4,
               }}
             >
-              <span style={{ fontSize: 9, color: '#d8b8ff', letterSpacing: '1px', fontFamily: PIXEL }}>
+              <span style={{ fontSize: 9, color: '#d8b8ff', letterSpacing: '1px' }}>
                 CONTEXT REWIND
               </span>
               <span
                 onClick={onCancel}
-                style={{
-                  fontSize: 7,
-                  color: '#6a5880',
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  fontFamily: PIXEL,
-                }}
+                style={{ fontSize: 7, color: '#6a5880', textDecoration: 'underline', cursor: 'pointer' }}
               >
                 cancel
               </span>
             </div>
             <StageCards rewindState={rewindState} />
-            <div style={{ marginTop: 5, fontSize: 7, color: '#8a78a0', fontFamily: PIXEL }}>
+            <div style={{ marginTop: 4, fontSize: 7, color: '#8a78a0' }}>
               {getProgressMessage(rewindState.stages)}
             </div>
           </>
@@ -382,27 +265,19 @@ export function RewindStrip({
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: 6,
+                marginBottom: 4,
               }}
             >
-              <span style={{ fontSize: 9, color: '#60c860', fontFamily: PIXEL }}>
-                REWIND COMPLETE ✓
-              </span>
+              <span style={{ fontSize: 9, color: '#60c860' }}>REWIND COMPLETE ✓</span>
               <span
                 onClick={onDismiss}
-                style={{
-                  fontSize: 7,
-                  color: '#60c860',
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  fontFamily: PIXEL,
-                }}
+                style={{ fontSize: 7, color: '#60c860', textDecoration: 'underline', cursor: 'pointer' }}
               >
                 dismiss
               </span>
             </div>
             <StageCards rewindState={rewindState} allDone />
-            <div style={{ marginTop: 5, fontSize: 7, color: '#60c860', fontFamily: PIXEL }}>
+            <div style={{ marginTop: 4, fontSize: 7, color: '#60c860' }}>
               Session reset. Albus is fresh. Context bar updated.
             </div>
           </>
@@ -415,27 +290,19 @@ export function RewindStrip({
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: 6,
+                marginBottom: 4,
               }}
             >
-              <span style={{ fontSize: 9, color: '#c04848', fontFamily: PIXEL }}>
-                REWIND FAILED ✕
-              </span>
+              <span style={{ fontSize: 9, color: '#c04848' }}>REWIND FAILED ✕</span>
               <span
                 onClick={onRetry}
-                style={{
-                  fontSize: 7,
-                  color: '#c04848',
-                  textDecoration: 'underline',
-                  cursor: 'pointer',
-                  fontFamily: PIXEL,
-                }}
+                style={{ fontSize: 7, color: '#c04848', textDecoration: 'underline', cursor: 'pointer' }}
               >
                 retry
               </span>
             </div>
             <StageCards rewindState={rewindState} />
-            <div style={{ marginTop: 5, fontSize: 7, color: '#c04848', fontFamily: PIXEL }}>
+            <div style={{ marginTop: 4, fontSize: 7, color: '#c04848' }}>
               Gateway health check timed out. Click retry to attempt again.
             </div>
           </>

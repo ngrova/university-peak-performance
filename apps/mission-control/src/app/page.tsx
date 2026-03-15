@@ -1,68 +1,57 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { Room } from './components/Room';
-import { TopBar } from './components/TopBar';
-import { ContextBar } from './components/ContextBar';
-import { LeftPanel } from './components/LeftPanel';
-import { ActivityLog } from './components/ActivityLog';
-import { RewindStrip } from './components/RewindStrip';
-import { InfoStrip } from './components/InfoStrip';
+import { TopStrip } from './components/TopStrip';
+import { ActivityStrip } from './components/ActivityStrip';
+import { RewindPanel } from './components/RewindPanel';
 import { AlbusSprite } from './components/AlbusSprite';
 import { ThoughtBubble } from './components/ThoughtBubble';
 import { albusState } from './components/sprite-state';
 import { useMetricsSync } from './hooks/useMetricsSync';
+import { usePoll } from './hooks/usePoll';
 import type { RewindStateFile } from './api/rewind/rewind-state-file';
 import type { ActivityLogData } from './api/activity-log/route';
+import type { SessionData, SpendData } from './components/TopStrip';
+
+interface ActivityData {
+  app: string;
+  task: string;
+  lastCommitAt?: string;
+}
 
 const IDLE_REWIND: RewindStateFile = {
-  status: 'idle', agentMessage: null, requestedAt: null, confirmedAt: null,
+  status: 'idle',
+  agentMessage: null,
+  requestedAt: null,
+  confirmedAt: null,
   stages: { memory: 'idle', clear: 'idle', restart: 'idle', verify: 'idle' },
 };
 
-function usePoll<T>(url: string, interval: number, init: T) {
-  const [data, setData] = useState<T>(init);
-  useEffect(() => {
-    const go = () => fetch(url).then(r => r.json()).then(setData).catch(() => {});
-    go(); const id = setInterval(go, interval); return () => clearInterval(id);
-  }, [url, interval]);
-  return data;
-}
-
-interface SessionData {
-  tokens: number; cap: number; percent: number;
-  outputTokens: number; messageCount: number;
-  systemTokens: number; convoTokens: number;
-  rewindSavings: number; rewindSavingsPct: number;
-}
-interface SpendData { usage: number; usageToday: number; }
-interface ActivityData { app: string; task: string; lastCommitAt?: string; }
-interface MetricsDay { date: string; totalInputTokens: number; totalSpend: number; prsMerged: number; rewindStreak: number; }
-interface MetricsData { days: MetricsDay[] }
-
 export default function LookoutPage() {
   const session = usePoll<SessionData>('/api/session', 30_000, {
-    tokens: 0, cap: 200_000, percent: 0, outputTokens: 0, messageCount: 0,
-    systemTokens: 0, convoTokens: 0, rewindSavings: 0, rewindSavingsPct: 0,
+    tokens: 0,
+    cap: 200_000,
+    percent: 0,
+    outputTokens: 0,
+    messageCount: 0,
+    systemTokens: 0,
+    convoTokens: 0,
+    rewindSavings: 0,
+    rewindSavingsPct: 0,
   });
   const spend = usePoll<SpendData>('/api/spend', 60_000, { usage: 0, usageToday: 0 });
-  const metrics = usePoll<MetricsData>('/api/metrics', 600_000, { days: [] });
   const activity = usePoll<ActivityData>('/api/activity', 15_000, { app: 'Mission Control', task: '' });
   const activityLog = usePoll<ActivityLogData>('/api/activity-log', 60_000, { entries: [] });
   const rewind = usePoll<RewindStateFile>('/api/rewind/state', 5_000, IDLE_REWIND);
 
   const today = new Date().toISOString().slice(0, 10);
-  const last7 = [...metrics.days].sort((a, b) => a.date.localeCompare(b.date)).slice(-7);
-  const tokenTrend = last7.map(d => Math.round(d.totalInputTokens / 1000));
-  while (tokenTrend.length < 7) tokenTrend.unshift(0);
-
-  const lastRewindAt = useRef<number>(Date.now());
-  useEffect(() => { if (rewind.status === 'done') lastRewindAt.current = Date.now(); }, [rewind.status]);
-  const timeSinceRewindMs = Date.now() - lastRewindAt.current;
 
   const prevOutputRef = useRef(0);
   const aState = albusState(prevOutputRef.current, session.outputTokens);
-  useEffect(() => { prevOutputRef.current = session.outputTokens; }, [session.outputTokens]);
+  useEffect(() => {
+    prevOutputRef.current = session.outputTokens;
+  }, [session.outputTokens]);
 
   useMetricsSync({
     date: today,
@@ -89,33 +78,30 @@ export default function LookoutPage() {
     await fetch('/api/rewind/cancel', { method: 'POST' });
   }, []);
 
+  const rewindActive = rewind.status !== 'idle';
+
   return (
     <>
+      <TopStrip
+        session={session}
+        spend={spend}
+        rewindState={rewind}
+        onRewind={handleRewind}
+        onCancel={handleCancel}
+      />
       <Room>
         <AlbusSprite state={aState} />
         <ThoughtBubble task={activity.task} />
       </Room>
-
-      <TopBar />
-      <ContextBar
-        tokens={session.tokens}
-        cap={session.cap}
-        percent={session.percent}
-        rewindSavings={session.rewindSavings}
-        rewindSavingsPct={session.rewindSavingsPct}
-      />
-      <LeftPanel session={session} spend={spend} tokenTrend={tokenTrend} />
-      <ActivityLog entries={activityLog.entries} />
-      <RewindStrip
-        rewindState={rewind}
-        lastRewindMs={timeSinceRewindMs}
-        contextPercent={session.percent}
-        onRewind={handleRewind}
-        onCancel={handleCancel}
-        onRetry={handleRetry}
-        onDismiss={handleDismiss}
-      />
-      <InfoStrip task={activity.task} albusState={aState} lastActivityAt={activity.lastCommitAt} />
+      <ActivityStrip entries={activityLog.entries} albusState={aState} />
+      {rewindActive && (
+        <RewindPanel
+          rewindState={rewind}
+          onCancel={handleCancel}
+          onRetry={handleRetry}
+          onDismiss={handleDismiss}
+        />
+      )}
     </>
   );
 }

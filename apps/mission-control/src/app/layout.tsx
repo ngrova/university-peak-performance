@@ -23,7 +23,15 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`text-[#E5E5E5] antialiased ${pressStart2P.variable}`}
-        style={{ margin: 0, padding: 0, overflow: 'hidden' }}
+        style={{
+          margin: 0,
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          overflow: 'hidden',
+          background: '#1a1520',
+        }}
       >
         {children}
       </body>

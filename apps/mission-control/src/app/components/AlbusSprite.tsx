@@ -20,7 +20,7 @@ export function AlbusSprite({ state: _state }: Props) {
         style={{
           position: 'absolute',
           left: '50%',
-          top: '45%',
+          top: '30%',
           width: 100,
           animation: 'albusFloat 3s ease-in-out infinite',
         }}

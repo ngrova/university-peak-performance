@@ -12,7 +12,7 @@ export function ThoughtBubble({ task }: Props) {
       style={{
         position: 'absolute',
         left: '50%',
-        top: '18%',
+        top: '12%',
         transform: 'translateX(-50%)',
         pointerEvents: 'none',
         zIndex: 10,
