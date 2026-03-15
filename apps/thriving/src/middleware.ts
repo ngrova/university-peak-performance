@@ -1,11 +1,12 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+const PUBLIC_PATHS = ['/login', '/signup', '/forgot-password', '/update-password', '/auth/confirm'];
+
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
-  // Allow auth routes freely
-  if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname === '/') {
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p)) || pathname === '/') {
     return NextResponse.next();
   }
 
