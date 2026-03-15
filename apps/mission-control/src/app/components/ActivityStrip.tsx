@@ -80,7 +80,8 @@ function EntryRow({ entry }: { entry: LogEntry }) {
   );
 }
 
-export function ActivityStrip({ entries, albusState: _albusState }: ActivityStripProps) {
+export function ActivityStrip({ entries, albusState }: ActivityStripProps) {
+  const isCoding = albusState === 'coding';
   const recent = entries.slice(0, 10);
 
   // Unique types present in recent entries — for legend
@@ -96,7 +97,7 @@ export function ActivityStrip({ entries, albusState: _albusState }: ActivityStri
         flexShrink: 0,
       }}
     >
-      {/* Header row: label left, color legend right */}
+      {/* Header row: label + badge left, color legend right */}
       <div
         style={{
           display: 'flex',
@@ -105,7 +106,22 @@ export function ActivityStrip({ entries, albusState: _albusState }: ActivityStri
           marginBottom: 6,
         }}
       >
-        <span style={{ fontSize: 13, color: '#8a78a0', letterSpacing: '1px' }}>ACTIVITY LOG</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 13, color: '#8a78a0', letterSpacing: '1px' }}>ACTIVITY LOG</span>
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 'bold',
+              padding: '3px 8px',
+              borderRadius: 2,
+              background: isCoding ? 'rgba(60,160,60,0.25)' : 'rgba(60,100,160,0.25)',
+              color: isCoding ? '#60c860' : '#6090c0',
+              fontFamily: PIXEL,
+            }}
+          >
+            {isCoding ? 'CODING' : 'IDLE'}
+          </span>
+        </div>
 
         {/* Color legend */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
