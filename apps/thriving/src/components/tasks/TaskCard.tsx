@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import type { Task } from '@upp/db'
 import { updateTaskStatusAction } from '@/actions/task-actions'
 import TaskDetailSheet from './TaskDetailSheet'
+import StatusIcon from './StatusIcon'
 import CelebrationOverlay from '@/components/ui/CelebrationOverlay'
 
 interface TaskCardProps {
@@ -15,21 +16,6 @@ const PRIORITY_COLOR: Record<number, string> = {
   1: 'var(--danger)', 2: 'var(--warning)', 3: 'var(--accent)', 4: 'var(--text-muted)',
 }
 const PRIORITY_LABEL: Record<number, string> = { 1: 'P1', 2: 'P2', 3: 'P3', 4: 'P4' }
-
-function StatusIcon({ status }: { status: Task['status'] }): React.JSX.Element {
-  const configs = {
-    todo: { color: 'var(--text-muted)', d: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Z' },
-    in_progress: { color: 'var(--accent)', d: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm0 16V6a6 6 0 0 1 0 12Z' },
-    done: { color: 'var(--success)', d: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm-1 14.4-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4-7 7Z' },
-    blocked: { color: 'var(--danger)', d: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm1 14h-2v-2h2v2Zm0-4h-2V7h2v5Z' },
-  }
-  const cfg = configs[status] ?? configs.todo
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill={cfg.color}>
-      <path d={cfg.d} />
-    </svg>
-  )
-}
 
 export default function TaskCard({ task, goalId, pillarId }: TaskCardProps): React.JSX.Element {
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -48,17 +34,8 @@ export default function TaskCard({ task, goalId, pillarId }: TaskCardProps): Rea
 
   return (
     <>
-      {showCelebration && (
-        <CelebrationOverlay taskTitle={task.title} onDismiss={() => setShowCelebration(false)} />
-      )}
-
-      <TaskDetailSheet
-        task={task}
-        goalId={goalId}
-        pillarId={pillarId}
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-      />
+      {showCelebration && <CelebrationOverlay taskTitle={task.title} onDismiss={() => setShowCelebration(false)} />}
+      <TaskDetailSheet task={task} goalId={goalId} pillarId={pillarId} open={sheetOpen} onClose={() => setSheetOpen(false)} />
 
       <div
         className="rounded-xl flex items-center gap-3 cursor-pointer transition-opacity active:opacity-70"
@@ -93,6 +70,14 @@ export default function TaskCard({ task, goalId, pillarId }: TaskCardProps): Rea
             </p>
           )}
         </div>
+
+        {/* One Thing badge */}
+        {task.is_one_thing && (
+          <span className="text-xs font-semibold flex-shrink-0 rounded px-1.5 py-0.5"
+            style={{ color: 'var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 15%, transparent)' }}>
+            ⭐ One Thing
+          </span>
+        )}
 
         {/* Priority badge */}
         <span

@@ -7,7 +7,7 @@ export { getPillars, createPillar, updatePillar, deletePillar, getPillarsWithPro
 export type { CreatePillarInput, PillarWithProgress } from './pillars'
 export { getGoals, createGoal, updateGoal, deleteGoal } from './goals'
 export type { CreateGoalInput } from './goals'
-export { getTasksByGoal, createTask, updateTask, deleteTask } from './tasks'
+export { getTasksByGoal, createTask, updateTask, deleteTask, unpinOneThingForUser } from './tasks'
 export type { CreateTaskInput } from './tasks'
 export { getOneThingTask, getTasksWithDeadlines, getTasksForQueue } from './tasks-views'
 export type { TaskWithContext } from './tasks-views'
