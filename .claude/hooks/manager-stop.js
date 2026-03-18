@@ -21,23 +21,26 @@ try {
   process.exit(0);
 }
 
-// Check if there are code changes (staged or unstaged) in apps/
+// Check if there are code changes (staged, unstaged, or untracked) in apps/
 let hasCodeChanges = false;
 try {
-  const diff = execSync(
+  const tracked = execSync(
     'git diff --name-only && git diff --cached --name-only',
     { encoding: 'utf8', cwd: repoRoot }
   );
-  hasCodeChanges = diff
-    .split('\n')
-    .some(
-      (f) =>
-        f.startsWith('apps/') &&
-        (f.endsWith('.ts') ||
-          f.endsWith('.tsx') ||
-          f.endsWith('.js') ||
-          f.endsWith('.jsx'))
-    );
+  const untracked = execSync(
+    'git ls-files --others --exclude-standard',
+    { encoding: 'utf8', cwd: repoRoot }
+  );
+  const allFiles = (tracked + '\n' + untracked).split('\n');
+  hasCodeChanges = allFiles.some(
+    (f) =>
+      f.startsWith('apps/') &&
+      (f.endsWith('.ts') ||
+        f.endsWith('.tsx') ||
+        f.endsWith('.js') ||
+        f.endsWith('.jsx'))
+  );
 } catch {
   hasCodeChanges = false;
 }
