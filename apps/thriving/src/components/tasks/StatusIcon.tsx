@@ -8,9 +8,11 @@ const CONFIGS: Record<string, { color: string; d: string }> = {
   blocked: { color: 'var(--danger)', d: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2Zm1 14h-2v-2h2v2Zm0-4h-2V7h2v5Z' },
 }
 
+const DEFAULT_CFG = CONFIGS.todo!
+
 // Renders the circle status icon for a task
 export default function StatusIcon({ status }: { status: Task['status'] }): React.JSX.Element {
-  const cfg = CONFIGS[status] ?? CONFIGS.todo
+  const cfg = CONFIGS[status] ?? DEFAULT_CFG
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill={cfg.color}>
       <path d={cfg.d} />
