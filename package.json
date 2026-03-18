@@ -9,6 +9,9 @@
     "test": "turbo test",
     "e2e": "turbo e2e"
   },
+  "dependencies": {
+    "styled-jsx": "^5.1.0"
+  },
   "devDependencies": {
     "turbo": "^2.0.0"
   },
