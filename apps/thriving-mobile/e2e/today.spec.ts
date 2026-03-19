@@ -1,47 +1,34 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Phase 1 — Today screen (unauthenticated)', () => {
-  test.beforeEach(async ({ page }) => {
-    // Unauthenticated users get redirected to login by middleware
-    // These tests verify the redirect works correctly
-    await page.goto('/today');
-  });
+const hasSupabase = !!(process.env['NEXT_PUBLIC_SUPABASE_URL'] && process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']);
+
+test.describe('Phase 1 — Auth redirect (requires Supabase)', () => {
+  test.skip(!hasSupabase, 'Skipping — NEXT_PUBLIC_SUPABASE_ANON_KEY not set');
 
   test('redirects unauthenticated user to login', async ({ page }) => {
+    await page.goto('/today');
     await page.waitForURL('**/login');
     await expect(page.locator('h1')).toContainText('Thriving');
   });
-});
-
-test.describe('Phase 1 — Capture sheet (unauthenticated)', () => {
-  test('center tab button exists in tab bar', async ({ page }) => {
-    await page.goto('/login');
-    // Tab bar should not be visible on auth pages
-    // This is expected — capture sheet is only on authenticated routes
-  });
-});
-
-test.describe('Phase 1 — Today screen structure', () => {
-  // These tests verify component rendering on the Today route
-  // They will redirect to login without auth, which is correct behavior
 
   test('/today route exists and responds', async ({ page }) => {
     const response = await page.goto('/today');
     expect(response?.status()).toBeLessThan(500);
   });
 
-  test('/capture redirects to /today', async ({ page }) => {
+  test('/capture redirects without crashing', async ({ page }) => {
     const response = await page.goto('/capture');
     expect(response?.status()).toBeLessThan(500);
   });
+});
 
-  test('login page has correct form structure for auth flow', async ({ page }) => {
+test.describe('Phase 1 — Login form interaction', () => {
+  test('login page has correct form structure', async ({ page }) => {
     await page.goto('/login');
     const emailInput = page.locator('#login-email');
     const passwordInput = page.locator('#login-pw');
     await expect(emailInput).toBeVisible();
     await expect(passwordInput).toBeVisible();
-    // Verify inputs accept text
     await emailInput.fill('test@example.com');
     await expect(emailInput).toHaveValue('test@example.com');
     await passwordInput.fill('testpassword');
