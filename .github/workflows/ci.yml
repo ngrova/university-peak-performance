@@ -173,7 +173,8 @@ jobs:
       - name: Run E2E tests
         run: pnpm turbo e2e
         env:
-          BASE_URL: ${{ vars.VERCEL_PREVIEW_URL || 'http://localhost:3000' }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://kemmvxnmlmvspfxgfvhl.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' }}
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
@@ -182,4 +183,5 @@ jobs:
           name: playwright-report
           path: |
             apps/*/playwright-report/
+            apps/*/test-results/
           retention-days: 7
