@@ -12,11 +12,11 @@ Before starting any new task:
 When a user describes a feature or fix in plain English, ALWAYS run this full pipeline automatically:
 
 1. **Plan** — Create PLAN.md using the make-plan skill template (approach, files, scope, STATUS: PENDING). Present it to the user and wait for approval.
-2. **Review plan** — Spawn 8 sub-agents in parallel (security, data integrity, reuse, standards, conflicts, scope, pattern consistency, test coverage). All 8 agents must approve. If any agent rejects, fix the concern and re-review. If you believe the rejection is wrong, explain the disagreement to Nick and let him decide. Never override a rejection.
+2. **Review plan** — Spawn 9 sub-agents in parallel (security, data integrity, code reuse, coding standards, integration correctness, scope, pattern consistency, test coverage, silent failure detection). All 9 agents must approve. If any agent rejects, fix the concern and re-review. If you believe the rejection is wrong, explain the disagreement to Nick and let him decide. Never override a rejection.
 3. **Approve** — Set PLAN.md STATUS: APPROVED (unlocks the require-plan hook)
 4. **Build** — Write code on a feature branch (nick/ or erin/ prefix)
 5. **Manager check** — Stop hook auto-runs typecheck + tests. Fix failures before proceeding.
-6. **Review code** — Spawn the same 8 sub-agents on the code diff. All 8 must approve. If any reject, fix the concern and re-review. If you believe the rejection is wrong, explain the disagreement to Nick and let him decide. Never override a rejection.
+6. **Review code** — Spawn the same 9 sub-agents on the code diff. All 9 must approve. If any reject, fix the concern and re-review. If you believe the rejection is wrong, explain the disagreement to Nick and let him decide. Never override a rejection.
 7. **Ship** — Create PR with conventional commit title and what/why/how-to-test description. After creating the PR, include a direct link to the GitHub Actions CI run so Nick can monitor test progress. Use: `gh run list --limit 1 --json url --jq '.[0].url'` to get the link.
 8. **Lock plan** — Immediately after creating the PR, set PLAN.md `STATUS: COMPLETED`. This prevents the stale approval from being reused as a free pass for the next task. The require-plan hook will block all code edits until a new plan is approved.
 9. **CI** — Lint, typecheck, Playwright E2E, gitleaks run automatically. CI is the merge gate.
