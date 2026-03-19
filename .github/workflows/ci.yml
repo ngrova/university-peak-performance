@@ -167,11 +167,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Discover apps with Playwright tests
+        id: discover
+        run: |
+          APPS=$(find apps -name "playwright.config.ts" -exec dirname {} \; | xargs -I{} basename {})
+          FILTERS=$(echo "$APPS" | xargs -I{} echo -n "--filter @upp/{} " | sed 's/ $//')
+          echo "filters=$FILTERS" >> "$GITHUB_OUTPUT"
+          echo "Found Playwright apps: $APPS"
+
       - name: Install Playwright browsers
-        run: pnpm --filter @upp/thriving-mobile exec playwright install --with-deps chromium
+        if: steps.discover.outputs.filters != ''
+        run: |
+          for dir in $(find apps -name "playwright.config.ts" -exec dirname {} \;); do
+            pnpm --filter "./$(basename $dir)" exec playwright install --with-deps chromium
+          done
+        working-directory: .
 
       - name: Run E2E tests
-        run: pnpm turbo e2e
+        if: steps.discover.outputs.filters != ''
+        run: pnpm turbo e2e ${{ steps.discover.outputs.filters }}
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://kemmvxnmlmvspfxgfvhl.supabase.co' }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || '' }}
