@@ -27,3 +27,6 @@ dist
 # Claude Code local
 .claude/settings.local.json
 .claude/worktrees/
+
+# Playwright auth state
+e2e/.auth/
