@@ -80,3 +80,5 @@ docs/                   Architecture docs, decisions log, specs
 - 2026-03-17: Add auto-merge to pipeline — after CI passes, Claude should run `gh pr merge --auto` so Nick doesn't have to go to GitHub
 - 2026-03-17: Security audit found 8x .select('*') violations in packages/db/ (tasks, goals, pillars, assessments, tree) — replace with explicit columns
 - 2026-03-17: Security audit found missing .limit() pagination on all list queries — add default limit(50) per coding standards
+- 2026-03-19: Never override a review agent rejection — fix the concern and re-review, or escalate to Nick for a decision
+- 2026-03-19: Always reset PLAN.md to STATUS: COMPLETED after shipping a PR — stale approvals bypass the require-plan hook
