@@ -179,9 +179,8 @@ jobs:
         if: steps.discover.outputs.filters != ''
         run: |
           for dir in $(find apps -name "playwright.config.ts" -exec dirname {} \;); do
-            pnpm --filter "./$(basename $dir)" exec playwright install --with-deps chromium
+            pnpm --filter "./$dir" exec playwright install --with-deps chromium
           done
-        working-directory: .
 
       - name: Run E2E tests
         if: steps.discover.outputs.filters != ''
