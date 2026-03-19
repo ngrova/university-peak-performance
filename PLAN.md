@@ -1,22 +1,15 @@
-# Plan: Fix capture bug + strengthen Testing Agent
+# Plan: Delete temporary debug API route
 
 ## Task
-"Fix Capture sheet 'Failed to save' bug — same queryFn pattern issue. Audit all server action calls. Strengthen Agent 8's prompt to reject smoke-only tests."
+"Delete the temporary debug route — auth issue is resolved."
 
 ## Approach
-- Audit every component that calls a server action — find direct references vs arrow-wrapped calls
-- Fix CaptureSheet.tsx and any other broken call sites
-- Replace Agent 8 prompt with stronger action-based acceptance criteria
+- Delete apps/thriving-mobile/src/app/api/debug/route.ts
 
-## Files to Change
-- `apps/thriving-mobile/src/components/CaptureSheet.tsx` — check captureTask call pattern
-- `apps/thriving-mobile/src/components/TaskRow.tsx` — check completeTask call
-- `apps/thriving-mobile/src/components/TaskDetailSheet.tsx` — check completeTask/updateTaskField calls
-- `apps/thriving-mobile/src/components/TaskActions.tsx` — check completeTask/updateTaskField calls
-- `apps/thriving-mobile/src/components/GoalPicker.tsx` — check fetchGoalsForPicker call
-- `.claude/skills/review-plan/SKILL.md` — replace Agent 8 prompt
+## Files to Delete
+- `apps/thriving-mobile/src/app/api/debug/route.ts`
 
 ## Scope
-medium (6 files)
+small (1 file deleted)
 
 ## STATUS: APPROVED
