@@ -13,10 +13,10 @@
 
 When a user describes a feature or fix, ALWAYS follow this pipeline automatically:
 1. Create PLAN.md (make-plan template) → present it → wait for approval
-2. Run 7-agent review on the plan → revise until all 7 approve
+2. Run 9-agent review on the plan → revise until all 9 approve
 3. Build on a feature branch (nick/ or erin/ prefix)
 4. Manager stop hook runs typecheck + tests automatically
-5. Run 7-agent review on the code diff → fix until all 7 approve
+5. Run 9-agent review on the code diff → fix until all 9 approve
 6. Create PR with conventional commit title
 The user just describes what they want. The system handles everything.
 
