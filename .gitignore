@@ -23,3 +23,7 @@ dist
 # Editor
 .vscode
 .idea
+
+# Claude Code local
+.claude/settings.local.json
+.claude/worktrees/
