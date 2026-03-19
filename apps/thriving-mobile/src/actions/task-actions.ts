@@ -1,7 +1,6 @@
 'use server';
 
-import { createTask, updateTask, getPillars, getGoals } from '@upp/db';
-import type { Goal, LifePillar } from '@upp/db';
+import { createTask, updateTask, getTasksByGoal } from '@upp/db';
 import { getServerClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
 
@@ -18,12 +17,12 @@ export async function captureTask(input: CaptureInput): Promise<{ error?: string
     const supabase = await getServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { error: 'Not signed in — please log in again' };
-    const goalId = input.goal_id;
-    if (!goalId) return { error: 'Select a goal for this task' };
+    if (!input.goal_id) return { error: 'Select a goal for this task' };
+    const existing = await getTasksByGoal(supabase, input.goal_id);
     const taskInput: Parameters<typeof createTask>[2] = {
-      goal_id: goalId,
+      goal_id: input.goal_id,
       title: input.title,
-      sort_order: Date.now(),
+      sort_order: existing.length,
     };
     if (input.due_date) taskInput.due_date = input.due_date;
     if (input.priority) taskInput.priority = input.priority;
@@ -64,18 +63,4 @@ export async function updateTaskField(
   } catch {
     return { error: 'Failed to save — try again' };
   }
-}
-
-/** Fetches all goals grouped by pillar for the goal picker */
-export async function fetchGoalsForPicker(): Promise<{ pillars: LifePillar[]; goals: Goal[] }> {
-  const supabase = await getServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { pillars: [], goals: [] };
-  const pillars = await getPillars(supabase, user.id);
-  const allGoals: Goal[] = [];
-  for (const pillar of pillars) {
-    const goals = await getGoals(supabase, pillar.id);
-    allGoals.push(...goals);
-  }
-  return { pillars, goals: allGoals };
 }

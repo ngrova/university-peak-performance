@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import type { Goal, LifePillar } from '@upp/db';
-import { fetchGoalsForPicker } from '@/actions/task-actions';
+import { fetchGoalsForPicker } from '@/actions/goal-actions';
 
 interface GoalPickerProps {
   value: string;
