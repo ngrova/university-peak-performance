@@ -1,7 +1,6 @@
 [build]
-  base = "../../"
-  command = "corepack enable && corepack prepare pnpm@latest --activate && pnpm install --frozen-lockfile && pnpm --filter @upp/thriving-mobile build"
-  publish = "apps/thriving-mobile/.next"
+  command = "cd ../.. && corepack enable && corepack prepare pnpm@latest --activate && pnpm install --frozen-lockfile && pnpm --filter @upp/thriving-mobile build"
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
