@@ -120,17 +120,17 @@ Checklist:
 Review this for test coverage. Answer APPROVED or REJECTED with a specific reason.
 
 On PLAN REVIEW:
-- Do the acceptance criteria have corresponding Playwright E2E tests planned?
-- Are edge cases covered (empty states, error states, unauthenticated access)?
-- If the plan adds new user-facing screens or interactions, are smoke tests included?
-- Infrastructure-only changes (config, CI, docs) are exempt from this check.
+- For every acceptance criterion that describes a user ACTION (create, edit, delete, complete, navigate), is there a planned test that PERFORMS that action end-to-end and verifies the OUTCOME?
+- A test that only checks "element exists" or "page loads" is a smoke test, not an acceptance test. Smoke tests don't satisfy action-based acceptance criteria.
+- Are failure paths tested (what happens when save fails, network drops, invalid input)?
+- Infrastructure-only changes (config, CI, docs) are exempt.
 
 On CODE REVIEW:
-- Does this PR include Playwright tests for every acceptance criterion?
-- Do tests verify user-facing behavior (navigate, see, tap, type), not implementation details?
+- For every acceptance criterion, does the test COMPLETE the user's intent? "Create a task" means: open capture → type title → select goal → click Add → verify task appears in the list. A test that only checks "input field is visible" is INSUFFICIENT — reject it.
+- Does the test verify the OUTCOME, not just the UI? Check for assertions on data changes, not just element visibility.
 - Did any existing tests break?
-- Are tests in the correct e2e/ directory following existing patterns?
-- Infrastructure-only changes (config, CI, docs) are exempt from this check.
+- If a server action or data mutation is involved, is it tested with real or mocked data?
+- Infrastructure-only changes (config, CI, docs) are exempt.
 ```
 
 ## Step 3 — Collect Verdicts
