@@ -1,5 +1,9 @@
 # Workflow
 
+## Pre-Flight Check
+
+Before starting any new feature, verify the previous PR merged successfully and all CI checks passed. Run: `gh pr list --state merged --limit 1` and check its status. If the last PR failed CI or is still open, flag it to Nick before proceeding.
+
 ## Automatic Pipeline — No Slash Commands Needed
 
 When a user describes a feature or fix in plain English, ALWAYS run this full pipeline automatically:
@@ -10,12 +14,16 @@ When a user describes a feature or fix in plain English, ALWAYS run this full pi
 4. **Build** — Write code on a feature branch (nick/ or erin/ prefix)
 5. **Manager check** — Stop hook auto-runs typecheck + tests. Fix failures before proceeding.
 6. **Review code** — Spawn the same 8 sub-agents on the code diff. Fix rejections, re-review until all 8 approve.
-7. **Ship** — Create PR with conventional commit title and what/why/how-to-test description
-8. **CI** — Lint, typecheck, tests, gitleaks, Greptile, Snyk run automatically
-9. **Human tests** — Nick or Erin tests on phone/browser
-10. **Merge** — All green → merge to main
+7. **Ship** — Create PR with conventional commit title and what/why/how-to-test description. After creating the PR, include a direct link to the GitHub Actions CI run so Nick can monitor test progress. Use: `gh run list --limit 1 --json url --jq '.[0].url'` to get the link.
+8. **Lock plan** — Immediately after creating the PR, set PLAN.md `STATUS: COMPLETED`. This prevents the stale approval from being reused as a free pass for the next task. The require-plan hook will block all code edits until a new plan is approved.
+9. **CI** — Lint, typecheck, tests, gitleaks, Greptile, Snyk run automatically
+10. **Human tests** — Nick or Erin tests on phone/browser
+11. **Merge** — All green → merge to main
 
 The user should NEVER need to type a slash command. Just describe what you want and the system handles everything.
+
+### Why STATUS: COMPLETED matters
+The require-plan hook blocks all code edits unless PLAN.md contains `STATUS: APPROVED`. If a completed plan is left with APPROVED, the next task can bypass the planning step entirely. Always reset to COMPLETED after shipping.
 
 ## Git Workflow
 
