@@ -1,7 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
+import fs from 'fs';
 
 const authFile = path.join(__dirname, 'e2e', '.auth', 'user.json');
+const hasAuthState = () => fs.existsSync(authFile);
 
 export default defineConfig({
   testDir: './e2e',
@@ -21,8 +23,14 @@ export default defineConfig({
       use: { ...devices['iPhone 14'], browserName: 'chromium' },
     },
     {
-      name: 'mobile-chrome',
-      testIgnore: /auth\.setup\.ts/,
+      name: 'smoke',
+      testMatch: /smoke\.spec\.ts|auth\.spec\.ts|today\.spec\.ts/,
+      testIgnore: /auth\.setup\.ts|phase1/,
+      use: { ...devices['iPhone 14'], browserName: 'chromium' },
+    },
+    {
+      name: 'authenticated',
+      testMatch: /phase1.*\.spec\.ts/,
       use: {
         ...devices['iPhone 14'],
         browserName: 'chromium',
