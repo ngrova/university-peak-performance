@@ -1,6 +1,7 @@
 [build]
   command = "cd ../.. && corepack enable && corepack prepare pnpm@latest --activate && pnpm install --frozen-lockfile && pnpm --filter @upp/thriving-mobile build"
   publish = ".next"
+  ignore = "cd ../.. && git diff --quiet $CACHED_COMMIT_REF HEAD -- apps/thriving-mobile/ packages/ package.json pnpm-lock.yaml"
 
 [build.environment]
   NODE_VERSION = "20"
