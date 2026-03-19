@@ -1,20 +1,18 @@
-# Plan: Fix require-plan hook to prevent stale plan reuse
+# Plan: Fix server action Supabase client — use getAll/setAll with try/catch
 
 ## Task
-"Fix the require-plan hook so stale approvals can't bypass it. After a PR is created, reset PLAN.md to STATUS: COMPLETED. The hook should only allow code changes when STATUS: APPROVED exists AND the plan was written for the current work."
+"Fix server actions so Today screen shows tasks and Capture saves successfully. The @upp/db get/set/remove cookie pattern doesn't work reliably with @supabase/ssr@0.5.2 on Netlify."
 
 ## Approach
-- Update require-plan.js to only pass when STATUS: APPROVED exists (unchanged)
-- Update workflow.md to document that PLAN.md must be reset to STATUS: COMPLETED after PR creation
-- Add a post-PR step in the pipeline rules: after creating a PR, set STATUS: COMPLETED in PLAN.md
-- This way the next task starts with a stale/completed plan that blocks edits until a new plan is approved
+- Create Supabase client directly from @supabase/ssr using getAll/setAll (same API the working middleware uses)
+- Wrap setAll in a try/catch so it doesn't crash when cookieStore.set() throws in Netlify serverless
+- Pass env vars directly (not through @upp/db's process.env indirection)
+- Add try/catch to today-actions.ts fetch functions so errors don't crash the server action stream
 
 ## Files to Change
-- `.claude/hooks/require-plan.js` — no logic change needed (already blocks non-APPROVED)
-- `.claude/rules/workflow.md` — add step: reset PLAN.md to STATUS: COMPLETED after PR
-- `PLAN.md` — reset current stale plan to COMPLETED
+- `apps/thriving-mobile/src/lib/supabase-server.ts` — use @supabase/ssr directly with getAll/setAll + try/catch
 
 ## Scope
-small (2 changed files + PLAN.md itself)
+small (1 file)
 
-## STATUS: COMPLETED
+## STATUS: APPROVED
