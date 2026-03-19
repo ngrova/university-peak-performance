@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Sun, ListChecks, PlusCircle, Target, GitBranch, type LucideIcon } from 'lucide-react';
+import { useCaptureSheet } from '@/hooks/use-capture-sheet';
 
 interface TabDef {
   href: string;
@@ -20,9 +21,10 @@ const TABS: readonly TabDef[] = [
   { href: '/tree', label: 'Tree', Icon: GitBranch },
 ];
 
-/** Fixed bottom tab bar with 5 tabs and safe-area padding */
+/** Fixed bottom tab bar — center button opens capture sheet */
 export default function BottomTabBar(): React.JSX.Element {
   const pathname = usePathname();
+  const openCapture = useCaptureSheet((s) => s.open);
 
   return (
     <nav
@@ -36,6 +38,22 @@ export default function BottomTabBar(): React.JSX.Element {
     >
       {TABS.map(({ href, label, Icon, isCenter }) => {
         const active = pathname.startsWith(href);
+
+        if (isCenter) {
+          return (
+            <button
+              key={href}
+              type="button"
+              onClick={openCapture}
+              aria-label={label}
+              className="flex flex-col items-center justify-center"
+              style={{ height: 'var(--tab-bar-height)', minWidth: '64px', color: 'var(--accent)' }}
+            >
+              <Icon size={32} strokeWidth={1.5} />
+            </button>
+          );
+        }
+
         return (
           <Link
             key={href}
@@ -48,15 +66,8 @@ export default function BottomTabBar(): React.JSX.Element {
               color: active ? 'var(--accent)' : 'var(--text-secondary)',
             }}
           >
-            <Icon
-              size={isCenter ? 32 : 24}
-              strokeWidth={active ? 2.2 : 1.5}
-              fill={active && !isCenter ? 'currentColor' : 'none'}
-              style={isCenter ? { color: 'var(--accent)' } : undefined}
-            />
-            {active && !isCenter && (
-              <span className="text-xs mt-0.5 font-semibold">{label}</span>
-            )}
+            <Icon size={24} strokeWidth={active ? 2.2 : 1.5} fill={active ? 'currentColor' : 'none'} />
+            {active && <span className="text-xs mt-0.5 font-semibold">{label}</span>}
           </Link>
         );
       })}

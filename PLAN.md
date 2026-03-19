@@ -1,42 +1,38 @@
-# Plan: Phase 0 — Scaffold thriving-mobile PWA
+# Plan: Phase 1 — Today + Capture (Daily Driver)
 
 ## Task
-"Read docs/MOBILE-REBUILD-SPEC.md. Build Phase 0 — Scaffold. When deployed and added to an iPhone home screen, it opens fullscreen with no browser chrome, shows a dark background with a bottom tab bar (5 tabs), no pinch-to-zoom, and feels like a native app — even though every screen is just a placeholder."
+"Build Phase 1 — Today + Capture. Open the app on my phone, see my One Thing hero card and queued tasks, capture a new task via the + button, swipe to complete a task, all data persists in Supabase."
 
 ## Approach
-- Create `apps/thriving-mobile/` as a new Next.js App Router app in the monorepo with TypeScript strict, Tailwind CSS, and wired to shared packages (`@upp/db`, `@upp/ui`, `@upp/utils`)
-- Configure full PWA: manifest.json (`display: standalone`), all Apple meta tags (apple-mobile-web-app-capable, status-bar-style black-translucent, theme-color #0A0A0F), viewport with `user-scalable=no, viewport-fit=cover`
-- Set up dark theme CSS variables per spec (#0A0A0F background, #1A1A2E surface, #E8A838 accent, system font stack) and globals.css
-- Build a bottom tab bar component (Today/Tasks/Capture/Goals/Tree) with Lucide icons, safe-area-inset-bottom padding, and 5 placeholder screens
-- Wire auth middleware reusing existing Supabase auth pattern, plus login/signup pages styled to the new dark theme
-- Add Netlify config for separate `thriving-mobile` site deployment
+- Build server actions for the mobile app that call existing `@upp/db` functions (getOneThingTask, getTasksForQueue, getTasksWithDeadlines, createTask, updateTask)
+- Build Today screen: greeting bar, One Thing hero card (with empty state), "Up Next" queue list, overdue/due-today section
+- Build Capture bottom sheet: opens from center tab (+) button, auto-focused text input, goal picker, "Add" button, rapid capture mode (stays open after save)
+- Build Task Detail bottom sheet: slides up on tap, editable title, status toggle, goal, deadline, notes — auto-saves changes
+- Add swipe-to-complete gesture on queue items with optimistic UI update
+- Wire the center tab (Capture) to open the bottom sheet instead of navigating to a page
 
 ## Files to Change
-- `netlify.toml` — add mobile app build context (or separate netlify config)
+- `apps/thriving-mobile/src/app/(app)/today/page.tsx` — replace placeholder with real Today screen
+- `apps/thriving-mobile/src/app/(app)/capture/page.tsx` — redirect to /today (capture is a sheet, not a page)
+- `apps/thriving-mobile/src/components/BottomTabBar.tsx` — center tab opens capture sheet instead of navigating
+- `apps/thriving-mobile/src/app/(app)/layout.tsx` — add capture sheet provider to app shell
 
 ## New Files
-- `apps/thriving-mobile/package.json` — app package with deps
-- `apps/thriving-mobile/next.config.mjs` — Next.js config with transpilePackages
-- `apps/thriving-mobile/tsconfig.json` — extends base, path alias @/*
-- `apps/thriving-mobile/tailwind.config.ts` — extends base + mobile content paths
-- `apps/thriving-mobile/postcss.config.js` — tailwind + autoprefixer
-- `apps/thriving-mobile/.eslintrc.json` — next/core-web-vitals
-- `apps/thriving-mobile/public/manifest.json` — PWA manifest (standalone, icons)
-- `apps/thriving-mobile/src/app/layout.tsx` — root layout with all PWA meta tags
-- `apps/thriving-mobile/src/app/globals.css` — dark theme CSS variables per spec
-- `apps/thriving-mobile/src/app/providers.tsx` — QueryClientProvider wrapper
-- `apps/thriving-mobile/src/app/(app)/layout.tsx` — app shell with bottom tab bar
-- `apps/thriving-mobile/src/app/(app)/today/page.tsx` — placeholder
-- `apps/thriving-mobile/src/app/(app)/tasks/page.tsx` — placeholder
-- `apps/thriving-mobile/src/app/(app)/goals/page.tsx` — placeholder
-- `apps/thriving-mobile/src/app/(app)/tree/page.tsx` — placeholder
-- `apps/thriving-mobile/src/app/(app)/capture/page.tsx` — placeholder (redirect target)
-- `apps/thriving-mobile/src/components/BottomTabBar.tsx` — 5-tab bar with Lucide icons
-- `apps/thriving-mobile/src/app/(auth)/login/page.tsx` — login page, dark theme
-- `apps/thriving-mobile/src/app/(auth)/signup/page.tsx` — signup page, dark theme
-- `apps/thriving-mobile/src/middleware.ts` — auth guard reusing Supabase SSR pattern
+- `apps/thriving-mobile/src/actions/task-actions.ts` — server actions for task CRUD
+- `apps/thriving-mobile/src/actions/today-actions.ts` — server actions for Today screen data
+- `apps/thriving-mobile/src/components/OneThingCard.tsx` — hero card for pinned One Thing
+- `apps/thriving-mobile/src/components/QueueList.tsx` — "Up Next" task list with swipe
+- `apps/thriving-mobile/src/components/OverdueList.tsx` — overdue/due-today section
+- `apps/thriving-mobile/src/components/TaskRow.tsx` — shared task row with swipe gesture
+- `apps/thriving-mobile/src/components/CaptureSheet.tsx` — bottom sheet for quick-add
+- `apps/thriving-mobile/src/components/TaskDetailSheet.tsx` — bottom sheet for task editing
+- `apps/thriving-mobile/src/components/GoalPicker.tsx` — goal selector for capture
+- `apps/thriving-mobile/src/components/GreetingBar.tsx` — "Good morning, Nick" with date
+- `apps/thriving-mobile/src/hooks/use-capture-sheet.ts` — Zustand store for sheet open/close
+- `apps/thriving-mobile/src/hooks/use-task-detail.ts` — Zustand store for task detail sheet
+- `apps/thriving-mobile/src/lib/supabase-browser.ts` — browser client helper
 
 ## Scope
-large (20+ files — but all are small scaffold files, most under 50 lines)
+large (16 new files, 4 changed — but this is the core daily-driver feature)
 
 ## STATUS: APPROVED

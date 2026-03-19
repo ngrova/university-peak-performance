@@ -1,11 +1,13 @@
 import React from 'react';
 import BottomTabBar from '@/components/BottomTabBar';
+import CaptureSheet from '@/components/CaptureSheet';
+import TaskDetailSheet from '@/components/TaskDetailSheet';
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-/** App shell with bottom tab bar and safe-area padding */
+/** App shell with bottom tab bar, capture sheet, and task detail sheet */
 export default function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
@@ -19,6 +21,8 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
         {children}
       </main>
       <BottomTabBar />
+      <CaptureSheet />
+      <TaskDetailSheet />
     </div>
   );
 }
