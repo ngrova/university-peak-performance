@@ -1,12 +1,12 @@
 ---
 name: review-plan
-description: Spawns 7 task-based sub-agents to review a plan or code diff in parallel. Each agent answers one binary yes/no question covering security, data integrity, reuse, standards, conflicts, scope, and pattern consistency. Use after writing PLAN.md and after building code.
+description: Spawns 8 task-based sub-agents to review a plan or code diff in parallel. Each agent answers one binary yes/no question covering security, data integrity, reuse, standards, conflicts, scope, pattern consistency, and test coverage. Use after writing PLAN.md and after building code.
 user_invocable: true
 ---
 
 # review-plan
 
-Review a PLAN.md or code diff by spawning 7 independent sub-agents in parallel. Each answers one focused question with APPROVED or REJECTED plus a specific reason.
+Review a PLAN.md or code diff by spawning 8 independent sub-agents in parallel. Each answers one focused question with APPROVED or REJECTED plus a specific reason.
 
 ## Step 1 — Determine Review Mode
 
@@ -15,9 +15,9 @@ Review a PLAN.md or code diff by spawning 7 independent sub-agents in parallel. 
 
 If PLAN.md exists and has `STATUS: APPROVED`, and there are staged/unstaged code changes, default to code review mode. Otherwise review the plan.
 
-## Step 2 — Spawn 7 Sub-Agents in Parallel
+## Step 2 — Spawn 8 Sub-Agents in Parallel
 
-Use the Agent tool to spawn all 7 agents simultaneously. Each agent receives ONLY the plan text or diff — never the main conversation context. Each returns a single verdict: `APPROVED` or `REJECTED: [specific reason]`.
+Use the Agent tool to spawn all 8 agents simultaneously. Each agent receives ONLY the plan text or diff — never the main conversation context. Each returns a single verdict: `APPROVED` or `REJECTED: [specific reason]`.
 
 ### Agent 1 — Security Audit
 
@@ -114,9 +114,28 @@ Checklist:
 - On CODE REVIEW only: can this code be simplified to fewer lines without losing clarity?
 ```
 
+### Agent 8 — Test Coverage
+
+```
+Review this for test coverage. Answer APPROVED or REJECTED with a specific reason.
+
+On PLAN REVIEW:
+- Do the acceptance criteria have corresponding Playwright E2E tests planned?
+- Are edge cases covered (empty states, error states, unauthenticated access)?
+- If the plan adds new user-facing screens or interactions, are smoke tests included?
+- Infrastructure-only changes (config, CI, docs) are exempt from this check.
+
+On CODE REVIEW:
+- Does this PR include Playwright tests for every acceptance criterion?
+- Do tests verify user-facing behavior (navigate, see, tap, type), not implementation details?
+- Did any existing tests break?
+- Are tests in the correct e2e/ directory following existing patterns?
+- Infrastructure-only changes (config, CI, docs) are exempt from this check.
+```
+
 ## Step 3 — Collect Verdicts
 
-Wait for all 7 agents to complete. Present results as:
+Wait for all 8 agents to complete. Present results as:
 
 ```
 ## Review Results
@@ -130,16 +149,17 @@ Wait for all 7 agents to complete. Present results as:
 | 5 | Decision Conflict | APPROVED / REJECTED: reason |
 | 6 | Scope | APPROVED / REJECTED: reason |
 | 7 | Pattern Consistency | APPROVED / REJECTED: reason |
+| 8 | Test Coverage | APPROVED / REJECTED: reason |
 ```
 
 ## Step 4 — Handle Results
 
-- **All 7 APPROVED:** Tell the user the plan/code passed review. Proceed with the next step in the workflow.
+- **All 8 APPROVED:** Tell the user the plan/code passed review. Proceed with the next step in the workflow.
 - **Any REJECTED:** List the specific rejections. Revise the plan or code to address each rejection. Then re-run the review on the revised version.
 
 ## Rules
 
 - Sub-agents must NEVER see the main conversation — they only see the plan or diff
-- All 7 agents must run in PARALLEL, not sequentially
+- All 8 agents must run in PARALLEL, not sequentially
 - Each agent returns exactly one verdict — no discussions or maybes
 - Never skip a review agent, even if you think it doesn't apply

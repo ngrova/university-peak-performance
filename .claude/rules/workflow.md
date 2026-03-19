@@ -5,11 +5,11 @@
 When a user describes a feature or fix in plain English, ALWAYS run this full pipeline automatically:
 
 1. **Plan** — Create PLAN.md using the make-plan skill template (approach, files, scope, STATUS: PENDING). Present it to the user and wait for approval.
-2. **Review plan** — Spawn 7 sub-agents in parallel (security, data integrity, reuse, standards, conflicts, scope, pattern consistency). If any reject, revise and re-review until all 7 approve.
+2. **Review plan** — Spawn 8 sub-agents in parallel (security, data integrity, reuse, standards, conflicts, scope, pattern consistency, test coverage). If any reject, revise and re-review until all 8 approve.
 3. **Approve** — Set PLAN.md STATUS: APPROVED (unlocks the require-plan hook)
 4. **Build** — Write code on a feature branch (nick/ or erin/ prefix)
 5. **Manager check** — Stop hook auto-runs typecheck + tests. Fix failures before proceeding.
-6. **Review code** — Spawn the same 7 sub-agents on the code diff. Fix rejections, re-review until all 7 approve.
+6. **Review code** — Spawn the same 8 sub-agents on the code diff. Fix rejections, re-review until all 8 approve.
 7. **Ship** — Create PR with conventional commit title and what/why/how-to-test description
 8. **CI** — Lint, typecheck, tests, gitleaks, Greptile, Snyk run automatically
 9. **Human tests** — Nick or Erin tests on phone/browser
@@ -55,6 +55,12 @@ The user should NEVER need to type a slash command. Just describe what you want 
 
 ## STATUS: PENDING
 ```
+
+## E2E Testing Requirement
+
+Every feature PR that adds or changes user-facing screens or interactions must include Playwright smoke tests covering the acceptance criteria. The Testing Agent (Agent 8) will reject PRs with missing or insufficient test coverage. Infrastructure-only changes (config, CI, docs) are exempt.
+
+Tests live in `apps/thriving-mobile/e2e/` and verify user-facing behavior: navigate to a page, see expected content, tap buttons, type in inputs. Do not test implementation details.
 
 ## Learning from Corrections
 
