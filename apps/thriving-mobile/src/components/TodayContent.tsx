@@ -14,17 +14,17 @@ export default function TodayContent(): React.JSX.Element {
 
   const { data: oneThing } = useQuery({
     queryKey: ['one-thing'],
-    queryFn: fetchOneThing,
+    queryFn: () => fetchOneThing(),
   });
 
   const { data: queue } = useQuery({
     queryKey: ['queue'],
-    queryFn: fetchQueue,
+    queryFn: () => fetchQueue(),
   });
 
   const { data: deadlines } = useQuery({
     queryKey: ['deadlines'],
-    queryFn: fetchDeadlineTasks,
+    queryFn: () => fetchDeadlineTasks(),
   });
 
   /** Invalidates all Today queries after a task is completed */

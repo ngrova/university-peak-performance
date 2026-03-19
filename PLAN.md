@@ -1,18 +1,15 @@
-# Plan: Fix server action Supabase client — use getAll/setAll with try/catch
+# Plan: Fix TanStack Query + server action integration
 
 ## Task
-"Fix server actions so Today screen shows tasks and Capture saves successfully. The @upp/db get/set/remove cookie pattern doesn't work reliably with @supabase/ssr@0.5.2 on Netlify."
+"Fix Today screen not showing tasks. TanStack Query passes AbortSignal to server actions which can't be serialized."
 
 ## Approach
-- Create Supabase client directly from @supabase/ssr using getAll/setAll (same API the working middleware uses)
-- Wrap setAll in a try/catch so it doesn't crash when cookieStore.set() throws in Netlify serverless
-- Pass env vars directly (not through @upp/db's process.env indirection)
-- Add try/catch to today-actions.ts fetch functions so errors don't crash the server action stream
+- Wrap server action calls in arrow functions so TanStack Query's context (which includes non-serializable AbortSignal) isn't passed through to the server action
 
 ## Files to Change
-- `apps/thriving-mobile/src/lib/supabase-server.ts` — use @supabase/ssr directly with getAll/setAll + try/catch
+- `apps/thriving-mobile/src/components/TodayContent.tsx` — wrap 3 queryFn calls
 
 ## Scope
-small (1 file)
+small (1 file, 3 lines changed)
 
 ## STATUS: APPROVED
