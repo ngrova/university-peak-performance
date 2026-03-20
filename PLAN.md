@@ -25,4 +25,4 @@ Create scripts/check-dead-code.js that builds an import graph and flags orphaned
 ## Scope
 small (3 files — 2 modified, 1 new)
 
-## STATUS: APPROVED
+## STATUS: COMPLETED
