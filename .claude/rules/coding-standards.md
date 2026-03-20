@@ -8,6 +8,27 @@
 - Nesting: 3 levels max — extract into helper functions
 - Exported functions: 3 max per file
 
+## File Header Comments (required on all .ts and .tsx files in apps/)
+
+Every source file must begin with a header block:
+
+```
+// ═══════════════════════════════════════════════════════════
+// FILE: [filename]
+// PURPOSE: [1-2 sentences in plain English — what this file does,
+//   written so a non-coder could understand it]
+// CALLED BY: [list the files/components that import or use this file]
+// DATA FLOW: [where data comes from → what happens → where it goes]
+// ═══════════════════════════════════════════════════════════
+```
+
+Every exported function must have an expanded comment explaining:
+- What triggers this function (user action, page load, other function)
+- What steps it takes (in plain English, not code jargon)
+- What it returns and what happens next
+
+Exempt: config files (tsconfig, postcss, eslint, tailwind, next.config), package.json, migration files, generated files.
+
 ## TypeScript and React
 
 - TypeScript strict mode — never use `any`
