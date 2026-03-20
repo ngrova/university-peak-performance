@@ -1,30 +1,28 @@
-# Plan: PR 2 — Design Registry + Agent 7 Integration
+# Plan: PR 3 — Dead Code Sweeper + Hook Warning
 
 ## TYPE
 FEATURE
 
 ## Task
 
-Create docs/DESIGN-REGISTRY.md seeded with all shared UI patterns from Phases 1-4. Update Agent 7 with registry-aware checks and touch-it-improve-it rule. Add registry update reminder to make-plan skill. PR 2 of 3 in pipeline evolution spec.
+Create scripts/check-dead-code.js that builds an import graph and flags orphaned files. Add it as a CI job. Add a warning to manager-stop.js when git rm appears in a FEATURE PR. PR 3 of 3 in pipeline evolution spec.
 
 ## Approach
 
-- Create docs/DESIGN-REGISTRY.md listing all canonical shared components with file paths, phases, and usage rules
-- Add REDESIGN + registry conditional block to Agent 7 in review-plan SKILL.md
-- Add registry check reminder to make-plan SKILL.md Step 2
-- Add CLAUDE.md rule: check DESIGN-REGISTRY.md before building any UI component
+- Create scripts/check-dead-code.js (~60 lines): scan apps/thriving-mobile/src/, build import graph via regex, flag files with zero inbound imports that aren't entry points
+- Add dead-code CI job to .github/workflows/ci.yml (runs alongside lint, typecheck, etc.)
+- Add git rm warning for FEATURE PRs to .claude/hooks/manager-stop.js
 
 ## Files to Change
 
-- `.claude/skills/review-plan/SKILL.md` — add registry clause + touch-it-improve-it to Agent 7
-- `.claude/skills/make-plan/SKILL.md` — add registry check reminder
-- `CLAUDE.md` — add design registry rule to Coding Principles
+- `.github/workflows/ci.yml` — add dead-code job
+- `.claude/hooks/manager-stop.js` — add git rm warning for FEATURE PRs
 
 ## New Files
 
-- `docs/DESIGN-REGISTRY.md` — seeded with all shared patterns from Phases 1-4
+- `scripts/check-dead-code.js` — import graph scanner, ~60 lines
 
 ## Scope
-small (4 files — 3 modified, 1 new)
+small (3 files — 2 modified, 1 new)
 
-## STATUS: COMPLETED
+## STATUS: APPROVED
