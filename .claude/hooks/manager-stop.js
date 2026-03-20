@@ -48,6 +48,33 @@ if (!hasCodeChanges) {
   process.exit(0);
 }
 
+const warnings = [];
+
+// Warn if file deletions appear in a FEATURE PR
+try {
+  const planPath = path.join(repoRoot, 'PLAN.md');
+  if (fs.existsSync(planPath)) {
+    const plan = fs.readFileSync(planPath, 'utf8');
+    const typeMatch = plan.match(/^## TYPE\s*\n\s*(\w+)/m);
+    const planType = typeMatch ? typeMatch[1].trim() : 'FEATURE';
+    if (planType === 'FEATURE') {
+      const deletions = execSync('git diff --cached --diff-filter=D --name-only', {
+        encoding: 'utf8',
+        cwd: repoRoot,
+      }).trim();
+      if (deletions) {
+        warnings.push(
+          'WARNING: File deletions detected in a FEATURE PR.\n' +
+          'If this PR replaces existing code, change TYPE to REDESIGN\n' +
+          "and list deleted files in 'Files to Delete'."
+        );
+      }
+    }
+  }
+} catch {
+  // Non-critical — skip warning if check fails
+}
+
 const errors = [];
 
 // Run typecheck
@@ -90,10 +117,13 @@ if (errors.length > 0) {
     })
   );
 } else {
+  const reason = warnings.length > 0
+    ? 'Typecheck and tests passed.\n\n' + warnings.join('\n\n')
+    : 'Typecheck and tests passed.';
   process.stdout.write(
     JSON.stringify({
       decision: 'approve',
-      reason: 'Typecheck and tests passed.',
+      reason,
     })
   );
 }

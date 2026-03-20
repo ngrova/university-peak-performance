@@ -28,6 +28,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  dead-code:
+    name: Dead Code Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for orphaned files
+        run: node scripts/check-dead-code.js
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
