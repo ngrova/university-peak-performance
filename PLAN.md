@@ -27,4 +27,4 @@ Create docs/DESIGN-REGISTRY.md seeded with all shared UI patterns from Phases 1-
 ## Scope
 small (4 files — 3 modified, 1 new)
 
-## STATUS: APPROVED
+## STATUS: COMPLETED
