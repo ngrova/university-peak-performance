@@ -1,3 +1,14 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: task-actions.ts
+// PURPOSE: Handles creating, completing, and editing individual
+//   tasks. These run on the server when a user taps buttons in
+//   the app — like "Add", "Complete", or changing a task's title.
+// CALLED BY: components/CaptureSheet.tsx, components/TaskRow.tsx,
+//   components/TaskActions.tsx, components/TaskDetailSheet.tsx,
+//   components/TaskSwipeRow.tsx
+// DATA FLOW: User action in UI → server action here → @upp/db
+//   writes to Supabase → revalidates cached pages
+// ═══════════════════════════════════════════════════════════
 'use server';
 
 import { createTask, updateTask, getTasksByGoal } from '@upp/db';
@@ -11,7 +22,14 @@ interface CaptureInput {
   priority?: 1 | 2 | 3 | 4;
 }
 
-/** Creates a new task from the capture sheet */
+/**
+ * Triggered by: user taps "Add" in the capture bottom sheet.
+ * Steps: checks the user is logged in, counts existing tasks under
+ *   the chosen goal to set sort order, then inserts the new task
+ *   into Supabase and refreshes the Today screen.
+ * Returns: empty object on success, or { error: message } if
+ *   something went wrong (shown to the user in the sheet).
+ */
 export async function captureTask(input: CaptureInput): Promise<{ error?: string }> {
   try {
     const supabase = await getServerClient();
@@ -35,7 +53,12 @@ export async function captureTask(input: CaptureInput): Promise<{ error?: string
   }
 }
 
-/** Marks a task as done with completed_at timestamp */
+/**
+ * Triggered by: user swipes right on a task or taps "Complete" in detail sheet.
+ * Steps: connects to Supabase, sets the task's status to "done" and
+ *   records the current time as completed_at, then refreshes the page.
+ * Returns: empty object on success, or { error: message } on failure.
+ */
 export async function completeTask(taskId: string): Promise<{ error?: string }> {
   try {
     const supabase = await getServerClient();
@@ -50,7 +73,13 @@ export async function completeTask(taskId: string): Promise<{ error?: string }> 
   }
 }
 
-/** Updates a task field (auto-save from detail sheet) */
+/**
+ * Triggered by: user edits a field in the task detail sheet (title,
+ *   deadline, notes, or status) — fires on blur or change.
+ * Steps: connects to Supabase, updates the single field on the task
+ *   row, then refreshes the Today screen cache.
+ * Returns: empty object on success, or { error: message } on failure.
+ */
 export async function updateTaskField(
   taskId: string,
   field: string,

@@ -1,3 +1,14 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: page.tsx (signup)
+// PURPOSE: The create-account screen — email and password form.
+//   On success, sends the user to the Today tab. Shows errors
+//   inline if something goes wrong (e.g., email already taken).
+// CALLED BY: Next.js framework (automatic — this is the /signup route);
+//   also linked from login/page.tsx
+// DATA FLOW: User types email + password → form submits →
+//   Supabase auth creates account → success redirects to /today,
+//   failure shows error message
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useState } from 'react';
@@ -6,7 +17,13 @@ import Link from 'next/link';
 import { createBrowserClient } from '@upp/db';
 import InputField from '@/components/InputField';
 
-/** Signup page with email/password registration */
+/**
+ * Triggered by: user navigates to /signup (linked from login page).
+ * Steps: renders email and password inputs. On submit, calls
+ *   Supabase signUp. If registration fails, shows the error
+ *   message inline. If it succeeds, navigates to /today.
+ * Returns: the signup form UI.
+ */
 export default function SignupPage(): React.JSX.Element {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -14,7 +31,7 @@ export default function SignupPage(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  /** Handles form submission for sign-up */
+  /** User taps "Sign up" → creates account with Supabase → redirects or shows error */
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError(null);

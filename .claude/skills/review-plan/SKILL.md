@@ -135,8 +135,8 @@ Answer APPROVED or REJECTED with a specific reason citing the exact line and vio
 Checklist — reject if ANY item fails:
 
 1. SANDI METZ RULES (hard limits)
-   - Files over 100 lines → REJECT. (Exempt: migration files, test files, type-only files.)
-   - Functions over 25 lines → REJECT.
+   - Files over 100 CODE lines → REJECT. Comments and blank lines are excluded from the count — the limit enforces small focused logic, not penalizing documentation. (Exempt: migration files, test files, type-only files.)
+   - Functions over 25 CODE lines → REJECT. Same exclusion — comments and blanks don't count.
    - More than 4 parameters on any function → REJECT. Use an options object.
    - Nesting deeper than 3 levels → REJECT. Extract inner blocks. No nested ternaries.
    - More than 3 exported members per file → REJECT. (TypeScript type/interface exports are exempt from this count.)

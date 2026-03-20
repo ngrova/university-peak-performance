@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: TaskRow.tsx
+// PURPOSE: A single task row used on the Today screen. Shows the
+//   task title, goal name, and due date. Tapping opens the detail
+//   sheet; swiping right marks it complete.
+// CALLED BY: components/QueueList.tsx, components/OverdueList.tsx
+// DATA FLOW: Parent passes a task as prop → tap opens detail sheet
+//   via store → swipe calls completeTask server action → parent's
+//   onCompleted callback refreshes the list
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useRef, useState } from 'react';
@@ -11,7 +21,13 @@ interface TaskRowProps {
   onCompleted?: () => void;
 }
 
-/** Single task row with tap-to-open and swipe-right-to-complete */
+/**
+ * Triggered by: QueueList or OverdueList renders one of these per task.
+ * Steps: shows the task's title, goal, and due date. Tracks touch
+ *   start/end positions — a rightward swipe > 80px triggers the
+ *   completeTask server action. A tap opens the task detail sheet.
+ * Returns: a single interactive task row element.
+ */
 export default function TaskRow({ task, onCompleted }: TaskRowProps): React.JSX.Element {
   const openDetail = useTaskDetail((s) => s.open);
   const startX = useRef(0);

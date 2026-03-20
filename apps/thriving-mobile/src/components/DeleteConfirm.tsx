@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: DeleteConfirm.tsx
+// PURPOSE: An inline confirmation row that appears when a user
+//   swipes left to delete a task. Shows "Delete [task name]?"
+//   with Cancel and Delete buttons to prevent accidental deletes.
+// CALLED BY: components/TaskSwipeRow.tsx
+// DATA FLOW: TaskSwipeRow detects left swipe → renders this instead
+//   of the normal row → user taps Delete → onConfirm fires →
+//   TaskSwipeRow calls deleteTaskAction
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React from 'react';
@@ -8,7 +18,13 @@ interface DeleteConfirmProps {
   onCancel: () => void;
 }
 
-/** Inline confirmation row shown before deleting a task */
+/**
+ * Triggered by: TaskSwipeRow replaces itself with this after a left swipe.
+ * Steps: shows the task title in red with "Delete?" text, plus
+ *   Cancel and Delete buttons. Cancel restores the normal row,
+ *   Delete fires the parent's onConfirm callback.
+ * Returns: a confirmation row element.
+ */
 export default function DeleteConfirm({ title, onConfirm, onCancel }: DeleteConfirmProps): React.JSX.Element {
   return (
     <div className="flex items-center justify-between py-3 px-1" style={{ minHeight: '44px' }}>

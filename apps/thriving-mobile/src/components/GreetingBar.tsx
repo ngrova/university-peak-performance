@@ -1,6 +1,20 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: GreetingBar.tsx
+// PURPOSE: Shows a personalized greeting ("Good morning") and
+//   today's date at the top of the Today screen.
+// CALLED BY: components/TodayContent.tsx
+// DATA FLOW: No external data — reads the device clock to pick
+//   morning/afternoon/evening and format the date string
+// ═══════════════════════════════════════════════════════════
 import React from 'react';
 
-/** Displays "Good morning/afternoon/evening, Nick" with today's date */
+/**
+ * Triggered by: TodayContent renders this at the top of the screen.
+ * Steps: reads the current hour from the device clock, picks
+ *   "morning", "afternoon", or "evening", and formats today's
+ *   date as "Wednesday, March 20".
+ * Returns: a header row with the greeting and date.
+ */
 export default function GreetingBar(): React.JSX.Element {
   const hour = new Date().getHours();
   const period = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';

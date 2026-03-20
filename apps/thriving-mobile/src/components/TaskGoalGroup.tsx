@@ -1,3 +1,12 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: TaskGoalGroup.tsx
+// PURPOSE: A collapsible section on the Tasks screen that groups
+//   tasks under a goal heading. Tap the header to expand/collapse.
+//   Each task inside is a swipeable row.
+// CALLED BY: components/TasksList.tsx
+// DATA FLOW: TasksList groups tasks by goal → passes each group
+//   here → this renders goal title header + TaskSwipeRow per task
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useState } from 'react';
@@ -11,7 +20,13 @@ interface TaskGoalGroupProps {
   onTaskChanged: () => void;
 }
 
-/** Collapsible section grouping tasks under a goal */
+/**
+ * Triggered by: TasksList renders one of these per goal.
+ * Steps: shows a clickable header with the goal title, task count,
+ *   and a chevron. Clicking toggles the body open/closed. When
+ *   open, renders a TaskSwipeRow for each task in the group.
+ * Returns: a collapsible section element.
+ */
 export default function TaskGoalGroup({ goalTitle, tasks, onTaskChanged }: TaskGoalGroupProps): React.JSX.Element {
   const [open, setOpen] = useState(true);
   const Icon = open ? ChevronDown : ChevronRight;

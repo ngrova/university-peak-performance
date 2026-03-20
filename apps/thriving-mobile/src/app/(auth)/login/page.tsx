@@ -1,3 +1,14 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: page.tsx (login)
+// PURPOSE: The sign-in screen — email and password form. On
+//   success, sends the user to the Today tab. Shows errors
+//   inline if credentials are wrong.
+// CALLED BY: Next.js framework (automatic — this is the /login route);
+//   also linked from signup/page.tsx
+// DATA FLOW: User types email + password → form submits →
+//   Supabase auth checks credentials → success redirects to
+//   /today, failure shows error message
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useState } from 'react';
@@ -6,7 +17,14 @@ import Link from 'next/link';
 import { createBrowserClient } from '@upp/db';
 import InputField from '@/components/InputField';
 
-/** Login page with email/password auth */
+/**
+ * Triggered by: user navigates to /login (or middleware redirects
+ *   unauthenticated users here).
+ * Steps: renders email and password inputs. On submit, calls
+ *   Supabase signInWithPassword. If auth fails, shows the error
+ *   message inline. If auth succeeds, navigates to /today.
+ * Returns: the login form UI.
+ */
 export default function LoginPage(): React.JSX.Element {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -14,7 +32,7 @@ export default function LoginPage(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  /** Handles form submission for sign-in */
+  /** User taps "Sign in" → validates with Supabase → redirects or shows error */
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError(null);

@@ -1,3 +1,12 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: tasks-page-actions.ts
+// PURPOSE: Fetches the full task list and handles task deletion
+//   for the Tasks screen (the "all tasks" inventory view).
+// CALLED BY: components/TasksContent.tsx, components/TaskSwipeRow.tsx
+// DATA FLOW: TasksContent loads → fetchAllTasks runs on server →
+//   @upp/db queries Supabase → returns tasks with goal context;
+//   swipe-left delete → deleteTaskAction → @upp/db removes row
+// ═══════════════════════════════════════════════════════════
 'use server';
 
 import { getAllTasksWithContext, deleteTask } from '@upp/db';
@@ -5,7 +14,13 @@ import type { TaskWithContext } from '@upp/db';
 import { getServerClient } from '@/lib/supabase-server';
 import { revalidatePath } from 'next/cache';
 
-/** Fetches all tasks for the current user with goal/pillar context */
+/**
+ * Triggered by: TasksContent mounts and TanStack Query runs this.
+ * Steps: gets the logged-in user, then asks @upp/db for every task
+ *   they own — including which goal and pillar each belongs to.
+ * Returns: array of tasks with goal context for the full inventory
+ *   view, or empty array if not logged in.
+ */
 export async function fetchAllTasks(): Promise<TaskWithContext[]> {
   const supabase = await getServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -13,7 +28,12 @@ export async function fetchAllTasks(): Promise<TaskWithContext[]> {
   return getAllTasksWithContext(supabase, user.id);
 }
 
-/** Deletes a task by ID */
+/**
+ * Triggered by: user confirms deletion after swiping left on a task.
+ * Steps: connects to Supabase, deletes the task row, then refreshes
+ *   both the Tasks and Today screen caches.
+ * Returns: empty object on success, or { error: message } on failure.
+ */
 export async function deleteTaskAction(taskId: string): Promise<{ error?: string }> {
   try {
     const supabase = await getServerClient();

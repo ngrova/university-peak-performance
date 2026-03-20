@@ -1,3 +1,12 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: CaptureSheet.tsx
+// PURPOSE: The "quick add" bottom sheet — slides up from the
+//   bottom so users can type a task title, pick a goal, and save.
+//   Stays open after each save for rapid-fire task capture.
+// CALLED BY: app/(app)/layout.tsx (always mounted in the app shell)
+// DATA FLOW: User types title + picks goal → taps Add → captureTask
+//   server action saves to Supabase → input clears for next entry
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
@@ -6,7 +15,14 @@ import { useCaptureSheet } from '@/hooks/use-capture-sheet';
 import { captureTask } from '@/actions/task-actions';
 import GoalPicker from './GoalPicker';
 
-/** Bottom sheet for rapid task capture — stays open after each save */
+/**
+ * Triggered by: useCaptureSheet store's isOpen becomes true (via tab
+ *   bar or FAB button).
+ * Steps: shows a text input and goal dropdown. On submit, calls
+ *   captureTask server action, clears the input on success (keeps
+ *   user's text on error), and auto-focuses for the next entry.
+ * Returns: the bottom sheet overlay and form, or null when closed.
+ */
 export default function CaptureSheet(): React.JSX.Element | null {
   const isOpen = useCaptureSheet((s) => s.isOpen);
   const close = useCaptureSheet((s) => s.close);

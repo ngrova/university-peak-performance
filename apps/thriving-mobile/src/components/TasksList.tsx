@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: TasksList.tsx
+// PURPOSE: Takes the full task array, applies search and status
+//   filters, groups the results by goal, and renders a
+//   TaskGoalGroup for each group. Shows empty-state messages
+//   when no tasks match.
+// CALLED BY: components/TasksContent.tsx
+// DATA FLOW: TasksContent passes tasks + search + filter → this
+//   filters and groups them → renders TaskGoalGroup per goal
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useMemo } from 'react';
@@ -11,7 +21,14 @@ interface TasksListProps {
   onTaskChanged: () => void;
 }
 
-/** Filters, groups by goal, and renders task list */
+/**
+ * Triggered by: TasksContent renders this with the full task array.
+ * Steps: applies the text search filter (title match), then the
+ *   status filter (all/active/blocked/completed), groups surviving
+ *   tasks by their goal title, and renders a TaskGoalGroup per
+ *   group. Shows "No tasks match" if the filtered list is empty.
+ * Returns: grouped task sections, or an empty-state message.
+ */
 export default function TasksList({ tasks, search, filter, onTaskChanged }: TasksListProps): React.JSX.Element {
   const filtered = useMemo(() => {
     let result = tasks;

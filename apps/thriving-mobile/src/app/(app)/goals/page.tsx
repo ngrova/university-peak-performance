@@ -1,6 +1,18 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: page.tsx (goals)
+// PURPOSE: Placeholder for the Goals screen — will show life
+//   pillars and their linked goals in Phase 3. Currently just
+//   displays a "coming soon" message.
+// CALLED BY: Next.js framework (automatic — this is the /goals route)
+// DATA FLOW: No data flow yet — static placeholder content only
+// ═══════════════════════════════════════════════════════════
 import React from 'react';
 
-/** Placeholder for the Goals screen — life pillars drill-down */
+/**
+ * Triggered by: user navigates to the Goals tab.
+ * Steps: renders a static heading and "coming in Phase 3" message.
+ * Returns: the placeholder Goals screen.
+ */
 export default function GoalsPage(): React.JSX.Element {
   return (
     <div className="pt-4 tab-enter">

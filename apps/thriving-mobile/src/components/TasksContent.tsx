@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: TasksContent.tsx
+// PURPOSE: The main Tasks screen — fetches all tasks and manages
+//   the search text and status filter. Combines the search bar,
+//   filter chips, task list, and floating "+" button.
+// CALLED BY: app/(app)/tasks/page.tsx
+// DATA FLOW: Page renders this → TanStack Query calls fetchAllTasks
+//   → user types/filters → state flows to TasksList for filtering
+//   → task mutations trigger re-fetch via handleChanged
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useState, useCallback } from 'react';
@@ -9,7 +19,14 @@ import TaskSearchBar from './TaskSearchBar';
 import TaskFilterChips from './TaskFilterChips';
 import TasksList from './TasksList';
 
-/** Orchestrator: fetches tasks and manages search/filter state */
+/**
+ * Triggered by: navigating to the Tasks tab (page.tsx renders this).
+ * Steps: fetches all tasks via TanStack Query, holds the search text
+ *   and filter selection in state, renders TaskSearchBar + TaskFilterChips
+ *   + TasksList + floating add button. When any task is changed
+ *   (completed, deleted), invalidates all relevant query caches.
+ * Returns: the full Tasks screen UI as a React element.
+ */
 export default function TasksContent(): React.JSX.Element {
   const queryClient = useQueryClient();
   const openCapture = useCaptureSheet((s) => s.open);

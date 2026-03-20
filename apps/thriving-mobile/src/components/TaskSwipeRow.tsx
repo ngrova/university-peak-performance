@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: TaskSwipeRow.tsx
+// PURPOSE: A task row used on the Tasks screen (full inventory)
+//   with swipe gestures — swipe right to complete, swipe left to
+//   delete. Shows status indicators (done, blocked, overdue).
+// CALLED BY: components/TaskGoalGroup.tsx
+// DATA FLOW: TaskGoalGroup passes a task prop → swipe right calls
+//   completeTask server action → swipe left shows DeleteConfirm →
+//   confirm calls deleteTaskAction → parent refreshes the list
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useRef, useState } from 'react';
@@ -13,7 +23,15 @@ interface TaskSwipeRowProps {
   onChanged: () => void;
 }
 
-/** Task row with swipe-right to complete and swipe-left to delete */
+/**
+ * Triggered by: TaskGoalGroup renders one of these per task.
+ * Steps: tracks touch gestures — right swipe > 80px completes the
+ *   task, left swipe > 80px shows a delete confirmation row. Tap
+ *   opens the task detail sheet. Shows visual indicators for done
+ *   (green circle, strikethrough), blocked (purple border), and
+ *   overdue (red date).
+ * Returns: an interactive task row with swipe gesture support.
+ */
 export default function TaskSwipeRow({ task, onChanged }: TaskSwipeRowProps): React.JSX.Element {
   const openDetail = useTaskDetail((s) => s.open);
   const startX = useRef(0);
