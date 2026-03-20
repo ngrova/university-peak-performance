@@ -1,28 +1,21 @@
-# Plan: PR 3 — Dead Code Sweeper + Hook Warning
-
-## TYPE
-FEATURE
+# Plan: Restructure Goals — Rename, Split, and Reparent
 
 ## Task
-
-Create scripts/check-dead-code.js that builds an import graph and flags orphaned files. Add it as a CI job. Add a warning to manager-stop.js when git rm appears in a FEATURE PR. PR 3 of 3 in pipeline evolution spec.
+Rename 7 existing goals to shorter actionable names, add 7 new goals split from originals, and move some goals to different pillars. Data cleanup only — no schema changes.
 
 ## Approach
-
-- Create scripts/check-dead-code.js (~60 lines): scan apps/thriving-mobile/src/, build import graph via regex, flag files with zero inbound imports that aren't entry points
-- Add dead-code CI job to .github/workflows/ci.yml (runs alongside lint, typecheck, etc.)
-- Add git rm warning for FEATURE PRs to .claude/hooks/manager-stop.js
+- Write a Supabase migration SQL file using title-based lookups (no hardcoded UUIDs)
+- Renames: UPDATE goals SET title, description WHERE title matches old name
+- New goals: INSERT using subqueries to resolve pillar_id by pillar name
+- Moves: UPDATE goals SET pillar_id using subquery on target pillar name
 
 ## Files to Change
-
-- `.github/workflows/ci.yml` — add dead-code job
-- `.claude/hooks/manager-stop.js` — add git rm warning for FEATURE PRs
+- None (existing code unchanged)
 
 ## New Files
-
-- `scripts/check-dead-code.js` — import graph scanner, ~60 lines
+- `apps/thriving/supabase/migrations/20260320000001_restructure_goals.sql`
 
 ## Scope
-small (3 files — 2 modified, 1 new)
+small (1 new file)
 
-## STATUS: COMPLETED
+## STATUS: APPROVED
