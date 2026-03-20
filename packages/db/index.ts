@@ -11,6 +11,7 @@ export { getTasksByGoal, createTask, updateTask, deleteTask, unpinOneThingForUse
 export type { CreateTaskInput } from './tasks'
 export { getOneThingTask, getTasksWithDeadlines, getTasksForQueue } from './tasks-views'
 export type { TaskWithContext } from './tasks-views'
+export { getAllTasksWithContext } from './tasks-all'
 export { saveAssessment, getAssessmentHistory, getLatestAssessment, deleteAssessment } from './assessments'
 export type { Assessment, DomainKey, DomainScores, DomainAverages } from './assessments'
 export { getTreeData } from './tree'
