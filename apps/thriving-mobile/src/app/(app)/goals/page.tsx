@@ -1,33 +1,20 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: page.tsx (goals)
-// PURPOSE: Placeholder for the Goals screen — will show life
-//   pillars and their linked goals in Phase 3. Currently just
-//   displays a "coming soon" message.
+// PURPOSE: The Goals tab's page — renders GoalsContent which
+//   handles the three-level drill-down: pillars → goals → tasks.
 // CALLED BY: Next.js framework (automatic — this is the /goals route)
-// DATA FLOW: No data flow yet — static placeholder content only
+// DATA FLOW: Next.js renders this → it renders GoalsContent →
+//   GoalsContent manages drill-down navigation and data fetching
 // ═══════════════════════════════════════════════════════════
 import React from 'react';
+import GoalsContent from '@/components/GoalsContent';
 
 /**
  * Triggered by: user navigates to the Goals tab.
- * Steps: renders a static heading and "coming in Phase 3" message.
- * Returns: the placeholder Goals screen.
+ * Steps: renders the GoalsContent component which handles all
+ *   drill-down navigation, data fetching, and display.
+ * Returns: the Goals screen UI.
  */
 export default function GoalsPage(): React.JSX.Element {
-  return (
-    <div className="pt-4 tab-enter">
-      <h1
-        className="text-2xl font-bold"
-        style={{ color: 'var(--text-primary)' }}
-      >
-        Goals
-      </h1>
-      <p
-        className="mt-2 text-base"
-        style={{ color: 'var(--text-secondary)' }}
-      >
-        Life Pillars and Goals — coming in Phase 3.
-      </p>
-    </div>
-  );
+  return <GoalsContent />;
 }
