@@ -11,12 +11,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchPillars, fetchGoalsForPillar, fetchTasksForGoal } from '@/actions/goals-page-actions';
-
-export interface BreadcrumbItem {
-  label: string;
-  level: 'pillars' | 'pillar' | 'goal';
-  id?: string;
-}
+import type { BreadcrumbItem } from '@/types/breadcrumb';
 
 /** Unwraps { data } | { error } from server actions, throwing on error */
 async function unwrap<T>(fn: () => Promise<{ data: T } | { error: string }>): Promise<T> {
@@ -45,7 +40,7 @@ function useGoalsNav() {
     setGoalId(id); setGoalTitle(title);
   }, []);
 
-  const navigateTo = useCallback((target: 'pillars' | 'pillar') => {
+  const navigateTo = useCallback((target: string) => {
     if (target === 'pillars') { setPillarId(null); setGoalId(null); }
     if (target === 'pillar') { setGoalId(null); }
   }, []);

@@ -1,33 +1,20 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: page.tsx (tree)
-// PURPOSE: Placeholder for the Tree screen — will show the
-//   domino tree visualization in Phase 4. Currently just
-//   displays a "coming soon" message.
+// PURPOSE: The Tree tab's page — renders TreeContent which
+//   handles the Domino Tree's zone-based drill-down navigation.
 // CALLED BY: Next.js framework (automatic — this is the /tree route)
-// DATA FLOW: No data flow yet — static placeholder content only
+// DATA FLOW: Next.js renders this → it renders TreeContent →
+//   TreeContent manages drill-down navigation and data display
 // ═══════════════════════════════════════════════════════════
 import React from 'react';
+import TreeContent from '@/components/TreeContent';
 
 /**
  * Triggered by: user navigates to the Tree tab.
- * Steps: renders a static heading and "coming in Phase 4" message.
- * Returns: the placeholder Tree screen.
+ * Steps: renders the TreeContent component which handles all
+ *   drill-down navigation, data fetching, and tree display.
+ * Returns: the Tree screen UI.
  */
 export default function TreePage(): React.JSX.Element {
-  return (
-    <div className="pt-4 tab-enter">
-      <h1
-        className="text-2xl font-bold"
-        style={{ color: 'var(--text-primary)' }}
-      >
-        Tree
-      </h1>
-      <p
-        className="mt-2 text-base"
-        style={{ color: 'var(--text-secondary)' }}
-      >
-        Domino Tree — coming in Phase 4.
-      </p>
-    </div>
-  );
+  return <TreeContent />;
 }
