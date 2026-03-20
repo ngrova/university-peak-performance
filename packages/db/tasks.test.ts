@@ -23,7 +23,8 @@ const mockTask: Task = {
 
 describe('getTasksByGoal', () => {
   it('filters by goal_id and returns tasks in order', async () => {
-    const order = vi.fn().mockResolvedValue({ data: [mockTask], error: null })
+    const limit = vi.fn().mockResolvedValue({ data: [mockTask], error: null })
+    const order = vi.fn().mockReturnValue({ limit })
     const eq = vi.fn().mockReturnValue({ order })
     const select = vi.fn().mockReturnValue({ eq })
     const client = { from: vi.fn().mockReturnValue({ select }) }
@@ -31,10 +32,12 @@ describe('getTasksByGoal', () => {
     const result = await getTasksByGoal(client as never, 'goal-1')
     expect(result).toEqual([mockTask])
     expect(eq).toHaveBeenCalledWith('goal_id', 'goal-1')
+    expect(limit).toHaveBeenCalledWith(50)
   })
 
   it('throws when supabase returns an error', async () => {
-    const order = vi.fn().mockResolvedValue({ data: null, error: new Error('db error') })
+    const limit = vi.fn().mockResolvedValue({ data: null, error: new Error('db error') })
+    const order = vi.fn().mockReturnValue({ limit })
     const eq = vi.fn().mockReturnValue({ order })
     const select = vi.fn().mockReturnValue({ eq })
     const client = { from: vi.fn().mockReturnValue({ select }) }
