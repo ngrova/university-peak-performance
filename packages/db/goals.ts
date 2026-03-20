@@ -10,10 +10,11 @@ export async function getGoals(
 ): Promise<Goal[]> {
   const { data, error } = await supabase
     .from('goals')
-    .select('*')
+    .select('id, user_id, pillar_id, title, description, target_date, status, sort_order, color, priority_rank, created_at, updated_at')
     .eq('pillar_id', pillarId)
     .eq('status', 'active')
     .order('sort_order', { ascending: true })
+    .limit(100)
   if (error) throw error
   return data
 }
@@ -36,7 +37,7 @@ export async function createGoal(
   const { data, error } = await supabase
     .from('goals')
     .insert({ ...input, user_id: userId })
-    .select()
+    .select('id, user_id, pillar_id, title, description, target_date, status, sort_order, color, priority_rank, created_at, updated_at')
     .single()
   if (error) throw error
   return data
@@ -51,7 +52,7 @@ export async function updateGoal(
     .from('goals')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', id)
-    .select()
+    .select('id, user_id, pillar_id, title, description, target_date, status, sort_order, color, priority_rank, created_at, updated_at')
     .single()
   if (error) throw error
   return data

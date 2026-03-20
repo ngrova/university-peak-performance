@@ -1,34 +1,31 @@
-# Plan: Phase 2 — Tasks Screen (Full Task Management)
+# Plan: Platform traps, CAUTION comments, workflow rule, and DB violation cleanup
 
 ## Task
-"Build the Tasks tab: searchable task list, filter chips (All/Active/Blocked/Completed), grouped by goal with collapsible sections, swipe right to complete, swipe left to delete, tap for task detail. Include Playwright E2E tests."
+"Create platform-traps.md rules file, add CAUTION comments at 3 dangerous boundary crossings, update workflow with knowledge-action rule, fix .select('*') and missing .limit() in packages/db/."
 
 ## Approach
-- Add `getAllTasksWithContext` to @upp/db (new file tasks-all.ts) — returns all tasks for a user with goal/pillar context, with limit
-- Add server action `fetchAllTasks` in tasks-page-actions.ts
-- Build TasksContent client component with search bar, filter chips, and grouped list
-- Reuse existing TaskRow for tap-to-detail and swipe-right-to-complete
-- Add TaskSwipeRow wrapping TaskRow with swipe-left to reveal delete action
-- Add TaskGoalGroup for collapsible sections grouped by goal
-- Add FAB button that opens the existing capture sheet
-- Write Playwright E2E tests: search finds task, filter chips work, tap opens detail, complete via detail sheet
+- Create .claude/rules/platform-traps.md with WRONG→RIGHT patterns for the 6 known production traps
+- Add CAUTION comments to supabase-server.ts, task-actions.ts, TodayContent.tsx
+- Add knowledge-action rule to workflow.md Pre-Flight Check
+- Fix all .select('*') violations in packages/db/ with explicit column lists
+- Add .limit() to all unbounded list queries in packages/db/
+- Add WARNING comment to clients.ts about get/set/remove cookie API
 
 ## Files to Change
-- `packages/db/index.ts` — export new getAllTasksWithContext
-- `apps/thriving-mobile/src/app/(app)/tasks/page.tsx` — replace placeholder
+- `.claude/rules/workflow.md` — add lesson-action rule
+- `apps/thriving-mobile/src/lib/supabase-server.ts` — CAUTION comment
+- `apps/thriving-mobile/src/actions/task-actions.ts` — CAUTION comment
+- `apps/thriving-mobile/src/components/TodayContent.tsx` — CAUTION comment
+- `packages/db/goals.ts` — explicit columns, .limit(100)
+- `packages/db/pillars.ts` — explicit columns, .limit(50), .limit(500)
+- `packages/db/assessments.ts` — explicit columns, .limit(50)
+- `packages/db/tree.ts` — explicit columns, .limit() on all queries
+- `packages/db/clients.ts` — WARNING comment
 
 ## New Files
-- `packages/db/tasks-all.ts` — getAllTasksWithContext query function
-- `apps/thriving-mobile/src/actions/tasks-page-actions.ts` — fetchAllTasks server action
-- `apps/thriving-mobile/src/components/TasksContent.tsx` — data fetching orchestrator
-- `apps/thriving-mobile/src/components/TasksList.tsx` — filtering, grouping, and rendering
-- `apps/thriving-mobile/src/components/TaskSearchBar.tsx` — sticky search input
-- `apps/thriving-mobile/src/components/TaskFilterChips.tsx` — horizontal filter chip row
-- `apps/thriving-mobile/src/components/TaskGoalGroup.tsx` — collapsible goal section
-- `apps/thriving-mobile/src/components/TaskSwipeRow.tsx` — row with bidirectional swipe
-- `apps/thriving-mobile/e2e/phase2-tasks.spec.ts` — E2E acceptance tests
+- `.claude/rules/platform-traps.md` — platform-specific trap documentation
 
 ## Scope
-large (2 changed, 9 new — but coherent single feature)
+large (1 new, 9 changed — coherent infrastructure cleanup)
 
 ## STATUS: APPROVED

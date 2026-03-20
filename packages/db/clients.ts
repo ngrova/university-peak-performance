@@ -25,6 +25,9 @@ interface CookieHandler {
   remove: (name: string, options: CookieOptions) => void;
 }
 
+// WARNING: This uses the get/set/remove cookie API. thriving-mobile code must NOT
+// import this function — use getServerClient() from @/lib/supabase-server.ts instead,
+// which uses the getAll/setAll API required by Netlify serverless.
 export function createServerClient(
   cookies: CookieHandler,
 ): ReturnType<typeof createSupabaseServerClient<Database>> {

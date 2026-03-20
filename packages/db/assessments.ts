@@ -34,7 +34,7 @@ export async function saveAssessment(
       domain_averages: domainAverages,
       overall_score: overallScore,
     })
-    .select()
+    .select('id, user_id, scores, domain_averages, overall_score, created_at')
     .single()
   if (error) throw error
   return data
@@ -46,9 +46,10 @@ export async function getAssessmentHistory(
 ): Promise<Assessment[]> {
   const { data, error } = await supabase
     .from('assessments')
-    .select('*')
+    .select('id, user_id, scores, domain_averages, overall_score, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
+    .limit(50)
   if (error) throw error
   return data ?? []
 }
@@ -59,7 +60,7 @@ export async function getLatestAssessment(
 ): Promise<Assessment | null> {
   const { data, error } = await supabase
     .from('assessments')
-    .select('*')
+    .select('id, user_id, scores, domain_averages, overall_score, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)

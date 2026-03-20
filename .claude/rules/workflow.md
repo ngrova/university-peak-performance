@@ -6,6 +6,7 @@ Before starting any new task:
 
 1. **Clean working tree** — Run `git status`. If there are dirty files from a previous task, either commit them in a dedicated cleanup PR or discard them. Never leave uncommitted changes in the working tree. A clean working tree is a prerequisite for starting work.
 2. **Verify last PR** — Run `gh pr list --state merged --limit 1` and check its status. If the last PR failed CI or is still open, flag it to Nick before proceeding.
+3. **Act on lessons** — Check CLAUDE.md lessons buffer. If any lesson describes a code pattern to fix (e.g., "replace .select('*') with explicit columns"), the CURRENT session must include those fixes in its work — do not just record lessons and move on. Lessons that describe fixes are action items, not notes.
 
 ## Automatic Pipeline — No Slash Commands Needed
 

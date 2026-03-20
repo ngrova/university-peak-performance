@@ -12,6 +12,8 @@ import OverdueList from './OverdueList';
 export default function TodayContent(): React.JSX.Element {
   const queryClient = useQueryClient();
 
+  // CAUTION: Arrow wrapper required on ALL server action queryFn/mutationFn calls
+  // Direct reference causes AbortSignal serialization failure (silent empty data)
   const { data: oneThing } = useQuery({
     queryKey: ['one-thing'],
     queryFn: () => fetchOneThing(),
