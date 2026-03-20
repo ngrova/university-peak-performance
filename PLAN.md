@@ -1,31 +1,19 @@
-# Plan: Platform traps, CAUTION comments, workflow rule, and DB violation cleanup
+# Plan: Fix unit test mocks after .limit() additions
 
 ## Task
-"Create platform-traps.md rules file, add CAUTION comments at 3 dangerous boundary crossings, update workflow with knowledge-action rule, fix .select('*') and missing .limit() in packages/db/."
+"Unit tests fail because mock Supabase chains don't include .limit() — added in PR #87."
 
 ## Approach
-- Create .claude/rules/platform-traps.md with WRONG→RIGHT patterns for the 6 known production traps
-- Add CAUTION comments to supabase-server.ts, task-actions.ts, TodayContent.tsx
-- Add knowledge-action rule to workflow.md Pre-Flight Check
-- Fix all .select('*') violations in packages/db/ with explicit column lists
-- Add .limit() to all unbounded list queries in packages/db/
-- Add WARNING comment to clients.ts about get/set/remove cookie API
+- Add .limit() to mock chains in goals.test.ts, pillars.test.ts, assessments.test.ts
+- Pattern: where mock chain ends at .order() → resolvedValue, insert .limit() returning the resolvedValue
+- For getPillarsWithProgress mocks: add .limit() to goals and tasks sub-query mocks
 
 ## Files to Change
-- `.claude/rules/workflow.md` — add lesson-action rule
-- `apps/thriving-mobile/src/lib/supabase-server.ts` — CAUTION comment
-- `apps/thriving-mobile/src/actions/task-actions.ts` — CAUTION comment
-- `apps/thriving-mobile/src/components/TodayContent.tsx` — CAUTION comment
-- `packages/db/goals.ts` — explicit columns, .limit(100)
-- `packages/db/pillars.ts` — explicit columns, .limit(50), .limit(500)
-- `packages/db/assessments.ts` — explicit columns, .limit(50)
-- `packages/db/tree.ts` — explicit columns, .limit() on all queries
-- `packages/db/clients.ts` — WARNING comment
-
-## New Files
-- `.claude/rules/platform-traps.md` — platform-specific trap documentation
+- `packages/db/goals.test.ts` — add .limit() to getGoals mock chain
+- `packages/db/pillars.test.ts` — add .limit() to getPillars and getPillarsWithProgress mock chains
+- `packages/db/assessments.test.ts` — add .limit() to getAssessmentHistory mock chain
 
 ## Scope
-large (1 new, 9 changed — coherent infrastructure cleanup)
+small (3 test files)
 
 ## STATUS: APPROVED
