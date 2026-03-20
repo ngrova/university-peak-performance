@@ -1,6 +1,8 @@
 import { cookies } from 'next/headers';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
+// CAUTION: Must use getAll/setAll, NOT get/set/remove — Netlify serverless
+// silently drops individual cookie operations. See .claude/rules/platform-traps.md
 /** Creates a Supabase server client with getAll/setAll — same API as middleware */
 export async function getServerClient() {
   const cookieStore = await cookies();

@@ -24,11 +24,13 @@ export async function getPillarsWithProgress(
       .from('goals')
       .select('id, pillar_id')
       .in('pillar_id', pillarIds)
-      .eq('status', 'active'),
+      .eq('status', 'active')
+      .limit(500),
     supabase
       .from('tasks')
       .select('goal_id, status')
-      .eq('user_id', userId),
+      .eq('user_id', userId)
+      .limit(500),
   ])
   if (goalsRes.error) throw goalsRes.error
   if (tasksRes.error) throw tasksRes.error
@@ -61,10 +63,11 @@ export async function getPillars(
 ): Promise<LifePillar[]> {
   const { data, error } = await supabase
     .from('life_pillars')
-    .select('*')
+    .select('id, user_id, name, icon, color, sort_order, is_archived, created_at, updated_at')
     .eq('user_id', userId)
     .eq('is_archived', false)
     .order('sort_order', { ascending: true })
+    .limit(50)
   if (error) throw error
   return data
 }
@@ -84,7 +87,7 @@ export async function createPillar(
   const { data, error } = await supabase
     .from('life_pillars')
     .insert({ ...input, user_id: userId })
-    .select()
+    .select('id, user_id, name, icon, color, sort_order, is_archived, created_at, updated_at')
     .single()
   if (error) throw error
   return data
@@ -99,7 +102,7 @@ export async function updatePillar(
     .from('life_pillars')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', id)
-    .select()
+    .select('id, user_id, name, icon, color, sort_order, is_archived, created_at, updated_at')
     .single()
   if (error) throw error
   return data

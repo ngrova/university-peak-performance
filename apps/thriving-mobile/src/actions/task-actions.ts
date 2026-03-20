@@ -22,6 +22,7 @@ export async function captureTask(input: CaptureInput): Promise<{ error?: string
     const taskInput: Parameters<typeof createTask>[2] = {
       goal_id: input.goal_id,
       title: input.title,
+      // CAUTION: sort_order is int4 (max 2.1B) — use array.length, NEVER Date.now()
       sort_order: existing.length,
     };
     if (input.due_date) taskInput.due_date = input.due_date;
