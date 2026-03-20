@@ -2,8 +2,8 @@
 
 ## Sandi Metz Rules
 
-- Files: 100 lines max
-- Functions: 25 lines max
+- Files: 100 CODE lines max (comments and blank lines are excluded — the limit enforces small focused logic, not penalizing documentation)
+- Functions: 25 CODE lines max (same exclusion — comments and blanks don't count)
 - Parameters: 4 max per function — use an options object if you need more
 - Nesting: 3 levels max — extract into helper functions
 - Exported functions: 3 max per file

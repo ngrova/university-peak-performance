@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: BottomTabBar.tsx
+// PURPOSE: The fixed navigation bar at the bottom of every screen.
+//   Five tabs: Today, Tasks, Capture (+), Goals, Tree. The center
+//   Capture button opens the quick-add sheet instead of navigating.
+// CALLED BY: app/(app)/layout.tsx
+// DATA FLOW: User taps a tab → Link navigates to that route (or
+//   the center button opens CaptureSheet via the Zustand store).
+//   Active tab is highlighted based on the current URL path.
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React from 'react';
@@ -21,7 +31,14 @@ const TABS: readonly TabDef[] = [
   { href: '/tree', label: 'Tree', Icon: GitBranch },
 ];
 
-/** Fixed bottom tab bar — center button opens capture sheet */
+/**
+ * Triggered by: app layout renders this at the bottom of every screen.
+ * Steps: reads the current URL path to determine which tab is active.
+ *   Renders five tab icons — four are Links that navigate, the center
+ *   one is a button that opens the capture sheet via the store.
+ *   Active tab gets a filled icon and label.
+ * Returns: a fixed-position navigation bar element.
+ */
 export default function BottomTabBar(): React.JSX.Element {
   const pathname = usePathname();
   const openCapture = useCaptureSheet((s) => s.open);

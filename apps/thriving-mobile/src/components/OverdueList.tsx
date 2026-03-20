@@ -1,3 +1,12 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: OverdueList.tsx
+// PURPOSE: Shows overdue and due-today tasks with a red warning
+//   icon on the Today screen. Hides itself entirely if nothing
+//   is urgent — so users only see it when action is needed.
+// CALLED BY: components/TodayContent.tsx
+// DATA FLOW: TodayContent passes deadline tasks as prop → this
+//   filters for overdue/today → renders TaskRows for urgent ones
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React from 'react';
@@ -10,7 +19,13 @@ interface OverdueListProps {
   onTaskCompleted: () => void;
 }
 
-/** Shows overdue and due-today tasks with red accent — hidden if empty */
+/**
+ * Triggered by: TodayContent renders this at the bottom of the screen.
+ * Steps: filters the task list down to tasks due today or earlier,
+ *   returns null (renders nothing) if none are urgent, otherwise
+ *   shows a red "Overdue & Due Today" header with TaskRows.
+ * Returns: the urgent tasks section, or null if nothing is overdue.
+ */
 export default function OverdueList({ tasks, onTaskCompleted }: OverdueListProps): React.JSX.Element | null {
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);

@@ -1,9 +1,26 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: middleware.ts
+// PURPOSE: The app's security gate — runs before every page load
+//   to check if the user is logged in. If not, redirects them to
+//   the login page. Public pages (login, signup) skip the check.
+// CALLED BY: Next.js framework (automatic — runs on every request)
+// DATA FLOW: Browser request → middleware reads auth cookies →
+//   Supabase verifies the session → allowed through or redirected
+//   to /login
+// ═══════════════════════════════════════════════════════════
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 const PUBLIC_PATHS = ['/login', '/signup', '/forgot-password', '/auth/confirm'];
 
-/** Redirects unauthenticated users to login */
+/**
+ * Triggered by: Next.js runs this automatically on every page request.
+ * Steps: checks if the URL is a public path (login, signup, etc.) —
+ *   if so, lets it through. Otherwise, creates a Supabase client
+ *   from the request cookies, calls getUser() to verify the session,
+ *   and redirects to /login if no valid user is found.
+ * Returns: NextResponse.next() to allow the request, or a redirect.
+ */
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 

@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: GoalPicker.tsx
+// PURPOSE: A dropdown menu for choosing which goal a new task
+//   belongs to. Goals are grouped under their life pillar headings
+//   (e.g., "Health > Run a marathon"). Loads data on mount.
+// CALLED BY: components/CaptureSheet.tsx
+// DATA FLOW: Component mounts → fetchGoalsForPicker server action
+//   returns pillars + goals → dropdown renders grouped options →
+//   user picks one → onChange sends goal ID back to parent
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -9,7 +19,13 @@ interface GoalPickerProps {
   onChange: (goalId: string) => void;
 }
 
-/** Dropdown to pick a goal, grouped by pillar */
+/**
+ * Triggered by: CaptureSheet renders this inside the capture form.
+ * Steps: on mount, calls fetchGoalsForPicker to get pillars and goals
+ *   from the server. Renders a <select> with <optgroup> per pillar.
+ *   Auto-selects the first goal if nothing is selected yet.
+ * Returns: a styled dropdown element.
+ */
 export default function GoalPicker({ value, onChange }: GoalPickerProps): React.JSX.Element {
   const [pillars, setPillars] = useState<LifePillar[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);

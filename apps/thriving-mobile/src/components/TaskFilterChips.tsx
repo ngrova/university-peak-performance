@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: TaskFilterChips.tsx
+// PURPOSE: Horizontally scrollable filter buttons on the Tasks
+//   screen — "All", "Active", "Blocked", "Completed". Tapping
+//   one filters the task list to show only that status.
+// CALLED BY: components/TasksContent.tsx
+// DATA FLOW: User taps a chip → onChange sends the filter value
+//   to TasksContent → TasksContent passes it to TasksList which
+//   shows only matching tasks
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React from 'react';
@@ -16,7 +26,13 @@ const FILTERS: { label: string; value: FilterValue }[] = [
   { label: 'Completed', value: 'completed' },
 ];
 
-/** Horizontally scrollable filter chips for task status */
+/**
+ * Triggered by: TasksContent renders this below the search bar.
+ * Steps: renders a row of pill-shaped buttons, one per filter option.
+ *   The active filter gets a highlighted style. Tapping a different
+ *   chip calls onChange with that filter's value.
+ * Returns: a scrollable row of filter buttons.
+ */
 export default function TaskFilterChips({ value, onChange }: TaskFilterChipsProps): React.JSX.Element {
   return (
     <div className="flex gap-2 mb-4 overflow-x-auto" role="radiogroup" aria-label="Filter tasks">

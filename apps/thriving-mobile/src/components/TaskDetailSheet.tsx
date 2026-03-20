@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: TaskDetailSheet.tsx
+// PURPOSE: Bottom sheet for viewing and editing a single task —
+//   title, deadline, notes, and action buttons (complete, block).
+//   Changes auto-save on blur so users don't need a save button.
+// CALLED BY: app/(app)/layout.tsx (always mounted in the app shell)
+// DATA FLOW: User taps a task anywhere → useTaskDetail store holds
+//   it → this sheet reads it and renders editable fields → on blur,
+//   updateTaskField server action saves to Supabase
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React from 'react';
@@ -6,7 +16,14 @@ import { useTaskDetail } from '@/hooks/use-task-detail';
 import { updateTaskField } from '@/actions/task-actions';
 import TaskActions from './TaskActions';
 
-/** Bottom sheet showing task details — auto-saves on change */
+/**
+ * Triggered by: useTaskDetail store gets a task (user tapped one).
+ * Steps: reads the task from the store. Renders editable title,
+ *   deadline date picker, notes textarea, and action buttons.
+ *   Each field auto-saves via updateTaskField on blur/change.
+ *   Tapping the backdrop or X closes the sheet.
+ * Returns: the detail sheet overlay, or null when no task is selected.
+ */
 export default function TaskDetailSheet(): React.JSX.Element | null {
   const task = useTaskDetail((s) => s.task);
   const close = useTaskDetail((s) => s.close);

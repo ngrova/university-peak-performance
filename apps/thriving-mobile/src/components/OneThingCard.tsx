@@ -1,3 +1,12 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: OneThingCard.tsx
+// PURPOSE: The hero card at the top of the Today screen showing
+//   the user's single most important task. If no task is pinned,
+//   shows a prompt to pick one. Tapping it opens the detail sheet.
+// CALLED BY: components/TodayContent.tsx
+// DATA FLOW: TodayContent passes the One Thing task as a prop →
+//   this renders it → tap opens TaskDetailSheet via the store
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React from 'react';
@@ -9,7 +18,13 @@ interface OneThingCardProps {
   task: TaskWithContext | null;
 }
 
-/** Hero card showing the pinned One Thing or empty state prompt */
+/**
+ * Triggered by: TodayContent renders this with the One Thing task prop.
+ * Steps: if no task exists, shows a placeholder prompting the user to
+ *   pin one. If a task exists, displays its title and goal badge in a
+ *   highlighted card. Tapping the card opens the task detail sheet.
+ * Returns: a styled card element (or empty-state placeholder).
+ */
 export default function OneThingCard({ task }: OneThingCardProps): React.JSX.Element {
   const openDetail = useTaskDetail((s) => s.open);
 

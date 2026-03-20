@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: TaskActions.tsx
+// PURPOSE: The "Complete" and "Block/Unblock" buttons shown in
+//   the task detail sheet. Lets users mark a task done or flag
+//   it as blocked.
+// CALLED BY: components/TaskDetailSheet.tsx
+// DATA FLOW: User taps a button → completeTask or updateTaskField
+//   server action fires → parent's onCompleted callback closes
+//   the sheet and refreshes data
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useState } from 'react';
@@ -10,7 +20,14 @@ interface TaskActionsProps {
   onCompleted: () => void;
 }
 
-/** Complete and Block/Unblock buttons for task detail sheet */
+/**
+ * Triggered by: TaskDetailSheet renders this with the current task's
+ *   ID and status.
+ * Steps: shows two buttons — "Complete" (calls completeTask server
+ *   action) and "Block/Unblock" (calls updateTaskField to toggle
+ *   status). Complete button disables during processing.
+ * Returns: a row of action buttons.
+ */
 export default function TaskActions({ taskId, status, onCompleted }: TaskActionsProps): React.JSX.Element {
   const [completing, setCompleting] = useState(false);
   const isBlocked = status === 'blocked';

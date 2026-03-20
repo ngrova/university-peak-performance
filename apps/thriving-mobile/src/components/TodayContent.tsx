@@ -1,3 +1,14 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: TodayContent.tsx
+// PURPOSE: The main Today screen — shows a greeting, the user's
+//   #1 focus task ("One Thing"), a priority queue of what's next,
+//   and any overdue or due-today tasks. This is the first thing
+//   users see when they open the app.
+// CALLED BY: app/(app)/today/page.tsx
+// DATA FLOW: Page renders this → TanStack Query calls three server
+//   actions (fetchOneThing, fetchQueue, fetchDeadlineTasks) → data
+//   flows down to child components as props
+// ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useCallback } from 'react';
@@ -8,7 +19,14 @@ import OneThingCard from './OneThingCard';
 import QueueList from './QueueList';
 import OverdueList from './OverdueList';
 
-/** Client wrapper that fetches and renders all Today screen sections */
+/**
+ * Triggered by: navigating to the Today tab (page.tsx renders this).
+ * Steps: fires three parallel data fetches (One Thing, queue, deadlines),
+ *   renders GreetingBar, OneThingCard, QueueList, and OverdueList with
+ *   the fetched data, and provides a callback to refresh everything
+ *   when a task is completed.
+ * Returns: the full Today screen UI as a React element.
+ */
 export default function TodayContent(): React.JSX.Element {
   const queryClient = useQueryClient();
 
@@ -29,7 +47,7 @@ export default function TodayContent(): React.JSX.Element {
     queryFn: () => fetchDeadlineTasks(),
   });
 
-  /** Invalidates all Today queries after a task is completed */
+  /** When a task is completed, tells TanStack Query to re-fetch all three sections */
   const handleCompleted = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['one-thing'] });
     queryClient.invalidateQueries({ queryKey: ['queue'] });

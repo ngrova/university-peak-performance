@@ -1,6 +1,18 @@
+// ═══════════════════════════════════════════════════════════
+// FILE: page.tsx (tree)
+// PURPOSE: Placeholder for the Tree screen — will show the
+//   domino tree visualization in Phase 4. Currently just
+//   displays a "coming soon" message.
+// CALLED BY: Next.js framework (automatic — this is the /tree route)
+// DATA FLOW: No data flow yet — static placeholder content only
+// ═══════════════════════════════════════════════════════════
 import React from 'react';
 
-/** Placeholder for the Tree screen — domino tree with zone navigation */
+/**
+ * Triggered by: user navigates to the Tree tab.
+ * Steps: renders a static heading and "coming in Phase 4" message.
+ * Returns: the placeholder Tree screen.
+ */
 export default function TreePage(): React.JSX.Element {
   return (
     <div className="pt-4 tab-enter">
