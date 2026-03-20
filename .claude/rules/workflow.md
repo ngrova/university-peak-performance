@@ -53,6 +53,9 @@ The require-plan hook blocks all code edits unless PLAN.md contains `STATUS: APP
 ```
 # Plan: [Feature Name]
 
+## TYPE
+[FEATURE | REDESIGN — defaults to FEATURE if omitted]
+
 ## Task
 [Plain English description from Nick or Erin]
 
@@ -62,11 +65,28 @@ The require-plan hook blocks all code edits unless PLAN.md contains `STATUS: APP
 ## Files to Change
 - path/to/file.tsx — what changes
 
+## New Files
+- path/to/new-file.tsx — what it does (skip if none)
+
+## Files to Delete
+- path/to/old-file.tsx — replaced by [new file] (REDESIGN only; skip for FEATURE)
+
 ## Scope
 [small / medium / large]
 
 ## STATUS: PENDING
 ```
+
+## REDESIGN PRs
+
+REDESIGN plans are for cleanup, consolidation, and replacement work where the primary intent is removing or restructuring existing code.
+
+- TYPE: REDESIGN unlocks the "Files to Delete" section and tells review agents to expect deliberate deletions
+- Every file in "Files to Delete" must include a one-line reason
+- Review agents 3, 6, and 8 apply conditional REDESIGN rules (see review-plan skill)
+- REDESIGN PRs deleting 10+ files should be split into smaller PRs
+- Plan line limit is 60 lines for REDESIGN (vs. 40 for FEATURE) to accommodate deletion lists
+- Use FEATURE (the default) for all new functionality, even if it touches existing files
 
 ## E2E Testing Requirement
 

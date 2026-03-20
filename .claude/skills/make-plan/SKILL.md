@@ -26,6 +26,9 @@ Write the file `PLAN.md` at the repo root using this exact format:
 ```
 # Plan: [Feature Name]
 
+## TYPE
+[FEATURE | REDESIGN — defaults to FEATURE if omitted]
+
 ## Task
 [The user's plain-English description, quoted verbatim]
 
@@ -37,6 +40,9 @@ Write the file `PLAN.md` at the repo root using this exact format:
 
 ## New Files
 - path/to/new-file.tsx — what it does (skip this section if none)
+
+## Files to Delete
+- path/to/old-file.tsx — replaced by [new file] (REDESIGN only; skip for FEATURE)
 
 ## Scope
 [small (1-3 files) / medium (4-7 files) / large (8+ files)]
@@ -60,6 +66,8 @@ When the user approves, update PLAN.md to change `STATUS: PENDING` to `STATUS: A
 ## Rules
 
 - Never start writing application code before PLAN.md has STATUS: APPROVED
-- Keep the plan concise — no more than 40 lines
+- Keep the plan concise — no more than 40 lines for FEATURE, 60 lines for REDESIGN (deletion lists need space)
+- TYPE defaults to FEATURE if omitted — only set REDESIGN when the primary intent is replacing, consolidating, or removing existing code
+- REDESIGN plans must list every file being removed in "Files to Delete" with a one-line reason
 - If scope is "large", suggest breaking it into smaller pieces
 - One plan per task — delete the old PLAN.md before creating a new one
