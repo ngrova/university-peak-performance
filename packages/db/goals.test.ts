@@ -19,7 +19,8 @@ const mockGoal: Goal = {
 
 describe('getGoals', () => {
   it('filters by pillar_id and returns active goals', async () => {
-    const order = vi.fn().mockResolvedValue({ data: [mockGoal], error: null })
+    const limit = vi.fn().mockResolvedValue({ data: [mockGoal], error: null })
+    const order = vi.fn().mockReturnValue({ limit })
     const eqStatus = vi.fn().mockReturnValue({ order })
     const eqPillar = vi.fn().mockReturnValue({ eq: eqStatus })
     const select = vi.fn().mockReturnValue({ eq: eqPillar })
@@ -32,7 +33,8 @@ describe('getGoals', () => {
   })
 
   it('throws when supabase returns an error', async () => {
-    const order = vi.fn().mockResolvedValue({ data: null, error: new Error('db error') })
+    const limit = vi.fn().mockResolvedValue({ data: null, error: new Error('db error') })
+    const order = vi.fn().mockReturnValue({ limit })
     const eqStatus = vi.fn().mockReturnValue({ order })
     const eqPillar = vi.fn().mockReturnValue({ eq: eqStatus })
     const select = vi.fn().mockReturnValue({ eq: eqPillar })

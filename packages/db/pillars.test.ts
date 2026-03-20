@@ -17,7 +17,8 @@ const mockPillar: LifePillar = {
 function makeClient(data: unknown, error: unknown = null) {
   const single = vi.fn().mockResolvedValue({ data, error })
   const select = vi.fn().mockReturnValue({ single })
-  const order = vi.fn().mockResolvedValue({ data, error })
+  const limit = vi.fn().mockResolvedValue({ data, error })
+  const order = vi.fn().mockReturnValue({ limit })
   const eqArchived = vi.fn().mockReturnValue({ order })
   const eqUser = vi.fn().mockReturnValue({ eq: eqArchived })
   const selectAll = vi.fn().mockReturnValue({ eq: eqUser })
@@ -85,7 +86,9 @@ describe('getPillarsWithProgress', () => {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
-                  order: vi.fn().mockResolvedValue({ data: pillars, error: null }),
+                  order: vi.fn().mockReturnValue({
+                    limit: vi.fn().mockResolvedValue({ data: pillars, error: null }),
+                  }),
                 }),
               }),
             }),
@@ -95,15 +98,18 @@ describe('getPillarsWithProgress', () => {
           return {
             select: vi.fn().mockReturnValue({
               in: vi.fn().mockReturnValue({
-                eq: vi.fn().mockResolvedValue({ data: goals, error: null }),
+                eq: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({ data: goals, error: null }),
+                }),
               }),
             }),
           }
         }
-        // tasks
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: tasks, error: null }),
+            eq: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue({ data: tasks, error: null }),
+            }),
           }),
         }
       }),
@@ -150,7 +156,9 @@ describe('getPillarsWithProgress', () => {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockReturnValue({
                 eq: vi.fn().mockReturnValue({
-                  order: vi.fn().mockResolvedValue({ data: [mockPillar], error: null }),
+                  order: vi.fn().mockReturnValue({
+                    limit: vi.fn().mockResolvedValue({ data: [mockPillar], error: null }),
+                  }),
                 }),
               }),
             }),
@@ -160,14 +168,18 @@ describe('getPillarsWithProgress', () => {
           return {
             select: vi.fn().mockReturnValue({
               in: vi.fn().mockReturnValue({
-                eq: vi.fn().mockResolvedValue({ data: null, error: new Error('goals error') }),
+                eq: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({ data: null, error: new Error('goals error') }),
+                }),
               }),
             }),
           }
         }
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            eq: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
           }),
         }
       }),

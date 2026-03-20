@@ -49,7 +49,8 @@ describe('saveAssessment', () => {
 
 describe('getAssessmentHistory', () => {
   it('returns assessments ordered by created_at desc', async () => {
-    const order = vi.fn().mockResolvedValue({ data: [mockAssessment], error: null })
+    const limit = vi.fn().mockResolvedValue({ data: [mockAssessment], error: null })
+    const order = vi.fn().mockReturnValue({ limit })
     const eq = vi.fn().mockReturnValue({ order })
     const select = vi.fn().mockReturnValue({ eq })
     const client = { from: vi.fn().mockReturnValue({ select }) }
@@ -60,7 +61,8 @@ describe('getAssessmentHistory', () => {
   })
 
   it('returns empty array when no assessments', async () => {
-    const order = vi.fn().mockResolvedValue({ data: null, error: null })
+    const limit = vi.fn().mockResolvedValue({ data: null, error: null })
+    const order = vi.fn().mockReturnValue({ limit })
     const eq = vi.fn().mockReturnValue({ order })
     const select = vi.fn().mockReturnValue({ eq })
     const client = { from: vi.fn().mockReturnValue({ select }) }
