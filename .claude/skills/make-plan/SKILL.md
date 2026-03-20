@@ -18,6 +18,8 @@ Use Glob, Grep, and Read tools to understand the current code relevant to this t
 - Which files need to change
 - Which existing components, hooks, or utilities can be reused
 - Which new files need to be created
+- Check `docs/DESIGN-REGISTRY.md` for canonical UI patterns — use them instead of building new versions
+- Note if any registry entries need updating as part of this plan
 
 ## Step 3 — Write PLAN.md
 
