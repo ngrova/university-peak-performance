@@ -18,6 +18,10 @@ export interface TaskWithContext extends Task {
   }
 }
 
+// NOTE: The * on tasks is required for Supabase's TypeScript inference on
+// join queries. Replacing with explicit columns breaks type narrowing and
+// returns Record<string, any>. The TaskWithContext interface constrains
+// which columns are actually consumed by the application.
 const CONTEXT_SELECT = `*, goals(title, pillar_id, priority_rank, life_pillars(id, name, color, icon))`
 
 const FAILURE_COST_ORDER: Record<string, number> = {
@@ -120,6 +124,21 @@ export async function getTasksForQueue(
   const { data, error } = await query
   if (error) throw error
   return (data ?? []).sort(sortByCost)
+}
+
+/** Fetches tasks for a goal with goal/pillar context for display */
+export async function getTasksByGoalWithContext(
+  supabase: AnyClient,
+  goalId: string,
+): Promise<TaskWithContext[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select(CONTEXT_SELECT)
+    .eq('goal_id', goalId)
+    .order('sort_order', { ascending: true })
+    .limit(50)
+  if (error) throw error
+  return data ?? []
 }
 
 export { FAILURE_COST_ORDER }

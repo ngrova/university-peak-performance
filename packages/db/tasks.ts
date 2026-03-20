@@ -16,6 +16,7 @@ export async function getTasksByGoal(
     .select(TASK_COLUMNS)
     .eq('goal_id', goalId)
     .order('sort_order', { ascending: true })
+    .limit(50)
   if (error) throw error
   return data
 }
