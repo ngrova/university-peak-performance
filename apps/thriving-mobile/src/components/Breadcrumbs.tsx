@@ -4,20 +4,20 @@
 //   screen showing the user's position in the drill-down
 //   (e.g., "Pillars > Health > Run a marathon"). Tapping any
 //   crumb navigates back to that level.
-// CALLED BY: components/GoalsContent.tsx
-// DATA FLOW: GoalsContent passes breadcrumb items + onNavigate
-//   callback → user taps a crumb → onNavigate fires → hook
-//   resets drill-down state to that level
+// CALLED BY: components/GoalsContent.tsx, components/TreeContent.tsx
+// DATA FLOW: Parent passes breadcrumb items + onNavigate callback
+//   → user taps a crumb → onNavigate fires → hook resets
+//   drill-down state to that level
 // ═══════════════════════════════════════════════════════════
 'use client';
 
 import React from 'react';
-import type { BreadcrumbItem } from '@/hooks/use-goals-drilldown';
+import type { BreadcrumbItem } from '@/types/breadcrumb';
 import BreadcrumbChip from './BreadcrumbChip';
 
 interface BreadcrumbsProps {
   items: BreadcrumbItem[];
-  onNavigate: (level: 'pillars' | 'pillar') => void;
+  onNavigate: (level: string) => void;
 }
 
 /**

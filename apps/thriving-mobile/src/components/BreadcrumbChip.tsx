@@ -11,13 +11,13 @@
 
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import type { BreadcrumbItem } from '@/hooks/use-goals-drilldown';
+import type { BreadcrumbItem } from '@/types/breadcrumb';
 
 interface BreadcrumbChipProps {
   item: BreadcrumbItem;
   isLast: boolean;
   showSeparator: boolean;
-  onNavigate: (level: 'pillars' | 'pillar') => void;
+  onNavigate: (level: string) => void;
 }
 
 /**
@@ -37,7 +37,7 @@ export default function BreadcrumbChip({ item, isLast, showSeparator, onNavigate
       ) : (
         <button
           type="button"
-          onClick={() => onNavigate(item.level as 'pillars' | 'pillar')}
+          onClick={() => onNavigate(item.level)}
           className="text-xs truncate"
           style={{ color: 'var(--accent)', minHeight: '32px' }}
         >
