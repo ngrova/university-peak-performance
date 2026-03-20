@@ -52,6 +52,8 @@ docs/                   Architecture docs, decisions log, specs
 
 ## Coding Principles
 
+- Before building any UI component, check `docs/DESIGN-REGISTRY.md` for the canonical implementation — use it, don't build a new version unless the plan explicitly replaces it
+- When updating shared components, update the design registry as part of the same PR
 - One component per file, every function gets a one-line comment
 - Validate inputs at the database level (CHECK, NOT NULL, UNIQUE, RLS)
 - Paginate all queries (default 50 rows) — never fetch unbounded result sets

@@ -250,6 +250,23 @@ Review this for pattern consistency. Answer APPROVED or REJECTED with a specific
 
 You check that new code follows EXACT patterns already in the codebase.
 
+DESIGN REGISTRY CHECK:
+- Read docs/DESIGN-REGISTRY.md for canonical shared UI patterns.
+- If a new component duplicates a registered pattern (e.g., building a new progress indicator when ProgressRing exists), REJECT with "use canonical [PatternName] from registry."
+- At plan review this is a soft check (flag overlap). At code review this is a hard check (reject duplicates without justification).
+
+REDESIGN HANDLING:
+First read the TYPE field from PLAN.md. If TYPE is FEATURE or absent, apply all rules below unchanged.
+If TYPE is REDESIGN:
+- Check docs/DESIGN-REGISTRY.md for canonical patterns. Flag any new component that duplicates a registered pattern.
+- If the PR touches a file using a deprecated pattern listed in the registry, require migration or explicit deferral justification with a bounded scope ("will migrate in Phase N cleanup").
+
+TOUCH-IT-IMPROVE-IT RULE (applies to ALL PR types):
+- If a PR touches a file that uses a deprecated pattern listed in the registry's "Deprecated patterns" section, require one of:
+  1. Migrate that file to the canonical pattern in this PR
+  2. Add an explicit deferral justification in the plan with bounded scope
+- This ensures deprecated patterns collapse over time instead of persisting.
+
 COMPONENT STRUCTURE:
 - One component per file, PascalCase filename.
 - 'use client' only when the component uses hooks or event handlers.
