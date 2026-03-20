@@ -66,6 +66,18 @@ docs/                   Architecture docs, decisions log, specs
 - When the buffer hits 10: promote 3x-repeated lessons to .claude/rules/, archive oldest unrepeated to .claude/CHANGELOG.md
 - Never modify hooks, delete permanent rules, or weaken review checks
 
+## REDESIGN PRs
+
+REDESIGN PRs are first-class citizens in this pipeline.
+They must shrink or modernize the codebase, not grow it.
+The 9-agent council adapts automatically based on TYPE
+but never relaxes FEATURE safety.
+
+- Set TYPE: REDESIGN when the primary intent is replacing, consolidating, or removing existing code
+- REDESIGN unlocks the "Files to Delete" section — every deletion must list a reason
+- Agents 3, 6, and 8 apply conditional rules for intentional deletions
+- Use FEATURE (the default) for all new functionality
+
 ## Critical Rules (repeated — read these last)
 
 - When a user describes a feature or fix, run the FULL pipeline automatically — no slash commands needed

@@ -97,6 +97,12 @@ Answer APPROVED or REJECTED with a specific reason citing the exact line or file
 
 New code must follow established patterns exactly, not reimplement from scratch.
 
+REDESIGN HANDLING:
+First read the TYPE field from PLAN.md. If TYPE is FEATURE or absent, apply all rules below unchanged.
+If TYPE is REDESIGN:
+- New components that replace items listed in "Files to Delete" are intentional replacements, not duplication. Only flag duplication against files NOT listed in the deletion plan.
+- All other rules (Supabase client, TanStack Query, sort order, server action structure, DB query layer) apply identically.
+
 1. SUPABASE SERVER CLIENT
    - Server-side code must use getServerClient() from @/lib/supabase-server.ts.
    - getServerClient() must use the getAll/setAll cookie API (@supabase/ssr v0.5+). If you see: { get: (name) => ..., set: () => {}, remove: () => {} } → REJECT. Correct pattern: { getAll: () => ..., setAll: (toSet) => { try {...} catch {} } }
@@ -222,6 +228,13 @@ PLAN FIDELITY (code review only):
 - If the diff modifies files NOT listed in the plan (excluding test files, config like tsconfig/package.json, and CI) → REJECT with "unplanned file change: [filename]."
 - If the plan lists a file with NO changes in the diff, flag it (may indicate incomplete work).
 
+REDESIGN PLAN FIDELITY (applies only when PLAN.md TYPE is REDESIGN):
+- File deletions (git rm) are expected ONLY for files listed in "Files to Delete." Unplanned deletions → REJECT.
+- Files listed in "Files to Delete" that are NOT actually deleted in the diff → REJECT as incomplete work.
+- Net file count should generally decrease or stay flat. Small increases are acceptable when splitting large files to meet Sandi Metz limits.
+- A FEATURE plan that contains git rm commands → REJECT with "file deletions require TYPE: REDESIGN."
+- REDESIGN PRs deleting 10+ files → flag and recommend splitting into smaller PRs.
+
 WORKING TREE CLEANLINESS (code review only):
 - If there are untracked or modified files NOT related to the current plan, REJECT with "dirty working tree — commit or discard unrelated files first."
 
@@ -297,6 +310,11 @@ ON CODE REVIEW:
 - TEST ISOLATION: Tests that create data should use unique identifiers (e.g., timestamp in name) so they don't conflict with parallel runs.
 - EXISTING TESTS: If the diff modifies a component or action that has existing tests, verify those tests still pass.
 
+REDESIGN TEST HANDLING (applies only when PLAN.md TYPE is REDESIGN):
+- Test file deletions are expected when the corresponding production code is deleted. Do not reject deletion of tests for removed components.
+- Replacement tests must cover the SAME user-facing behaviors as the removed tests. If a deleted component had 3 test scenarios and the replacement has 1 → REJECT as coverage regression.
+- Orphaned test files (tests that import or reference deleted components) → REJECT as cleanup incomplete.
+
 If all checks pass, answer APPROVED.
 ```
 
@@ -371,3 +389,4 @@ These critical patterns are caught by 2+ agents:
 - `queryFn` without arrow wrapper: Agent 3 + Agent 5
 - Wrong Supabase cookie API: Agent 3 + Agent 5
 - Silent error swallowing: Agent 2 + Agent 9
+- REDESIGN deletion fidelity: Agent 6 + Agent 8
