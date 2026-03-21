@@ -1,38 +1,32 @@
-# Plan: Assistant Delegation Model — PR 2 Application Layer
+# Plan: Clean up packages/db — limits, splits, and owner name fix
 
 ## TYPE
-FEATURE
+REDESIGN
 
 ## Task
-Wire up the delegation model in the mobile app so assistants can pick an account after login, see the owner's data, and know whose account they're viewing.
+Fix the three Sandi Metz violations Agent 3 flagged in packages/db/ (missing .limit(), file size, export count) and update the choose-account default owner name to "Nick Grover."
 
 ## Approach
-- Create `getActingAsUserId()` helper: reads `acting_as` cookie, validates delegation, returns owner_id or falls back to auth.uid()
-- Update 8 server action functions that pass `user.id` → swap to `targetUserId`
-- Build `/choose-account` route: server component checks delegations, redirects if none, renders picker
-- Add `DelegationBanner` to app layout: reads cookie, shows "Viewing Nick's account" with switch link
-- Create seed-delegations script for Erin and Liz
-- Two cookies: `acting_as` (owner UUID) and `acting_as_name` (display name for banner)
+- Add .limit(200) to 3 unbounded queries in tasks-views.ts (getOneThingTask, getTasksWithDeadlines, getTasksForQueue)
+- Split tasks-views.ts into tasks-scoring.ts (One Thing + queue logic) and tasks-context.ts (deadline + goal-context queries)
+- Split pillars.ts into pillars.ts (reads) and pillars-mutations.ts (create/update/delete)
+- Update index.ts re-export paths for both splits
+- Change DEFAULT_OWNER_NAME to "Nick Grover" in choose-account/page.tsx
 
 ## Files to Change
-- `apps/thriving-mobile/src/lib/get-acting-as.ts` — new helper
-- `apps/thriving-mobile/src/actions/delegation-actions.ts` — new: selectAccount, clearActingAs
-- `apps/thriving-mobile/src/actions/today-actions.ts` — targetUserId in 3 functions
-- `apps/thriving-mobile/src/actions/task-actions.ts` — targetUserId in captureTask
-- `apps/thriving-mobile/src/actions/goal-actions.ts` — targetUserId in fetchGoalsForPicker
-- `apps/thriving-mobile/src/actions/goals-page-actions.ts` — targetUserId in fetchPillars
-- `apps/thriving-mobile/src/actions/tasks-page-actions.ts` — targetUserId in fetchAllTasks
-- `apps/thriving-mobile/src/actions/tree-actions.ts` — targetUserId in fetchTreeData
-- `apps/thriving-mobile/src/app/(auth)/choose-account/page.tsx` — new server component
-- `apps/thriving-mobile/src/components/ChooseAccountContent.tsx` — new client component
-- `apps/thriving-mobile/src/components/DelegationBanner.tsx` — new server component
-- `apps/thriving-mobile/src/app/(app)/layout.tsx` — add DelegationBanner
-- `apps/thriving-mobile/src/app/(auth)/login/page.tsx` — redirect to /choose-account
-- `apps/thriving-mobile/src/app/(auth)/signup/page.tsx` — redirect to /choose-account
-- `apps/thriving/scripts/seed-delegations.ts` — new script
-- `docs/DESIGN-REGISTRY.md` — add DelegationBanner + ChooseAccountContent entries
+- `packages/db/tasks-views.ts` → rename to `packages/db/tasks-scoring.ts` (scoring, one-thing, queue)
+- `packages/db/pillars.ts` — remove mutation functions
+- `packages/db/index.ts` — update re-export paths
+- `apps/thriving-mobile/src/app/(auth)/choose-account/page.tsx` — default owner name
+
+## New Files
+- `packages/db/tasks-context.ts` — deadlines + goal-context queries (split from tasks-views.ts)
+- `packages/db/pillars-mutations.ts` — create, update, delete pillar (split from pillars.ts)
+
+## Files to Delete
+- `packages/db/tasks-views.ts` — replaced by tasks-scoring.ts and tasks-context.ts
 
 ## Scope
-large (16 files)
+medium (7 files)
 
-## STATUS: COMPLETED
+## STATUS: APPROVED

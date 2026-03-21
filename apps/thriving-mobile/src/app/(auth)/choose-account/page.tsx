@@ -21,8 +21,9 @@ interface DelegationWithName {
 }
 
 // Hardcoded for now — replaced by a profiles table when the invite flow is built
+// Nick is the only owner; when more owners exist, add UUID → name entries here
 const OWNER_NAMES: Record<string, string> = {};
-const DEFAULT_OWNER_NAME = 'Shared account';
+const DEFAULT_OWNER_NAME = 'Nick Grover';
 
 /**
  * Triggered by: login/signup redirects here, or user navigates directly.

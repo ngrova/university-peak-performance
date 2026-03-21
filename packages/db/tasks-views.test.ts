@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getOneThingTask, getTasksWithDeadlines, getTasksForQueue } from './tasks-views'
-import type { TaskWithContext } from './tasks-views'
+import { getOneThingTask, getTasksForQueue } from './tasks-scoring'
+import { getTasksWithDeadlines } from './tasks-context'
+import type { TaskWithContext } from './tasks-context'
 
 const makeTask = (overrides: Partial<TaskWithContext> = {}): TaskWithContext => ({
   id: 'task-1',
@@ -28,9 +29,10 @@ const makeTask = (overrides: Partial<TaskWithContext> = {}): TaskWithContext => 
   ...overrides,
 })
 
-// getOneThingTask chain: .from().select().eq(user).neq(status) → resolved
+// getOneThingTask chain: .from().select().eq(user).neq(status).limit() → resolved
 function makeOneThingClient(tasks: TaskWithContext[], error?: Error) {
-  const neqFn = vi.fn().mockResolvedValue({ data: error ? null : tasks, error: error ?? null })
+  const limitFn = vi.fn().mockResolvedValue({ data: error ? null : tasks, error: error ?? null })
+  const neqFn = vi.fn().mockReturnValue({ limit: limitFn })
   const eqFn = vi.fn().mockReturnValue({ neq: neqFn })
   const selectFn = vi.fn().mockReturnValue({ eq: eqFn })
   return { from: vi.fn().mockReturnValue({ select: selectFn }) }
@@ -67,9 +69,10 @@ describe('getOneThingTask', () => {
   })
 })
 
-// getTasksWithDeadlines: .from().select().eq(user).neq(status).not(due_date).order() → resolved
+// getTasksWithDeadlines: .from().select().eq(user).neq(status).not(due_date).order().limit() → resolved
 function makeDeadlinesClient(tasks: TaskWithContext[], error?: Error) {
-  const orderFn = vi.fn().mockResolvedValue({ data: error ? null : tasks, error: error ?? null })
+  const limitFn = vi.fn().mockResolvedValue({ data: error ? null : tasks, error: error ?? null })
+  const orderFn = vi.fn().mockReturnValue({ limit: limitFn })
   const notFn = vi.fn().mockReturnValue({ order: orderFn })
   const neqFn = vi.fn().mockReturnValue({ not: notFn })
   const eqFn = vi.fn().mockReturnValue({ neq: neqFn })
@@ -95,17 +98,19 @@ describe('getTasksWithDeadlines', () => {
   })
 })
 
-// getTasksForQueue: .from().select().eq(user).neq(status) → resolved (no assignee)
-// with assignee: .from().select().eq(user).neq(status).eq(assignee) → resolved
+// getTasksForQueue: .from().select().eq(user).neq(status).limit() → resolved (no assignee)
+// with assignee: .from().select().eq(user).neq(status).limit().eq(assignee) → resolved
 function makeQueueClient(tasks: TaskWithContext[], withAssignee?: string) {
   if (withAssignee) {
     const eqAssigneeFn = vi.fn().mockResolvedValue({ data: tasks, error: null })
-    const neqFn = vi.fn().mockReturnValue({ eq: eqAssigneeFn })
+    const limitFn = vi.fn().mockReturnValue({ eq: eqAssigneeFn })
+    const neqFn = vi.fn().mockReturnValue({ limit: limitFn })
     const eqUserFn = vi.fn().mockReturnValue({ neq: neqFn })
     const selectFn = vi.fn().mockReturnValue({ eq: eqUserFn })
     return { from: vi.fn().mockReturnValue({ select: selectFn }) }
   }
-  const neqFn = vi.fn().mockResolvedValue({ data: tasks, error: null })
+  const limitFn = vi.fn().mockResolvedValue({ data: tasks, error: null })
+  const neqFn = vi.fn().mockReturnValue({ limit: limitFn })
   const eqFn = vi.fn().mockReturnValue({ neq: neqFn })
   const selectFn = vi.fn().mockReturnValue({ eq: eqFn })
   return { from: vi.fn().mockReturnValue({ select: selectFn }) }

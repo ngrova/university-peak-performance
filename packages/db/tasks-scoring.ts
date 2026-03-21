@@ -1,22 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Task, FailureCost } from './types'
+import type { FailureCost } from './types'
+import type { TaskWithContext } from './tasks-context'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyClient = SupabaseClient<any, any, any>
-
-export interface TaskWithContext extends Task {
-  goals: {
-    title: string
-    pillar_id: string
-    priority_rank: number
-    life_pillars: {
-      id: string
-      name: string
-      color: string
-      icon: string
-    }
-  }
-}
 
 // NOTE: The * on tasks is required for Supabase's TypeScript inference on
 // join queries. Replacing with explicit columns breaks type narrowing and
@@ -38,6 +25,7 @@ const FAILURE_COST_WEIGHT: Record<string, number> = {
   low: 10,
 }
 
+// Converts a due date into a 0-100 urgency score (higher = more urgent)
 function dueDateUrgency(dueDate: string | null): number {
   if (!dueDate) return 0
   const now = new Date()
@@ -54,6 +42,7 @@ function dueDateUrgency(dueDate: string | null): number {
   return 0
 }
 
+// Combines failure cost, goal rank, priority, and deadline urgency into a single score
 function scoreTask(t: TaskWithContext): number {
   const costWeight = FAILURE_COST_WEIGHT[t.failure_cost ?? 'low'] ?? 10
   const goalRank = t.goals?.priority_rank ?? 5
@@ -62,6 +51,7 @@ function scoreTask(t: TaskWithContext): number {
   return costWeight + goalRank + priorityScore + urgency
 }
 
+// Sorts tasks by failure cost, then priority, then deadline
 function sortByCost(a: TaskWithContext, b: TaskWithContext): number {
   const aCost = FAILURE_COST_ORDER[a.failure_cost ?? 'low'] ?? 3
   const bCost = FAILURE_COST_ORDER[b.failure_cost ?? 'low'] ?? 3
@@ -73,6 +63,7 @@ function sortByCost(a: TaskWithContext, b: TaskWithContext): number {
   return 0
 }
 
+// Returns the user's pinned One Thing, or the highest-scoring active task
 export async function getOneThingTask(
   supabase: AnyClient,
   userId: string,
@@ -82,6 +73,7 @@ export async function getOneThingTask(
     .select(CONTEXT_SELECT)
     .eq('user_id', userId)
     .neq('status', 'done')
+    .limit(200)
   if (error) throw error
   const tasks: TaskWithContext[] = data ?? []
   const pinned = tasks.find((t) => t.is_one_thing)
@@ -93,21 +85,7 @@ export async function getOneThingTask(
   return active.sort((a, b) => scoreTask(b) - scoreTask(a))[0] ?? null
 }
 
-export async function getTasksWithDeadlines(
-  supabase: AnyClient,
-  userId: string,
-): Promise<TaskWithContext[]> {
-  const { data, error } = await supabase
-    .from('tasks')
-    .select(CONTEXT_SELECT)
-    .eq('user_id', userId)
-    .neq('status', 'done')
-    .not('due_date', 'is', null)
-    .order('due_date', { ascending: true })
-  if (error) throw error
-  return data ?? []
-}
-
+// Returns active tasks sorted by failure cost, priority, and deadline for the Up Next queue
 export async function getTasksForQueue(
   supabase: AnyClient,
   userId: string,
@@ -118,27 +96,13 @@ export async function getTasksForQueue(
     .select(CONTEXT_SELECT)
     .eq('user_id', userId)
     .neq('status', 'done')
+    .limit(200)
   if (assignee) {
     query = query.eq('assignee', assignee)
   }
   const { data, error } = await query
   if (error) throw error
   return (data ?? []).sort(sortByCost)
-}
-
-/** Fetches tasks for a goal with goal/pillar context for display */
-export async function getTasksByGoalWithContext(
-  supabase: AnyClient,
-  goalId: string,
-): Promise<TaskWithContext[]> {
-  const { data, error } = await supabase
-    .from('tasks')
-    .select(CONTEXT_SELECT)
-    .eq('goal_id', goalId)
-    .order('sort_order', { ascending: true })
-    .limit(50)
-  if (error) throw error
-  return data ?? []
 }
 
 export { FAILURE_COST_ORDER }

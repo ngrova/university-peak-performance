@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getPillars, createPillar, deletePillar, getPillarsWithProgress } from './pillars'
+import { getPillars, getPillarsWithProgress } from './pillars'
+import { createPillar, deletePillar } from './pillars-mutations'
 import type { LifePillar } from './types'
 
 const mockPillar: LifePillar = {
