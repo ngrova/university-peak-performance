@@ -6,7 +6,8 @@
 // CALLED BY: Next.js framework (automatic — this is the /signup route);
 //   also linked from login/page.tsx
 // DATA FLOW: User types email + password → form submits →
-//   Supabase auth creates account → success redirects to /today,
+//   Supabase auth creates account → success redirects to
+//   /choose-account (which skips to /today if no delegations),
 //   failure shows error message
 // ═══════════════════════════════════════════════════════════
 'use client';
@@ -21,7 +22,7 @@ import InputField from '@/components/InputField';
  * Triggered by: user navigates to /signup (linked from login page).
  * Steps: renders email and password inputs. On submit, calls
  *   Supabase signUp. If registration fails, shows the error
- *   message inline. If it succeeds, navigates to /today.
+ *   message inline. If it succeeds, navigates to /choose-account.
  * Returns: the signup form UI.
  */
 export default function SignupPage(): React.JSX.Element {
@@ -46,7 +47,7 @@ export default function SignupPage(): React.JSX.Element {
       setLoading(false);
       return;
     }
-    router.push('/today');
+    router.push('/choose-account');
   }
 
   return (

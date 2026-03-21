@@ -1,6 +1,6 @@
 # Design Registry
 
-Last updated: Phase 4 (PR #94)
+Last updated: Delegation Model (PR #99)
 
 One source of truth for every shared UI pattern in thriving-mobile.
 Agent 7 reads this at plan review (soft check) and code review (hard check).
@@ -163,6 +163,20 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 - **Introduced:** Phase 1
 - **Usage:** Personalized greeting + date on Today screen
 - **Called by:** TodayContent
+
+## Delegation
+
+### DelegationBanner
+- **Canonical:** `src/components/DelegationBanner.tsx`
+- **Introduced:** Delegation Model
+- **Usage:** Persistent banner showing "Viewing X's account" with switch link when acting as assistant
+- **Called by:** layout.tsx
+
+### ChooseAccountContent
+- **Canonical:** `src/components/ChooseAccountContent.tsx`
+- **Introduced:** Delegation Model
+- **Usage:** Account picker shown after login when user has delegations
+- **Called by:** choose-account/page.tsx
 
 ---
 

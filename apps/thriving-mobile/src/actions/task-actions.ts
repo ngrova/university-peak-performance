@@ -13,6 +13,7 @@
 
 import { createTask, updateTask, getTasksByGoal } from '@upp/db';
 import { getServerClient } from '@/lib/supabase-server';
+import { getActingAsUserId } from '@/lib/get-acting-as';
 import { revalidatePath } from 'next/cache';
 
 interface CaptureInput {
@@ -24,9 +25,9 @@ interface CaptureInput {
 
 /**
  * Triggered by: user taps "Add" in the capture bottom sheet.
- * Steps: checks the user is logged in, counts existing tasks under
- *   the chosen goal to set sort order, then inserts the new task
- *   into Supabase and refreshes the Today screen.
+ * Steps: checks the user is logged in, resolves delegation context,
+ *   counts existing tasks under the chosen goal to set sort order,
+ *   then inserts the new task under the target user's account.
  * Returns: empty object on success, or { error: message } if
  *   something went wrong (shown to the user in the sheet).
  */
@@ -36,6 +37,7 @@ export async function captureTask(input: CaptureInput): Promise<{ error?: string
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { error: 'Not signed in — please log in again' };
     if (!input.goal_id) return { error: 'Select a goal for this task' };
+    const targetUserId = await getActingAsUserId(supabase, user.id);
     const existing = await getTasksByGoal(supabase, input.goal_id);
     const taskInput: Parameters<typeof createTask>[2] = {
       goal_id: input.goal_id,
@@ -45,7 +47,7 @@ export async function captureTask(input: CaptureInput): Promise<{ error?: string
     };
     if (input.due_date) taskInput.due_date = input.due_date;
     if (input.priority) taskInput.priority = input.priority;
-    await createTask(supabase, user.id, taskInput);
+    await createTask(supabase, targetUserId, taskInput);
     revalidatePath('/today');
     return {};
   } catch {

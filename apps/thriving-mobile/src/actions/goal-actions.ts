@@ -12,6 +12,7 @@
 import { getPillars, getGoals } from '@upp/db';
 import type { Goal, LifePillar } from '@upp/db';
 import { getServerClient } from '@/lib/supabase-server';
+import { getActingAsUserId } from '@/lib/get-acting-as';
 
 /**
  * Triggered by: GoalPicker dropdown mounts on the capture sheet.
@@ -24,7 +25,8 @@ export async function fetchGoalsForPicker(): Promise<{ pillars: LifePillar[]; go
   const supabase = await getServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { pillars: [], goals: [] };
-  const pillars = await getPillars(supabase, user.id);
+  const targetUserId = await getActingAsUserId(supabase, user.id);
+  const pillars = await getPillars(supabase, targetUserId);
   const allGoals: Goal[] = [];
   for (const pillar of pillars) {
     const goals = await getGoals(supabase, pillar.id);

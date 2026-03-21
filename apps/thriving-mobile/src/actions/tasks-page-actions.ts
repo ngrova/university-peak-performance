@@ -12,6 +12,7 @@
 import { getAllTasksWithContext, deleteTask } from '@upp/db';
 import type { TaskWithContext } from '@upp/db';
 import { getServerClient } from '@/lib/supabase-server';
+import { getActingAsUserId } from '@/lib/get-acting-as';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -25,7 +26,8 @@ export async function fetchAllTasks(): Promise<TaskWithContext[]> {
   const supabase = await getServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
-  return getAllTasksWithContext(supabase, user.id);
+  const targetUserId = await getActingAsUserId(supabase, user.id);
+  return getAllTasksWithContext(supabase, targetUserId);
 }
 
 /**
