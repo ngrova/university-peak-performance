@@ -3,72 +3,15 @@
  * Verifies that User B cannot read, update, or delete User A's data.
  * Runs against a local Supabase instance started via `supabase start`.
  */
-import { createClient } from '@supabase/supabase-js'
-
-const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321'
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
-
-if (!SERVICE_ROLE_KEY) {
-  console.error('SUPABASE_SERVICE_ROLE_KEY is required')
-  process.exit(1)
-}
-
-// Creates a Supabase admin client with service_role privileges
-const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false },
-})
-
-let passed = 0
-let failed = 0
-
-// Asserts a condition and logs the result
-function assert(label: string, condition: boolean): void {
-  if (condition) {
-    console.log(`  ✅ ${label}`)
-    passed++
-  } else {
-    console.error(`  ❌ ${label}`)
-    failed++
-  }
-}
-
-// Creates a test user and returns an authenticated client
-async function createTestUser(email: string): Promise<ReturnType<typeof createClient>> {
-  const { data, error } = await admin.auth.admin.createUser({
-    email,
-    password: 'test-password-123!',
-    email_confirm: true,
-  })
-  if (error) throw new Error(`Failed to create user ${email}: ${error.message}`)
-
-  const { data: session, error: signInError } = await admin.auth.signInWithPassword({
-    email,
-    password: 'test-password-123!',
-  })
-  if (signInError) throw new Error(`Failed to sign in ${email}: ${signInError.message}`)
-
-  return createClient(SUPABASE_URL, process.env.SUPABASE_ANON_KEY ?? '', {
-    global: { headers: { Authorization: `Bearer ${session.session!.access_token}` } },
-    auth: { autoRefreshToken: false, persistSession: false },
-  })
-}
-
-// Deletes test users by email prefix
-async function cleanup(userIds: string[]): Promise<void> {
-  for (const id of userIds) {
-    await admin.auth.admin.deleteUser(id)
-  }
-}
+import { assert, createTestUser, getUserId, cleanup, printAndExit } from './test-rls-helpers'
 
 async function run(): Promise<void> {
   console.log('\n🔒 RLS Cross-Tenant Isolation Test\n')
 
   const userAClient = await createTestUser('rls-test-a@example.com')
   const userBClient = await createTestUser('rls-test-b@example.com')
-
-  const { data: userAData } = await admin.auth.admin.listUsers()
-  const userAId = userAData.users.find((u) => u.email === 'rls-test-a@example.com')!.id
-  const userBId = userAData.users.find((u) => u.email === 'rls-test-b@example.com')!.id
+  const userAId = await getUserId('rls-test-a@example.com')
+  const userBId = await getUserId('rls-test-b@example.com')
 
   try {
     // User A creates pillar → goal → task
@@ -143,8 +86,7 @@ async function run(): Promise<void> {
     await cleanup([userAId, userBId])
   }
 
-  console.log(`\n${passed} passed, ${failed} failed\n`)
-  process.exit(failed > 0 ? 1 : 0)
+  printAndExit()
 }
 
 run().catch((err) => {
