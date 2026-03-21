@@ -148,6 +148,7 @@ jobs:
           export SUPABASE_ANON_KEY=$(supabase status --output json | jq -r '.ANON_KEY')
           export SUPABASE_SERVICE_ROLE_KEY=$(supabase status --output json | jq -r '.SERVICE_ROLE_KEY')
           npx tsx scripts/test-rls.ts
+          npx tsx scripts/test-rls-delegation.ts
 
       - name: Stop local Supabase
         if: always()
