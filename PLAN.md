@@ -35,4 +35,4 @@ Wire up the delegation model in the mobile app so assistants can pick an account
 ## Scope
 large (16 files)
 
-## STATUS: APPROVED
+## STATUS: COMPLETED
