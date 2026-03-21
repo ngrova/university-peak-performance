@@ -7,7 +7,8 @@
 //   also linked from signup/page.tsx
 // DATA FLOW: User types email + password → form submits →
 //   Supabase auth checks credentials → success redirects to
-//   /today, failure shows error message
+//   /choose-account (which skips to /today if no delegations),
+//   failure shows error message
 // ═══════════════════════════════════════════════════════════
 'use client';
 
@@ -22,7 +23,7 @@ import InputField from '@/components/InputField';
  *   unauthenticated users here).
  * Steps: renders email and password inputs. On submit, calls
  *   Supabase signInWithPassword. If auth fails, shows the error
- *   message inline. If auth succeeds, navigates to /today.
+ *   message inline. If auth succeeds, navigates to /choose-account.
  * Returns: the login form UI.
  */
 export default function LoginPage(): React.JSX.Element {
@@ -47,7 +48,7 @@ export default function LoginPage(): React.JSX.Element {
       setLoading(false);
       return;
     }
-    router.push('/today');
+    router.push('/choose-account');
   }
 
   return (

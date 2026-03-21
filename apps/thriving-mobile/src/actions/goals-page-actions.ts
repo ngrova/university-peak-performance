@@ -13,6 +13,7 @@
 import { getPillarsWithProgress, getGoalsWithProgress, getTasksByGoalWithContext } from '@upp/db';
 import type { PillarWithProgress, GoalWithProgress, TaskWithContext } from '@upp/db';
 import { getServerClient } from '@/lib/supabase-server';
+import { getActingAsUserId } from '@/lib/get-acting-as';
 
 type Result<T> = { data: T } | { error: string };
 
@@ -28,7 +29,8 @@ export async function fetchPillars(): Promise<Result<PillarWithProgress[]>> {
     const supabase = await getServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { error: 'Session expired — please log in again' };
-    const data = await getPillarsWithProgress(supabase, user.id);
+    const targetUserId = await getActingAsUserId(supabase, user.id);
+    const data = await getPillarsWithProgress(supabase, targetUserId);
     return { data };
   } catch {
     return { error: 'Failed to load pillars — try again' };

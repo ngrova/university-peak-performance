@@ -13,6 +13,7 @@
 import { getTreeData } from '@upp/db';
 import type { TreeData } from '@upp/db';
 import { getServerClient } from '@/lib/supabase-server';
+import { getActingAsUserId } from '@/lib/get-acting-as';
 
 /**
  * Triggered by: Tree screen mounts (hook calls this once).
@@ -26,7 +27,8 @@ export async function fetchTreeData(): Promise<{ data: TreeData } | { error: str
     const supabase = await getServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { error: 'Session expired — please log in again' };
-    const data = await getTreeData(supabase, user.id);
+    const targetUserId = await getActingAsUserId(supabase, user.id);
+    const data = await getTreeData(supabase, targetUserId);
     return { data };
   } catch {
     return { error: 'Failed to load tree — try again' };
