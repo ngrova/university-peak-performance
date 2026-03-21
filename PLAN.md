@@ -64,4 +64,4 @@ Let Erin and Liz log in with their own accounts and work within Nick's data — 
 ## Scope
 large (17 files across 2 PRs: 3 in PR 1, 14 in PR 2)
 
-## STATUS: APPROVED
+## STATUS: COMPLETED
