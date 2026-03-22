@@ -68,6 +68,12 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 - **Usage:** App-wide goal detail overlay with inline editing (auto-save on blur), pillar picker, archive
 - **Called by:** layout.tsx (always mounted), controlled by useGoalDetail store
 
+### PillarEditSheet
+- **Canonical:** `src/components/PillarEditSheet.tsx`
+- **Introduced:** Pillar CRUD (PR #102)
+- **Usage:** App-wide pillar detail overlay with inline editing (auto-save on blur), color picker, reorder, archive
+- **Called by:** layout.tsx (always mounted), controlled by usePillarDetail store
+
 ## Breadcrumbs
 
 ### Breadcrumbs
@@ -86,8 +92,8 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 
 ### PillarCard
 - **Canonical:** `src/components/PillarCard.tsx`
-- **Introduced:** Phase 3
-- **Usage:** Tappable pillar card with progress bar and goal count
+- **Introduced:** Phase 3, edit icon added in Pillar CRUD
+- **Usage:** Tappable pillar card with progress bar, goal count, and edit icon (opens PillarEditSheet)
 - **Called by:** PillarList
 
 ### GoalCard
@@ -135,6 +141,12 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 - **Introduced:** Goal CRUD (PR #101)
 - **Usage:** Inline add-goal button with text input, saves on Enter/blur, disables during save
 - **Called by:** PillarDetail
+
+### AddPillarButton
+- **Canonical:** `src/components/AddPillarButton.tsx`
+- **Introduced:** Pillar CRUD (PR #102)
+- **Usage:** Inline add-pillar button with text input, saves on Enter/blur, disables during save
+- **Called by:** PillarList
 
 ## Filter & search
 
