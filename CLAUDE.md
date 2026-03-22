@@ -96,3 +96,5 @@ but never relaxes FEATURE safety.
 - 2026-03-17: Security audit found missing .limit() pagination on all list queries — add default limit(50) per coding standards
 - 2026-03-19: Never override a review agent rejection — fix the concern and re-review, or escalate to Nick for a decision
 - 2026-03-19: Always reset PLAN.md to STATUS: COMPLETED after shipping a PR — stale approvals bypass the require-plan hook
+- 2026-03-22: Never skip the 9-agent review, even for small fixes. The pipeline is non-negotiable — if a fix is too small for the council, it's still not too small for the council.
+- 2026-03-22: When debugging, confirm the root cause with evidence before writing a fix. Check logs, reproduce the error, read the actual error message. Don't guess and ship.
