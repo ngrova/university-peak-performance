@@ -1,16 +1,18 @@
-# Plan: Fix Deepgram keyword param — use keyterm for Nova-3
+# Plan: Fix stale data after capture — invalidate TanStack Query caches
 
 ## TYPE
 FEATURE
 
 ## Task
-Deepgram Nova-3 does not support `keywords` param. Confirmed via Netlify logs: `Deepgram API 400: Keywords are not supported for Nova-3. Please use keyterm instead.` Change `keywords` to `keyterm` in the Deepgram URL.
+After adding a task via capture sheet, the task list doesn't refresh. The server action calls `revalidatePath('/today')` (server-side Next.js cache) but never invalidates TanStack Query client-side caches. The existing refresh pattern (used by TaskSwipeRow, GoalDetail, etc.) calls `queryClient.invalidateQueries()` on relevant keys. Apply the same pattern to capture.
 
 ## Approach
-- Replace `keywords=` with `keyterm=` in the Deepgram API URL in transcribe-audio.ts
+- Add `useQueryClient` to `useCaptureForm` hook in CaptureFormFields.tsx
+- After successful capture, invalidate all task-related query keys: one-thing, queue, deadlines, all-tasks, pillars, goals, goal-tasks
+- Matches existing patterns in TodayContent (lines 52-55) and TasksContent (lines 43-46)
 
 ## Files to Change
-- `apps/thriving-mobile/src/lib/transcribe-audio.ts` — change keywords to keyterm
+- `apps/thriving-mobile/src/components/CaptureFormFields.tsx` — add query cache invalidation after successful capture
 
 ## Scope
 small (1 file)
