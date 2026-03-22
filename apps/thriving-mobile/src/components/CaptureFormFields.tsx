@@ -10,6 +10,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { captureTask } from '@/actions/task-actions';
 import { useCaptureMedia } from '@/hooks/use-capture-media';
 import type { TaskAssignee } from '@upp/db';
@@ -32,6 +33,7 @@ export function useCaptureForm() {
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const clearMedia = useCaptureMedia((s) => s.clearAll);
+  const qc = useQueryClient();
   async function handleAdd() {
     if (!title.trim() || saving) return;
     setSaving(true); setError(null);
@@ -45,6 +47,13 @@ export function useCaptureForm() {
     if (result.error) { setError(result.error); return; }
     setTitle(''); setPriority(null); setDeadline(''); setAssignee(null); setNotes('');
     clearMedia();
+    qc.invalidateQueries({ queryKey: ['one-thing'] });
+    qc.invalidateQueries({ queryKey: ['queue'] });
+    qc.invalidateQueries({ queryKey: ['deadlines'] });
+    qc.invalidateQueries({ queryKey: ['all-tasks'] });
+    qc.invalidateQueries({ queryKey: ['pillars'] });
+    qc.invalidateQueries({ queryKey: ['goals'] });
+    qc.invalidateQueries({ queryKey: ['goal-tasks'] });
     inputRef.current?.focus();
   }
   return { title, setTitle, goalId, setGoalId, priority, setPriority, deadline, setDeadline, assignee, setAssignee, notes, setNotes, saving, error, inputRef, handleAdd };
