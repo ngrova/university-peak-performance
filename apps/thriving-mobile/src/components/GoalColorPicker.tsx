@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: GoalColorPicker.tsx
-// PURPOSE: A row of color swatches for picking a goal's accent
-//   color. Tapping a swatch immediately saves the new color.
-// CALLED BY: components/GoalEditSheet.tsx
-// DATA FLOW: GoalEditSheet passes current color + onSave callback →
+// PURPOSE: A row of color swatches for picking an accent color.
+//   Tapping a swatch immediately saves the new color.
+// CALLED BY: components/GoalEditSheet.tsx, components/PillarEditSheet.tsx
+// DATA FLOW: Parent sheet passes current color + onSave callback →
 //   user taps a swatch → onSave fires with the hex value
 // ═══════════════════════════════════════════════════════════
 'use client';
