@@ -1,12 +1,11 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: process-capture-action.ts
-// PURPOSE: Server action that sends voice recordings and photos
-//   to Claude AI for transcription and task field extraction.
-//   Receives base64-encoded media (converted client-side since
-//   Blobs are not serializable across the RSC boundary).
+// PURPOSE: Server action that transcribes voice recordings via
+//   Deepgram, then sends transcripts + photos to Claude for task
+//   field extraction. Returns AI suggestions + transcripts.
 // CALLED BY: components/CaptureMediaSection.tsx
-// DATA FLOW: Client converts blobs to base64 → this action loads
-//   pillar/goal structure → calls Claude API → returns suggestions
+// DATA FLOW: Client sends base64 media → Deepgram transcribes voice →
+//   Claude receives text + images → returns field suggestions
 // ═══════════════════════════════════════════════════════════
 'use server';
 
@@ -15,11 +14,9 @@ import { getActingAsUserId } from '@/lib/get-acting-as';
 import { getPillars, getGoals } from '@upp/db';
 import type { Goal, LifePillar } from '@upp/db';
 import { reportError } from '@/lib/report-error';
+import { transcribeAudio } from '@/lib/transcribe-audio';
 
-interface MediaPayload {
-  voice: { data: string; mimeType: string }[];
-  images: { data: string; mimeType: string }[];
-}
+type MediaPayload = { voice: { data: string; mimeType: string }[]; images: { data: string; mimeType: string }[] };
 
 export interface AISuggestion {
   title?: string;
@@ -30,19 +27,26 @@ export interface AISuggestion {
   notes?: string;
 }
 
+export interface ProcessResult {
+  suggestion: AISuggestion;
+  transcripts: string[];
+}
+
 /**
  * Triggered by: user taps "Process with AI" in CaptureMediaSection.
- * Steps: authenticates user, loads their pillar/goal hierarchy,
- *   builds a Claude API request with base64 media and goal context,
- *   parses the JSON response into suggested task field values.
- * Returns: AISuggestion on success, or { error } on failure.
+ * Steps: transcribes voice recordings via Deepgram, loads the user's
+ *   pillar/goal hierarchy, sends transcripts + images to Claude,
+ *   returns AI suggestions alongside transcripts for the UI.
+ * Returns: { suggestion, transcripts } on success, or { error }.
  */
 export async function processCapture(
   media: MediaPayload,
-): Promise<AISuggestion | { error: string }> {
+): Promise<ProcessResult | { error: string }> {
   try {
     const apiKey = process.env['ANTHROPIC_API_KEY'];
     if (!apiKey) return { error: 'AI processing not configured — add fields manually' };
+    const txResult = await transcribeAll(media.voice);
+    if ('error' in txResult) return txResult;
     const supabase = await getServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { error: 'Not signed in — please log in again' };
@@ -50,14 +54,26 @@ export async function processCapture(
     const pillars = await getPillars(supabase, targetUserId);
     const allGoals: Goal[] = [];
     for (const p of pillars) { const g = await getGoals(supabase, p.id); allGoals.push(...g); }
-    const systemPrompt = buildPrompt(pillars, allGoals);
-    const content = buildContent(media);
+    const content = buildContent(txResult.transcripts, media.images);
     if (content.length <= 1) return { error: 'No media to process' };
-    return await callClaude(apiKey, systemPrompt, content);
+    const suggestion = await callClaude(apiKey, buildPrompt(pillars, allGoals), content);
+    if ('error' in suggestion) return suggestion;
+    return { suggestion, transcripts: txResult.transcripts };
   } catch (err) {
     reportError(err);
     return { error: 'AI processing failed — add fields manually' };
   }
+}
+
+/** Transcribes all voice recordings via Deepgram, returns transcripts or first error */
+async function transcribeAll(voice: MediaPayload['voice']): Promise<{ transcripts: string[] } | { error: string }> {
+  const transcripts: string[] = [];
+  for (const v of voice) {
+    const result = await transcribeAudio(v.data, v.mimeType);
+    if ('error' in result) return { error: result.error };
+    transcripts.push(result.transcript);
+  }
+  return { transcripts };
 }
 
 /** Builds system prompt with the user's pillar → goal hierarchy */
@@ -79,17 +95,16 @@ Respond with ONLY valid JSON:
 Use EXACT goal titles. Keep title short. Extract dates, names, contact info into notes.`;
 }
 
-/** Converts base64 media into Claude API content blocks */
-function buildContent(media: MediaPayload): Record<string, unknown>[] {
+/** Builds Claude content blocks: transcripts as text + images */
+function buildContent(transcripts: string[], images: MediaPayload['images']): Record<string, unknown>[] {
   const blocks: Record<string, unknown>[] = [];
-  for (const v of media.voice) {
-    const mt = v.mimeType.split(';')[0] as string;
-    blocks.push({ type: 'document', source: { type: 'base64', media_type: mt, data: v.data } });
+  if (transcripts.length > 0) {
+    blocks.push({ type: 'text', text: `Voice recording transcripts:\n${transcripts.join('\n\n')}` });
   }
-  for (const img of media.images) {
+  for (const img of images) {
     blocks.push({ type: 'image', source: { type: 'base64', media_type: img.mimeType || 'image/jpeg', data: img.data } });
   }
-  blocks.push({ type: 'text', text: 'Analyze the recordings and photos above. Extract one task.' });
+  blocks.push({ type: 'text', text: 'Extract one task from the content above.' });
   return blocks;
 }
 

@@ -15,6 +15,7 @@ import type { VoiceNote } from '@/hooks/use-capture-media';
 
 interface VoiceNoteCardProps {
   note: VoiceNote;
+  transcript?: string | undefined;
   onRemove: () => void;
 }
 
@@ -28,7 +29,7 @@ const BARS = [8, 14, 10, 18, 12, 16, 8, 14, 6, 10, 14, 8, 12, 16, 6];
  *   X button removes the recording from the capture media store.
  * Returns: a compact voice note card element.
  */
-export default function VoiceNoteCard({ note, onRemove }: VoiceNoteCardProps): React.JSX.Element {
+export default function VoiceNoteCard({ note, transcript, onRemove }: VoiceNoteCardProps): React.JSX.Element {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -43,11 +44,14 @@ export default function VoiceNoteCard({ note, onRemove }: VoiceNoteCardProps): R
   }
 
   return (
-    <div className="rounded-lg p-3 relative flex items-center gap-2" style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border)' }}>
-      <PlayButton playing={playing} onToggle={togglePlay} />
-      <Waveform />
-      <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{formatDuration(note.duration)}</span>
-      <RemoveButton onRemove={onRemove} />
+    <div className="rounded-lg p-3 relative" style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border)' }}>
+      <div className="flex items-center gap-2">
+        <PlayButton playing={playing} onToggle={togglePlay} />
+        <Waveform />
+        <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{formatDuration(note.duration)}</span>
+        <RemoveButton onRemove={onRemove} />
+      </div>
+      {transcript && <p className="text-xs mt-2 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{transcript}</p>}
     </div>
   );
 }
