@@ -9,7 +9,8 @@
 // ═══════════════════════════════════════════════════════════
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import type { Goal } from '@upp/db';
 import { X } from 'lucide-react';
 import { useCaptureSheet } from '@/hooks/use-capture-sheet';
 import GoalPicker from './GoalPicker';
@@ -41,11 +42,16 @@ export default function CaptureSheet(): React.JSX.Element | null {
 /** Renders media section + form fields inside the sheet */
 function CaptureForm({ onClose }: { onClose: () => void }) {
   const f = useCaptureForm();
+  const goalsRef = useRef<Goal[]>([]);
   useEffect(() => { f.inputRef.current?.focus(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /** Populates form fields from AI suggestions */
+  /** Populates form fields from AI suggestions, matching goalTitle to goalId */
   function handleAI(s: AISuggestion) {
     if (s.title) f.setTitle(s.title);
+    if (s.goalTitle) {
+      const match = goalsRef.current.find((g) => g.title.toLowerCase() === s.goalTitle!.toLowerCase());
+      if (match) f.setGoalId(match.id);
+    }
     if (s.priority) f.setPriority(s.priority);
     if (s.deadline) f.setDeadline(s.deadline);
     if (s.assignee) f.setAssignee(s.assignee as Parameters<typeof f.setAssignee>[0]);
@@ -57,7 +63,7 @@ function CaptureForm({ onClose }: { onClose: () => void }) {
       <SheetHeader onClose={onClose} />
       <CaptureMediaSection onAIResult={handleAI} />
       <TitleInput ref={f.inputRef} value={f.title} onChange={f.setTitle} onSubmit={f.handleAdd} />
-      <div className="mb-3"><GoalPicker value={f.goalId} onChange={f.setGoalId} /></div>
+      <div className="mb-3"><GoalPicker value={f.goalId} onChange={f.setGoalId} onGoalsLoaded={(g) => { goalsRef.current = g; }} /></div>
       <FieldLabel text="Priority" />
       <PriorityChips value={f.priority} onChange={f.setPriority} />
       <FieldLabel text="Deadline" />

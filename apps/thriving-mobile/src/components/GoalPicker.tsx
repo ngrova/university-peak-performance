@@ -17,6 +17,7 @@ import { fetchGoalsForPicker } from '@/actions/goal-actions';
 interface GoalPickerProps {
   value: string;
   onChange: (goalId: string) => void;
+  onGoalsLoaded?: (goals: Goal[]) => void;
 }
 
 /**
@@ -26,7 +27,7 @@ interface GoalPickerProps {
  *   Auto-selects the first goal if nothing is selected yet.
  * Returns: a styled dropdown element.
  */
-export default function GoalPicker({ value, onChange }: GoalPickerProps): React.JSX.Element {
+export default function GoalPicker({ value, onChange, onGoalsLoaded }: GoalPickerProps): React.JSX.Element {
   const [pillars, setPillars] = useState<LifePillar[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
 
@@ -35,6 +36,7 @@ export default function GoalPicker({ value, onChange }: GoalPickerProps): React.
       setPillars(p);
       setGoals(g);
       if (!value && g.length > 0 && g[0]) onChange(g[0].id);
+      onGoalsLoaded?.(g);
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
