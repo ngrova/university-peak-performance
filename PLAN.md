@@ -30,4 +30,4 @@ Upgrade the capture sheet with priority chips (P1-P4, color-coded pills), deadli
 ## Scope
 medium (5 files changed, 5 new files)
 
-## STATUS: APPROVED
+## STATUS: COMPLETED
