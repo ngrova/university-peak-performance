@@ -1,33 +1,39 @@
-# Plan: Capture Sheet Upgrade — Layers 1-2 (PR 1 of 2)
+# Plan: Capture Layer 3 — Voice, Camera, AI Processing (PR 2 of 2)
 
 ## TYPE
 FEATURE
 
 ## Task
-Upgrade the capture sheet with priority chips (P1-P4, color-coded pills), deadline picker (tappable chip → date picker), assignee picker (Nick/Erin/Liz tappable pills), and notes field. All optional — title + goal remains the only required flow. Fields clear after add for rapid-fire entry. Delegation-aware.
+Add voice recording, camera capture, and AI processing to the capture sheet. Voice notes stack vertically as expandable cards. Photos scroll horizontally as thumbnails. "Process with AI" sends all content to Claude, which returns suggested task fields (title, goal, priority, assignee, deadline, notes). Media blobs stay accessible in a Zustand store until task is added — future PRs can add persistent storage without a rewrite.
 
 ## Approach
-- Extend `CaptureInput` in task-actions.ts to pass assignee, notes, and failure_cost through to `createTask`
-- Update `TaskAssignee` type in `@upp/db` to include `'Liz'` + add DB CHECK constraint migration
-- Build chip/pill sub-components: PriorityChips, DeadlineChip, AssigneeChips — reusable for PR 2
-- Upgrade CaptureSheet: add scrollable content area, new fields below goal picker, preserve rapid-fire clear
-- Make sheet scrollable with `max-h-[80vh] overflow-y-auto` matching GoalEditSheet pattern
+- Build `useCaptureMedia` Zustand store holding voice blobs + photo files with stable IDs — persists until cleared
+- Voice recording via MediaRecorder API (audio/webm on Chrome, audio/mp4 on Safari via `isTypeSupported`)
+- Pulsing animation during recording, static decorative waveform on completed cards
+- Camera via native `<input type="file" accept="image/*" capture>` — opens device camera
+- Resize photos client-side (max 1024px) before base64 encoding to stay within payload limits
+- Configure `serverActions.bodySizeLimit: '10mb'` in next.config for multi-media payloads
+- AI server action: `process.env['ANTHROPIC_API_KEY']` in 'use server' file only (never client-exposed)
+- AI calls Claude (claude-haiku-4-5-20251001 for speed), returns JSON with title, goalTitle, priority, assignee, deadline, notes
+- Error handling: mic denied → "Microphone access denied — check browser settings"; AI timeout → "AI processing failed — add fields manually"; payload error → "Content too large — remove a recording or photo"
+- Extract `CaptureFormFields.tsx` from CaptureSheet (useCaptureForm hook, field labels, title input) to stay under 100 lines
 
 ## Files to Change
-- `packages/db/types.ts` — add `'Liz'` to `TaskAssignee` union type
-- `apps/thriving-mobile/src/actions/task-actions.ts` — extend CaptureInput with assignee, notes, failure_cost
-- `apps/thriving-mobile/src/components/CaptureSheet.tsx` — add new fields, make scrollable
-- `apps/thriving-mobile/src/components/GoalPicker.tsx` — show pillar name alongside goal (matches mockup)
-- `docs/DESIGN-REGISTRY.md` — add PriorityChips, DeadlineChip, AssigneeChips, update CaptureSheet
+- `apps/thriving-mobile/src/components/CaptureSheet.tsx` — add media section, extract internals to CaptureFormFields
+- `apps/thriving-mobile/next.config.mjs` — set serverActions.bodySizeLimit to '10mb'
+- `docs/DESIGN-REGISTRY.md` — add VoiceNoteCard, PhotoCapture, CaptureMediaSection, update CaptureSheet
 
 ## New Files
-- `apps/thriving/supabase/migrations/20260322000001_add_assignee_check.sql` — CHECK constraint on assignee column
-- `apps/thriving-mobile/src/components/PriorityChips.tsx` — P1-P4 color-coded pill selector
-- `apps/thriving-mobile/src/components/DeadlineChip.tsx` — tappable chip wrapping native date input
-- `apps/thriving-mobile/src/components/AssigneeChips.tsx` — Nick/Erin/Liz tappable pill selector
-- `apps/thriving-mobile/e2e/capture-upgrade.spec.ts` — E2E: add with all fields, quick capture, clear after add
+- `apps/thriving-mobile/src/hooks/use-capture-media.ts` — Zustand store for voice blobs + photo files
+- `apps/thriving-mobile/src/hooks/use-voice-recorder.ts` — MediaRecorder wrapper hook
+- `apps/thriving-mobile/src/components/CaptureFormFields.tsx` — extracted form internals (hook, labels, title input)
+- `apps/thriving-mobile/src/components/CaptureMediaSection.tsx` — voice/photo/AI buttons, cards, thumbnails
+- `apps/thriving-mobile/src/components/VoiceNoteCard.tsx` — expandable card with play, waveform, transcript
+- `apps/thriving-mobile/src/components/PhotoCapture.tsx` — file input + horizontal thumbnail scroll
+- `apps/thriving-mobile/src/actions/process-capture-action.ts` — server action calling Claude API
+- `apps/thriving-mobile/e2e/capture-ai.spec.ts` — E2E: photo capture, AI button, field population
 
 ## Scope
-medium (5 files changed, 5 new files)
+large (3 files changed, 8 new files)
 
 ## STATUS: COMPLETED
