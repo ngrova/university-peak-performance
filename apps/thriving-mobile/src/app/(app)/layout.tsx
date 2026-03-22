@@ -2,16 +2,17 @@
 // FILE: layout.tsx (app shell)
 // PURPOSE: The authenticated app shell — wraps every screen with
 //   the delegation banner (if acting as assistant), the bottom tab
-//   bar, the capture sheet, and the task detail sheet.
+//   bar, the capture sheet, task detail sheet, and goal edit sheet.
 // CALLED BY: Next.js framework (automatic — layout for the (app) group)
 // DATA FLOW: DelegationBanner reads acting_as cookie → child page
-//   renders inside <main> → BottomTabBar, CaptureSheet, and
-//   TaskDetailSheet mount alongside, controlled by Zustand stores
+//   renders inside <main> → BottomTabBar, CaptureSheet,
+//   TaskDetailSheet, and GoalEditSheet mount alongside via Zustand
 // ═══════════════════════════════════════════════════════════
 import React from 'react';
 import BottomTabBar from '@/components/BottomTabBar';
 import CaptureSheet from '@/components/CaptureSheet';
 import TaskDetailSheet from '@/components/TaskDetailSheet';
+import GoalEditSheet from '@/components/GoalEditSheet';
 import DelegationBanner from '@/components/DelegationBanner';
 
 interface AppLayoutProps {
@@ -22,7 +23,7 @@ interface AppLayoutProps {
  * Triggered by: Next.js renders this for all routes under /(app)/.
  * Steps: renders DelegationBanner (only visible if acting as assistant),
  *   then the child page in a padded <main> area, then mounts the three
- *   persistent overlays (tab bar, capture sheet, detail sheet) below.
+ *   persistent overlays (tab bar, capture sheet, detail sheet, goal edit sheet).
  * Returns: the app shell layout wrapping the current page.
  */
 export default function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
@@ -41,6 +42,7 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
       <BottomTabBar />
       <CaptureSheet />
       <TaskDetailSheet />
+      <GoalEditSheet />
     </div>
   );
 }

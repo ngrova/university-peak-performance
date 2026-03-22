@@ -46,7 +46,7 @@ export async function createGoal(
 export async function updateGoal(
   supabase: AnyClient,
   id: string,
-  updates: Partial<Pick<Goal, 'title' | 'description' | 'target_date' | 'status' | 'sort_order' | 'color' | 'priority_rank'>>,
+  updates: Partial<Pick<Goal, 'title' | 'description' | 'target_date' | 'status' | 'sort_order' | 'color' | 'priority_rank' | 'pillar_id'>>,
 ): Promise<Goal> {
   const { data, error } = await supabase
     .from('goals')

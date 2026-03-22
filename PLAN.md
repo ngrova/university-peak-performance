@@ -1,38 +1,37 @@
-# Plan: Assistant Delegation Model — PR 2 Application Layer
+# Plan: Goal CRUD (PR 1 of 2)
 
 ## TYPE
 FEATURE
 
 ## Task
-Wire up the delegation model in the mobile app so assistants can pick an account after login, see the owner's data, and know whose account they're viewing.
+Build goal management from the Goals tab — users can create, edit, move between pillars, and archive goals directly from their phones. Edit icon on GoalCard opens a detail sheet with auto-save on blur (matching TaskDetailSheet pattern). Add goal button at the bottom of PillarDetail. Delegation model must work (assistant edits use targetUserId).
 
 ## Approach
-- Create `getActingAsUserId()` helper: reads `acting_as` cookie, validates delegation, returns owner_id or falls back to auth.uid()
-- Update 8 server action functions that pass `user.id` → swap to `targetUserId`
-- Build `/choose-account` route: server component checks delegations, redirects if none, renders picker
-- Add `DelegationBanner` to app layout: reads cookie, shows "Viewing Nick's account" with switch link
-- Create seed-delegations script for Erin and Liz
-- Two cookies: `acting_as` (owner UUID) and `acting_as_name` (display name for banner)
+- Add `pillar_id` to `updateGoal` in `@upp/db` (column already exists on goals table) so goals can move between pillars
+- Create server actions for goal CRUD using `captureException` in catch blocks (diverging from task-actions.ts silent-catch pattern)
+- sort_order for new goals uses `existingGoals.length` (monotonic counter, not Date.now())
+- Create a Zustand store (`use-goal-detail`) mirroring `use-task-detail` to control the GoalEditSheet
+- Build GoalEditSheet (bottom sheet with auto-save): title, priority rank, target date, color, status, pillar picker
+- Add edit icon to GoalCard; add "Add Goal" button (disabled during submission) at bottom of PillarDetail
+- Update design registry with new components
 
 ## Files to Change
-- `apps/thriving-mobile/src/lib/get-acting-as.ts` — new helper
-- `apps/thriving-mobile/src/actions/delegation-actions.ts` — new: selectAccount, clearActingAs
-- `apps/thriving-mobile/src/actions/today-actions.ts` — targetUserId in 3 functions
-- `apps/thriving-mobile/src/actions/task-actions.ts` — targetUserId in captureTask
-- `apps/thriving-mobile/src/actions/goal-actions.ts` — targetUserId in fetchGoalsForPicker
-- `apps/thriving-mobile/src/actions/goals-page-actions.ts` — targetUserId in fetchPillars
-- `apps/thriving-mobile/src/actions/tasks-page-actions.ts` — targetUserId in fetchAllTasks
-- `apps/thriving-mobile/src/actions/tree-actions.ts` — targetUserId in fetchTreeData
-- `apps/thriving-mobile/src/app/(auth)/choose-account/page.tsx` — new server component
-- `apps/thriving-mobile/src/components/ChooseAccountContent.tsx` — new client component
-- `apps/thriving-mobile/src/components/DelegationBanner.tsx` — new server component
-- `apps/thriving-mobile/src/app/(app)/layout.tsx` — add DelegationBanner
-- `apps/thriving-mobile/src/app/(auth)/login/page.tsx` — redirect to /choose-account
-- `apps/thriving-mobile/src/app/(auth)/signup/page.tsx` — redirect to /choose-account
-- `apps/thriving/scripts/seed-delegations.ts` — new script
-- `docs/DESIGN-REGISTRY.md` — add DelegationBanner + ChooseAccountContent entries
+- `packages/db/goals.ts` — add `pillar_id` to updateGoal's Partial<Pick<>> type
+- `apps/thriving-mobile/src/components/GoalCard.tsx` — add edit icon button (Pencil from lucide)
+- `apps/thriving-mobile/src/components/PillarDetail.tsx` — add "Add Goal" button below goal list
+- `apps/thriving-mobile/src/components/GoalsContent.tsx` — pass pillarId to PillarDetail, mount refresh after mutations
+- `apps/thriving-mobile/src/hooks/use-goals-drilldown.ts` — expose current pillarId for goal creation
+- `apps/thriving-mobile/src/app/(app)/layout.tsx` — mount GoalEditSheet alongside TaskDetailSheet
+- `docs/DESIGN-REGISTRY.md` — add GoalEditSheet, AddGoalButton, update GoalCard entry
+
+## New Files
+- `apps/thriving-mobile/src/hooks/use-goal-detail.ts` — Zustand store for selected goal (mirrors use-task-detail)
+- `apps/thriving-mobile/src/actions/goal-crud-actions.ts` — createGoal, updateGoalField, archiveGoal server actions
+- `apps/thriving-mobile/src/components/GoalEditSheet.tsx` — bottom sheet with auto-save editing
+- `apps/thriving-mobile/src/components/AddGoalButton.tsx` — inline "Add goal" with title input
+- `apps/thriving-mobile/e2e/goal-crud.spec.ts` — E2E: create, edit, move, archive, delegation mode, drill-down regression, error case
 
 ## Scope
-large (16 files)
+large (7 files changed, 5 new files)
 
 ## STATUS: COMPLETED
