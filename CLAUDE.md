@@ -8,6 +8,10 @@
 - Keep every file under 100 lines and every function under 25 lines
 - List explicit columns in every Supabase query — never use .select('*')
 - Handle loading, success, and error states on every user-facing action
+- When pushing back, present the concern and wait for a response before acting. Pushback is a conversation, not a monologue — don't implement your alternative without agreement from Nick or Erin.
+  <!-- Pushback = you want to change something ("this should be two PRs", "long-press is wrong, use edit icons"). Present it and WAIT.
+       Relevant context = you're sharing useful info but not disagreeing. Share it and keep moving.
+       Nothing to add = just proceed. Don't narrate the absence of pushback. -->
 
 ## Automatic Pipeline
 
@@ -88,6 +92,7 @@ but never relaxes FEATURE safety.
 - Keep every file under 100 lines and every function under 25 lines
 - List explicit columns in every Supabase query — never use .select('*')
 - Handle loading, success, and error states on every user-facing action
+- When pushing back, present the concern and wait for a response before acting. Pushback is a conversation, not a monologue — don't implement your alternative without agreement from Nick or Erin.
 
 ## Lessons Learned
 
@@ -96,3 +101,5 @@ but never relaxes FEATURE safety.
 - 2026-03-17: Security audit found missing .limit() pagination on all list queries — add default limit(50) per coding standards
 - 2026-03-19: Never override a review agent rejection — fix the concern and re-review, or escalate to Nick for a decision
 - 2026-03-19: Always reset PLAN.md to STATUS: COMPLETED after shipping a PR — stale approvals bypass the require-plan hook
+- 2026-03-22: Share CI link only after the final push (including PLAN.md status update) — use `gh run list --limit 1` to get the latest run, not the one from PR creation which gets cancelled by subsequent pushes
+- 2026-03-22: After creating a PR, run `gh run watch <id> --exit-status` in the background to monitor CI and report the result — don't hand Nick a link to check manually
