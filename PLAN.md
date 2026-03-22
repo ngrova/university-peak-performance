@@ -33,4 +33,4 @@ Build pillar management from the Goals tab — users can create, edit, reorder, 
 ## Scope
 large (5 files changed, 5 new files)
 
-## STATUS: APPROVED
+## STATUS: COMPLETED
