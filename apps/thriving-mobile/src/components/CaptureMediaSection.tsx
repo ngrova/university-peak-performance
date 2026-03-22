@@ -3,7 +3,7 @@
 // PURPOSE: The voice/photo/AI section at the top of the capture
 //   sheet. Shows Voice and Scan buttons, stacked voice cards,
 //   horizontal photo thumbnails, and "Process with AI" button.
-// CALLED BY: components/CaptureSheet.tsx
+// CALLED BY: components/CapturePageContent.tsx
 // DATA FLOW: User records voice / snaps photos → media stored in
 //   useCaptureMedia → "Process with AI" transcribes via Deepgram
 //   then sends text + images to Claude → suggestions populate form

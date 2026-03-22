@@ -1,11 +1,10 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: BottomTabBar.tsx
 // PURPOSE: The fixed navigation bar at the bottom of every screen.
-//   Five tabs: Today, Tasks, Capture (+), Goals, Tree. The center
-//   Capture button opens the quick-add sheet instead of navigating.
+//   Five tabs: Today, Tasks, Capture (+), Goals, Tree. All tabs
+//   are Links — Capture navigates to the full-screen /capture page.
 // CALLED BY: app/(app)/layout.tsx
-// DATA FLOW: User taps a tab → Link navigates to that route (or
-//   the center button opens CaptureSheet via the Zustand store).
+// DATA FLOW: User taps a tab → Link navigates to that route.
 //   Active tab is highlighted based on the current URL path.
 // ═══════════════════════════════════════════════════════════
 'use client';
@@ -14,7 +13,6 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Sun, ListChecks, PlusCircle, Target, GitBranch, type LucideIcon } from 'lucide-react';
-import { useCaptureSheet } from '@/hooks/use-capture-sheet';
 
 interface TabDef {
   href: string;
@@ -34,14 +32,12 @@ const TABS: readonly TabDef[] = [
 /**
  * Triggered by: app layout renders this at the bottom of every screen.
  * Steps: reads the current URL path to determine which tab is active.
- *   Renders five tab icons — four are Links that navigate, the center
- *   one is a button that opens the capture sheet via the store.
- *   Active tab gets a filled icon and label.
+ *   Renders five tab Links — the center one is styled larger as the
+ *   primary action. Active tab gets a filled icon and label.
  * Returns: a fixed-position navigation bar element.
  */
 export default function BottomTabBar(): React.JSX.Element {
   const pathname = usePathname();
-  const openCapture = useCaptureSheet((s) => s.open);
 
   return (
     <nav
@@ -58,16 +54,15 @@ export default function BottomTabBar(): React.JSX.Element {
 
         if (isCenter) {
           return (
-            <button
+            <Link
               key={href}
-              type="button"
-              onClick={openCapture}
+              href={href}
               aria-label={label}
               className="flex flex-col items-center justify-center"
               style={{ height: 'var(--tab-bar-height)', minWidth: '64px', color: 'var(--accent)' }}
             >
               <Icon size={32} strokeWidth={1.5} />
-            </button>
+            </Link>
           );
         }
 
