@@ -123,6 +123,7 @@ async function callClaude(apiKey: string, system: string, content: Record<string
   const body = await resp.json() as { content: { type: string; text?: string }[] };
   const text = body.content.find((b) => b.type === 'text')?.text;
   if (!text) return { error: 'AI returned empty response — add fields manually' };
-  try { return JSON.parse(text) as AISuggestion; }
+  const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  try { return JSON.parse(cleaned) as AISuggestion; }
   catch { reportError(new Error(`Non-JSON from Claude: ${text.substring(0, 100)}`)); return { error: 'AI response was malformed — add fields manually' }; }
 }
