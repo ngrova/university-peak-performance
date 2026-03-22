@@ -83,8 +83,8 @@ Use EXACT goal titles. Keep title short. Extract dates, names, contact info into
 function buildContent(media: MediaPayload): Record<string, unknown>[] {
   const blocks: Record<string, unknown>[] = [];
   for (const v of media.voice) {
-    const mt = v.mimeType.split(';')[0];
-    blocks.push({ type: 'document', source: { type: 'base64', media_type: mt, data: v.data } });
+    const mt = v.mimeType.split(';')[0] as string;
+    blocks.push({ type: 'audio', source: { type: 'base64', media_type: mt, data: v.data } });
   }
   for (const img of media.images) {
     blocks.push({ type: 'image', source: { type: 'base64', media_type: img.mimeType || 'image/jpeg', data: img.data } });
@@ -100,7 +100,11 @@ async function callClaude(apiKey: string, system: string, content: Record<string
     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1024, system, messages: [{ role: 'user', content }] }),
   });
-  if (!resp.ok) { reportError(new Error(`Claude API ${resp.status}`)); return { error: 'AI processing failed — add fields manually' }; }
+  if (!resp.ok) {
+    const errBody = await resp.text().catch(() => 'no body');
+    reportError(new Error(`Claude API ${resp.status}: ${errBody}`));
+    return { error: 'AI processing failed — add fields manually' };
+  }
   const body = await resp.json() as { content: { type: string; text?: string }[] };
   const text = body.content.find((b) => b.type === 'text')?.text;
   if (!text) return { error: 'AI returned empty response — add fields manually' };
