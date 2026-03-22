@@ -37,7 +37,7 @@ export async function transcribeAudio(
     const audioBuffer = Buffer.from(base64Data, 'base64');
     const contentType = mimeType.split(';')[0] || 'audio/webm';
 
-    const resp = await fetch('https://api.deepgram.com/v1/listen?model=nova-3&smart_format=true', {
+    const resp = await fetch('https://api.deepgram.com/v1/listen?model=nova-3&smart_format=true&keywords=Erin:2&keywords=Liz:2&keywords=Nick:2', {
       method: 'POST',
       headers: {
         'Authorization': `Token ${apiKey}`,

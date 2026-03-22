@@ -84,15 +84,17 @@ function buildPrompt(pillars: LifePillar[], goals: Goal[]): string {
   }).join('\n\n');
   return `You extract tasks from voice recordings and photos for a productivity app.
 
-The user's pillars and goals:
+GOALS (use these EXACT titles for goalTitle):
 ${hierarchy}
 
-Valid assignees: Nick, Erin, Liz. Priority: 1 (urgent) to 4 (low).
+ASSIGNEE DETECTION: Look for phrases like "Erin should handle", "assign to Nick", "Liz can do this", "have Erin...", "Nick needs to...", "let Liz...". Also note: the transcription may spell "Erin" as "Aaron" — treat "Aaron" as "Erin". Valid assignees: Nick, Erin, Liz.
 
-Respond with ONLY valid JSON:
-{"title":"action verb + what","goalTitle":"exact goal from list or null","priority":1-4,"assignee":"Nick"|"Erin"|"Liz"|null,"deadline":"YYYY-MM-DD"|null,"notes":"context, contacts, amounts"}
+Priority: 1 (urgent/critical) to 4 (low/someday).
 
-Use EXACT goal titles. Keep title short. Extract dates, names, contact info into notes.`;
+Respond with ONLY valid JSON (no markdown, no code fences):
+{"title":"action verb + what","goalTitle":"exact goal title from list above or null","priority":1-4,"assignee":"Nick"|"Erin"|"Liz"|null,"deadline":"YYYY-MM-DD"|null,"notes":"context, contacts, amounts"}
+
+CRITICAL: goalTitle must EXACTLY match one of the goal titles listed above. Do not paraphrase or invent goals.`;
 }
 
 /** Builds Claude content blocks: transcripts as text + images */
