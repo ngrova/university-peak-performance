@@ -52,8 +52,8 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 
 ### TaskDetailSheet
 - **Canonical:** `src/components/TaskDetailSheet.tsx`
-- **Introduced:** Phase 1
-- **Usage:** App-wide task detail overlay with inline editing (auto-save on blur)
+- **Introduced:** Phase 1, priority/assignee/failure-cost added in Task Detail Fields
+- **Usage:** App-wide task detail overlay with inline editing — title, priority chips, assignee pills, failure cost, deadline, notes (auto-save on blur/change)
 - **Called by:** layout.tsx (always mounted)
 
 ### CaptureSheet
@@ -166,13 +166,13 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 - **Usage:** Inline add-pillar button with text input, saves on Enter/blur, disables during save
 - **Called by:** PillarList
 
-## Capture field components
+## Task field components
 
 ### PriorityChips
 - **Canonical:** `src/components/PriorityChips.tsx`
 - **Introduced:** Capture Upgrade (PR #103)
 - **Usage:** P1-P4 color-coded pill selector for task priority (single-select, toggle off)
-- **Called by:** CaptureSheet
+- **Called by:** CaptureSheet, TaskDetailSheet
 
 ### DeadlineChip
 - **Canonical:** `src/components/DeadlineChip.tsx`
@@ -184,7 +184,13 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 - **Canonical:** `src/components/AssigneeChips.tsx`
 - **Introduced:** Capture Upgrade (PR #103)
 - **Usage:** Nick/Erin/Liz tappable pill selector for task assignee (single-select, toggle off)
-- **Called by:** CaptureSheet
+- **Called by:** CaptureSheet, TaskDetailSheet
+
+### FailureCostChips
+- **Canonical:** `src/components/FailureCostChips.tsx`
+- **Introduced:** Task Detail Fields (PR #112)
+- **Usage:** Low/medium/high/critical pill selector for task failure cost (single-select, toggle off)
+- **Called by:** TaskDetailSheet
 
 ## Filter & search
 

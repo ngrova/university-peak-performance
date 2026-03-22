@@ -3,7 +3,7 @@
 // PURPOSE: A horizontal row of tappable pills for selecting
 //   the task assignee — Nick, Erin, or Liz. Single-select.
 //   Tapping the active one clears the selection.
-// CALLED BY: components/CaptureSheet.tsx
+// CALLED BY: components/CaptureSheet.tsx, components/TaskDetailSheet.tsx
 // DATA FLOW: CaptureSheet passes value + onChange → user taps
 //   a pill → onChange fires with the assignee name (or null)
 // ═══════════════════════════════════════════════════════════

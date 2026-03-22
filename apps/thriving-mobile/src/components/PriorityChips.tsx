@@ -3,7 +3,7 @@
 // PURPOSE: A horizontal row of P1–P4 color-coded pill buttons
 //   for selecting task priority. Single-select — tapping one
 //   deselects the others. Tapping the active one deselects it.
-// CALLED BY: components/CaptureSheet.tsx
+// CALLED BY: components/CaptureSheet.tsx, components/TaskDetailSheet.tsx
 // DATA FLOW: CaptureSheet passes value + onChange → user taps
 //   a pill → onChange fires with the priority number (or null)
 // ═══════════════════════════════════════════════════════════
