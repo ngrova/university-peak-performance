@@ -62,6 +62,12 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 - **Usage:** Quick-add overlay for rapid task capture (stays open after save)
 - **Called by:** layout.tsx (always mounted)
 
+### GoalEditSheet
+- **Canonical:** `src/components/GoalEditSheet.tsx`
+- **Introduced:** Goal CRUD (PR #101)
+- **Usage:** App-wide goal detail overlay with inline editing (auto-save on blur), pillar picker, archive
+- **Called by:** layout.tsx (always mounted), controlled by useGoalDetail store
+
 ## Breadcrumbs
 
 ### Breadcrumbs
@@ -86,8 +92,8 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 
 ### GoalCard
 - **Canonical:** `src/components/GoalCard.tsx`
-- **Introduced:** Phase 3
-- **Usage:** Tappable goal card with progress bar and task count
+- **Introduced:** Phase 3, edit icon added in Goal CRUD
+- **Usage:** Tappable goal card with progress bar, task count, and edit icon (opens GoalEditSheet)
 - **Called by:** PillarDetail
 
 ### OneThingCard
@@ -123,6 +129,12 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 - **Introduced:** Phase 1
 - **Usage:** Inline confirmation row for destructive actions (swipe-to-delete)
 - **Called by:** TaskSwipeRow
+
+### AddGoalButton
+- **Canonical:** `src/components/AddGoalButton.tsx`
+- **Introduced:** Goal CRUD (PR #101)
+- **Usage:** Inline add-goal button with text input, saves on Enter/blur, disables during save
+- **Called by:** PillarDetail
 
 ## Filter & search
 

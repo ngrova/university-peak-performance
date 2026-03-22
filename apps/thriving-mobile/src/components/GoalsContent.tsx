@@ -44,7 +44,9 @@ export default function GoalsContent(): React.JSX.Element {
       ) : (
         <div key={animKey} className="drill-enter">
           {drill.level === 'pillars' && <PillarList pillars={drill.pillars} onPillarTap={drill.drillIntoPillar} />}
-          {drill.level === 'pillar' && <PillarDetail goals={drill.goals} pillarColor={pillarColor} onGoalTap={drill.drillIntoGoal} />}
+          {drill.level === 'pillar' && drill.pillarId && (
+            <PillarDetail goals={drill.goals} pillarId={drill.pillarId} pillarColor={pillarColor} onGoalTap={drill.drillIntoGoal} onGoalCreated={drill.refresh} />
+          )}
           {drill.level === 'goal' && <GoalDetail tasks={drill.tasks} onTaskChanged={drill.refresh} />}
         </div>
       )}
