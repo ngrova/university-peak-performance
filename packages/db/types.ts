@@ -26,7 +26,7 @@ export interface Goal {
 }
 
 export type FailureCost = 'low' | 'medium' | 'high' | 'critical'
-export type TaskAssignee = 'Nick' | 'Erin'
+export type TaskAssignee = 'Nick' | 'Erin' | 'Liz'
 
 export interface Task {
   id: string

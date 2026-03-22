@@ -58,8 +58,8 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 
 ### CaptureSheet
 - **Canonical:** `src/components/CaptureSheet.tsx`
-- **Introduced:** Phase 1
-- **Usage:** Quick-add overlay for rapid task capture (stays open after save)
+- **Introduced:** Phase 1, upgraded with priority/deadline/assignee/notes in Capture Upgrade
+- **Usage:** Quick-add overlay for rapid task capture with optional priority chips, deadline picker, assignee pills, and notes
 - **Called by:** layout.tsx (always mounted)
 
 ### GoalEditSheet
@@ -147,6 +147,26 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 - **Introduced:** Pillar CRUD (PR #102)
 - **Usage:** Inline add-pillar button with text input, saves on Enter/blur, disables during save
 - **Called by:** PillarList
+
+## Capture field components
+
+### PriorityChips
+- **Canonical:** `src/components/PriorityChips.tsx`
+- **Introduced:** Capture Upgrade (PR #103)
+- **Usage:** P1-P4 color-coded pill selector for task priority (single-select, toggle off)
+- **Called by:** CaptureSheet
+
+### DeadlineChip
+- **Canonical:** `src/components/DeadlineChip.tsx`
+- **Introduced:** Capture Upgrade (PR #103)
+- **Usage:** Tappable chip wrapping native date picker, shows formatted date or "No deadline"
+- **Called by:** CaptureSheet
+
+### AssigneeChips
+- **Canonical:** `src/components/AssigneeChips.tsx`
+- **Introduced:** Capture Upgrade (PR #103)
+- **Usage:** Nick/Erin/Liz tappable pill selector for task assignee (single-select, toggle off)
+- **Called by:** CaptureSheet
 
 ## Filter & search
 

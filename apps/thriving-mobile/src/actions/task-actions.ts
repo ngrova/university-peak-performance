@@ -12,6 +12,7 @@
 'use server';
 
 import { createTask, updateTask, getTasksByGoal } from '@upp/db';
+import type { TaskAssignee, FailureCost } from '@upp/db';
 import { getServerClient } from '@/lib/supabase-server';
 import { getActingAsUserId } from '@/lib/get-acting-as';
 import { revalidatePath } from 'next/cache';
@@ -21,6 +22,9 @@ interface CaptureInput {
   goal_id?: string;
   due_date?: string;
   priority?: 1 | 2 | 3 | 4;
+  assignee?: TaskAssignee;
+  notes?: string;
+  failure_cost?: FailureCost;
 }
 
 /**
@@ -47,6 +51,9 @@ export async function captureTask(input: CaptureInput): Promise<{ error?: string
     };
     if (input.due_date) taskInput.due_date = input.due_date;
     if (input.priority) taskInput.priority = input.priority;
+    if (input.assignee) taskInput.assignee = input.assignee;
+    if (input.notes) taskInput.notes = input.notes;
+    if (input.failure_cost) taskInput.failure_cost = input.failure_cost;
     await createTask(supabase, targetUserId, taskInput);
     revalidatePath('/today');
     return {};
