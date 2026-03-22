@@ -34,4 +34,4 @@ Build goal management from the Goals tab — users can create, edit, move betwee
 ## Scope
 large (7 files changed, 5 new files)
 
-## STATUS: APPROVED
+## STATUS: COMPLETED
