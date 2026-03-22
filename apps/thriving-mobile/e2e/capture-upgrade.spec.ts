@@ -5,12 +5,11 @@ const hasCredentials = !!(process.env['E2E_TEST_EMAIL'] && process.env['E2E_TEST
 test.describe('Capture Upgrade — priority, deadline, assignee, notes', () => {
   test.skip(!hasCredentials, 'Skipping — E2E_TEST_EMAIL/PASSWORD not set');
 
-  // Helper: open capture sheet
+  // Helper: navigate to capture page
   async function openCapture(page: import('@playwright/test').Page) {
-    await page.goto('/today');
+    await page.goto('/capture');
     await page.waitForLoadState('networkidle');
-    await page.locator('button[aria-label="Capture"]').click();
-    await expect(page.locator('h2', { hasText: 'Capture' })).toBeVisible({ timeout: 3_000 });
+    await expect(page.locator('h1', { hasText: 'Capture' })).toBeVisible({ timeout: 5_000 });
   }
 
   test('capture with all fields — priority, deadline, assignee, notes', async ({ page }) => {
@@ -41,7 +40,7 @@ test.describe('Capture Upgrade — priority, deadline, assignee, notes', () => {
     await page.locator('textarea[placeholder="Add notes, contacts, context..."]').fill('E2E test notes');
 
     // Tap Add
-    await page.locator('button', { hasText: 'Add' }).click();
+    await page.locator('button', { hasText: 'Add task' }).click();
 
     // All fields should clear
     await expect(page.locator('input[placeholder="What needs to be done?"]')).toHaveValue('', { timeout: 5_000 });
@@ -59,13 +58,13 @@ test.describe('Capture Upgrade — priority, deadline, assignee, notes', () => {
     await page.locator('input[placeholder="What needs to be done?"]').fill(taskTitle);
 
     // Don't touch priority, deadline, assignee, or notes
-    await page.locator('button', { hasText: 'Add' }).click();
+    await page.locator('button', { hasText: 'Add task' }).click();
 
     // Title clears = success
     await expect(page.locator('input[placeholder="What needs to be done?"]')).toHaveValue('', { timeout: 5_000 });
 
     // Close and verify task exists
-    await page.locator('button[aria-label="Close"]').click();
+    await page.locator('button[aria-label="Back"]').click();
     await page.goto('/today');
     await page.waitForLoadState('networkidle');
     await expect(page.locator(`text=${taskTitle}`)).toBeVisible({ timeout: 10_000 });
@@ -108,7 +107,7 @@ test.describe('Capture Upgrade — priority, deadline, assignee, notes', () => {
     await expect(page.locator('text=Deadline')).toBeVisible({ timeout: 3_000 });
     await expect(page.locator('text=Assignee')).toBeVisible({ timeout: 3_000 });
     await expect(page.locator('text=Notes')).toBeVisible({ timeout: 3_000 });
-    await expect(page.locator('button', { hasText: 'Add' })).toBeVisible({ timeout: 3_000 });
+    await expect(page.locator('button', { hasText: 'Add task' })).toBeVisible({ timeout: 3_000 });
   });
 
   test('error state preserves all field values', async ({ page }) => {

@@ -6,12 +6,11 @@ const hasAIKey = !!process.env['ANTHROPIC_API_KEY'];
 test.describe('Capture Layer 3 — Voice, Camera, AI', () => {
   test.skip(!hasCredentials, 'Skipping — E2E_TEST_EMAIL/PASSWORD not set');
 
-  // Helper: open capture sheet
+  // Helper: navigate to capture page
   async function openCapture(page: import('@playwright/test').Page) {
-    await page.goto('/today');
+    await page.goto('/capture');
     await page.waitForLoadState('networkidle');
-    await page.locator('button[aria-label="Capture"]').click();
-    await expect(page.locator('h2', { hasText: 'Capture' })).toBeVisible({ timeout: 3_000 });
+    await expect(page.locator('h1', { hasText: 'Capture' })).toBeVisible({ timeout: 5_000 });
   }
 
   test('voice and scan buttons are visible in capture sheet', async ({ page }) => {
@@ -94,7 +93,7 @@ test.describe('Capture Layer 3 — Voice, Camera, AI', () => {
     // Quick capture still works (title only)
     const timestamp = Date.now();
     await page.locator('input[placeholder="What needs to be done?"]').fill(`AI Test ${timestamp}`);
-    await page.locator('button', { hasText: 'Add' }).click();
+    await page.locator('button', { hasText: 'Add task' }).click();
     await expect(page.locator('input[placeholder="What needs to be done?"]')).toHaveValue('', { timeout: 5_000 });
   });
 

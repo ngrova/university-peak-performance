@@ -3,7 +3,7 @@
 // PURPOSE: The form field internals for the capture sheet —
 //   state management hook, field labels, and title input.
 //   Extracted from CaptureSheet to keep files under 100 lines.
-// CALLED BY: components/CaptureSheet.tsx
+// CALLED BY: components/CapturePageContent.tsx
 // DATA FLOW: CaptureSheet renders these fields → user fills in
 //   values → useCaptureForm hook manages state → handleAdd submits
 // ═══════════════════════════════════════════════════════════
@@ -34,8 +34,8 @@ export function useCaptureForm() {
   const inputRef = useRef<HTMLInputElement>(null);
   const clearMedia = useCaptureMedia((s) => s.clearAll);
   const qc = useQueryClient();
-  async function handleAdd() {
-    if (!title.trim() || saving) return;
+  async function handleAdd(): Promise<boolean> {
+    if (!title.trim() || saving) return false;
     setSaving(true); setError(null);
     const input: Parameters<typeof captureTask>[0] = { title: title.trim(), goal_id: goalId };
     if (priority) input.priority = priority;
@@ -44,7 +44,7 @@ export function useCaptureForm() {
     if (notes.trim()) input.notes = notes.trim();
     const result = await captureTask(input);
     setSaving(false);
-    if (result.error) { setError(result.error); return; }
+    if (result.error) { setError(result.error); return false; }
     setTitle(''); setPriority(null); setDeadline(''); setAssignee(null); setNotes('');
     clearMedia();
     qc.invalidateQueries({ queryKey: ['one-thing'] });
@@ -55,6 +55,7 @@ export function useCaptureForm() {
     qc.invalidateQueries({ queryKey: ['goals'] });
     qc.invalidateQueries({ queryKey: ['goal-tasks'] });
     inputRef.current?.focus();
+    return true;
   }
   return { title, setTitle, goalId, setGoalId, priority, setPriority, deadline, setDeadline, assignee, setAssignee, notes, setNotes, saving, error, inputRef, handleAdd };
 }

@@ -2,15 +2,14 @@
 // FILE: layout.tsx (app shell)
 // PURPOSE: The authenticated app shell — wraps every screen with
 //   the delegation banner (if acting as assistant), the bottom tab
-//   bar, capture sheet, task/goal/pillar edit sheets.
+//   bar, and task/goal/pillar edit sheets.
 // CALLED BY: Next.js framework (automatic — layout for the (app) group)
 // DATA FLOW: DelegationBanner reads acting_as cookie → child page
-//   renders inside <main> → BottomTabBar, CaptureSheet,
+//   renders inside <main> → BottomTabBar,
 //   TaskDetailSheet, GoalEditSheet, PillarEditSheet mount via Zustand
 // ═══════════════════════════════════════════════════════════
 import React from 'react';
 import BottomTabBar from '@/components/BottomTabBar';
-import CaptureSheet from '@/components/CaptureSheet';
 import TaskDetailSheet from '@/components/TaskDetailSheet';
 import GoalEditSheet from '@/components/GoalEditSheet';
 import PillarEditSheet from '@/components/PillarEditSheet';
@@ -41,7 +40,6 @@ export default function AppLayout({ children }: AppLayoutProps): React.JSX.Eleme
         {children}
       </main>
       <BottomTabBar />
-      <CaptureSheet />
       <TaskDetailSheet />
       <GoalEditSheet />
       <PillarEditSheet />

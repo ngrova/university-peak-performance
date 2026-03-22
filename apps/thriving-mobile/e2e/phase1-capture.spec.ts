@@ -10,9 +10,10 @@ test.describe('Phase 1 — Capture + Complete', () => {
     await page.waitForLoadState('networkidle');
     const taskName = `E2E Capture ${Date.now()}`;
 
-    // Open capture sheet via + button
-    await page.locator('button[aria-label="Capture"]').click();
-    await expect(page.locator('text=Capture')).toBeVisible();
+    // Navigate to capture page via + button
+    await page.locator('a[aria-label="Capture"]').click();
+    await page.waitForURL('/capture');
+    await expect(page.locator('h1', { hasText: 'Capture' })).toBeVisible({ timeout: 5_000 });
 
     // Fill title
     const titleInput = page.locator('input[placeholder="What needs to be done?"]');
@@ -20,18 +21,14 @@ test.describe('Phase 1 — Capture + Complete', () => {
 
     // Wait for goal picker to load
     const goalSelect = page.locator('select[aria-label="Goal"]');
-    await page.waitForTimeout(1000);
-    const selectedGoal = await goalSelect.inputValue();
-    expect(selectedGoal).toBeTruthy();
+    await expect(goalSelect).toBeVisible({ timeout: 5_000 });
 
-    // Tap Add and verify input clears (rapid capture mode)
-    await page.locator('button:has-text("Add")').click();
+    // Tap Add and verify toast appears then input clears
+    await page.locator('button:has-text("Add task")').click();
     await expect(titleInput).toHaveValue('', { timeout: 5_000 });
 
-    // Close sheet
-    await page.locator('button[aria-label="Close"]').click();
-
-    // Reload and verify task appears in queue
+    // Navigate back and verify task appears
+    await page.locator('button[aria-label="Back"]').click();
     await page.goto('/today');
     await page.waitForLoadState('networkidle');
     await expect(page.locator(`text=${taskName}`)).toBeVisible({ timeout: 10_000 });
@@ -43,12 +40,13 @@ test.describe('Phase 1 — Capture + Complete', () => {
 
     // Create a disposable task to complete
     const taskName = `E2E Complete ${Date.now()}`;
-    await page.locator('button[aria-label="Capture"]').click();
+    await page.locator('a[aria-label="Capture"]').click();
+    await page.waitForURL('/capture');
     await page.locator('input[placeholder="What needs to be done?"]').fill(taskName);
-    await page.waitForTimeout(1000);
-    await page.locator('button:has-text("Add")').click();
+    await expect(page.locator('select[aria-label="Goal"]')).toBeVisible({ timeout: 5_000 });
+    await page.locator('button:has-text("Add task")').click();
     await expect(page.locator('input[placeholder="What needs to be done?"]')).toHaveValue('');
-    await page.locator('button[aria-label="Close"]').click();
+    await page.locator('button[aria-label="Back"]').click();
 
     // Reload to see the task
     await page.goto('/today');

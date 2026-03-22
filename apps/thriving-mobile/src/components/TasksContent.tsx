@@ -12,9 +12,9 @@
 
 import React, { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
 import { PlusCircle } from 'lucide-react';
 import { fetchAllTasks } from '@/actions/tasks-page-actions';
-import { useCaptureSheet } from '@/hooks/use-capture-sheet';
 import TaskSearchBar from './TaskSearchBar';
 import TaskFilterChips from './TaskFilterChips';
 import TasksList from './TasksList';
@@ -29,7 +29,6 @@ import TasksList from './TasksList';
  */
 export default function TasksContent(): React.JSX.Element {
   const queryClient = useQueryClient();
-  const openCapture = useCaptureSheet((s) => s.open);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'blocked' | 'completed'>('all');
 
@@ -53,9 +52,8 @@ export default function TasksContent(): React.JSX.Element {
       <TaskSearchBar value={search} onChange={setSearch} />
       <TaskFilterChips value={filter} onChange={setFilter} />
       <TasksList tasks={tasks ?? []} search={search} filter={filter} onTaskChanged={handleChanged} />
-      <button
-        type="button"
-        onClick={openCapture}
+      <Link
+        href="/capture"
         aria-label="Add task"
         className="fixed right-5 flex items-center justify-center rounded-full"
         style={{
@@ -65,7 +63,7 @@ export default function TasksContent(): React.JSX.Element {
         }}
       >
         <PlusCircle size={24} />
-      </button>
+      </Link>
     </div>
   );
 }

@@ -56,17 +56,23 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 - **Usage:** App-wide task detail overlay with inline editing — title, priority chips, assignee pills, failure cost, deadline, notes (auto-save on blur/change)
 - **Called by:** layout.tsx (always mounted)
 
-### CaptureSheet
-- **Canonical:** `src/components/CaptureSheet.tsx`
-- **Introduced:** Phase 1, upgraded in Capture Upgrade + Layer 3 (voice, camera, AI)
-- **Usage:** Full capture overlay — voice recording, camera, AI processing, then title/goal/priority/deadline/assignee/notes
-- **Called by:** layout.tsx (always mounted)
+### CapturePageContent
+- **Canonical:** `src/components/CapturePageContent.tsx`
+- **Introduced:** Capture Fullscreen (replaces CaptureSheet)
+- **Usage:** Full-screen capture page — voice recording, camera, AI processing, task form, success toast. Lives at /capture under (fullscreen) route group.
+- **Called by:** app/(fullscreen)/capture/page.tsx
+
+### SuccessToast
+- **Canonical:** `src/components/SuccessToast.tsx`
+- **Introduced:** Capture Fullscreen
+- **Usage:** Brief green "Task added" toast that fades after 1.5s. Confirms successful save during rapid capture.
+- **Called by:** CapturePageContent
 
 ### CaptureMediaSection
 - **Canonical:** `src/components/CaptureMediaSection.tsx`
 - **Introduced:** Capture Layer 3 (PR #104)
 - **Usage:** Voice/photo capture buttons, voice note cards, photo thumbnails, "Process with AI" button
-- **Called by:** CaptureSheet
+- **Called by:** CapturePageContent
 
 ### VoiceNoteCard
 - **Canonical:** `src/components/VoiceNoteCard.tsx`

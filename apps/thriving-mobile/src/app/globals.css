@@ -75,6 +75,10 @@ html, body {
   animation: fade-in 0.2s ease-out forwards;
 }
 
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
+
 /* Spring drill-down transition for Goals screen levels */
 @keyframes drill-in {
   from { opacity: 0; transform: translateY(12px); }
