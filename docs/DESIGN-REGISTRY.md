@@ -58,9 +58,27 @@ Claude Code updates this whenever a PR adds or modifies shared components.
 
 ### CaptureSheet
 - **Canonical:** `src/components/CaptureSheet.tsx`
-- **Introduced:** Phase 1, upgraded with priority/deadline/assignee/notes in Capture Upgrade
-- **Usage:** Quick-add overlay for rapid task capture with optional priority chips, deadline picker, assignee pills, and notes
+- **Introduced:** Phase 1, upgraded in Capture Upgrade + Layer 3 (voice, camera, AI)
+- **Usage:** Full capture overlay — voice recording, camera, AI processing, then title/goal/priority/deadline/assignee/notes
 - **Called by:** layout.tsx (always mounted)
+
+### CaptureMediaSection
+- **Canonical:** `src/components/CaptureMediaSection.tsx`
+- **Introduced:** Capture Layer 3 (PR #104)
+- **Usage:** Voice/photo capture buttons, voice note cards, photo thumbnails, "Process with AI" button
+- **Called by:** CaptureSheet
+
+### VoiceNoteCard
+- **Canonical:** `src/components/VoiceNoteCard.tsx`
+- **Introduced:** Capture Layer 3 (PR #104)
+- **Usage:** Compact card for one voice recording — play/stop, decorative waveform, duration, remove button
+- **Called by:** CaptureMediaSection
+
+### PhotoCapture
+- **Canonical:** `src/components/PhotoCapture.tsx`
+- **Introduced:** Capture Layer 3 (PR #104)
+- **Usage:** Horizontal scrolling row of captured photo thumbnails with remove buttons
+- **Called by:** CaptureMediaSection
 
 ### GoalEditSheet
 - **Canonical:** `src/components/GoalEditSheet.tsx`
