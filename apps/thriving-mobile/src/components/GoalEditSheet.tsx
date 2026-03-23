@@ -93,11 +93,24 @@ function ErrorBanner({ message }: { message: string }) {
   return <p className="text-sm px-3 py-2 mb-3 rounded-lg" style={{ color: 'var(--danger)', backgroundColor: 'rgba(232,72,72,0.1)' }}>{message}</p>;
 }
 
-/** Archive button with loading state */
+/** Archive button with confirm/cancel step to prevent accidental archives */
 function ArchiveBtn({ archiving, onArchive }: { archiving: boolean; onArchive: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  if (confirming) {
+    return (
+      <div className="flex gap-2 mt-4">
+        <button type="button" onClick={() => setConfirming(false)} className="flex-1 py-3 rounded-lg text-sm font-medium" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+          Cancel
+        </button>
+        <button type="button" onClick={onArchive} disabled={archiving} className="flex-1 py-3 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--danger)', color: '#fff' }}>
+          {archiving ? 'Archiving…' : 'Archive'}
+        </button>
+      </div>
+    );
+  }
   return (
-    <button type="button" onClick={onArchive} disabled={archiving} className="w-full mt-4 py-3 rounded-lg text-sm font-medium" style={{ backgroundColor: 'rgba(232,72,72,0.1)', color: 'var(--danger)' }}>
-      {archiving ? 'Archiving…' : 'Archive Goal'}
+    <button type="button" onClick={() => setConfirming(true)} className="w-full mt-4 py-3 rounded-lg text-sm font-medium" style={{ backgroundColor: 'rgba(232,72,72,0.1)', color: 'var(--danger)' }}>
+      Archive Goal
     </button>
   );
 }
