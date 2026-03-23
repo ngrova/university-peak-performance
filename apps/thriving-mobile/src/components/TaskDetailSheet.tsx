@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: TaskDetailSheet.tsx
 // PURPOSE: Bottom sheet for viewing and editing a single task —
-//   title, priority, assignee, failure cost, deadline, notes,
-//   and action buttons. Changes auto-save on blur/change.
+//   title, goal, priority, assignee, failure cost, deadline, and
+//   notes. Changes auto-save on blur/change.
 // CALLED BY: app/(app)/layout.tsx (always mounted in the app shell)
 // DATA FLOW: User taps a task anywhere → useTaskDetail store holds
 //   it → this sheet reads it and renders editable fields → on
@@ -16,6 +16,7 @@ import { useTaskDetail } from '@/hooks/use-task-detail';
 import { updateTaskField } from '@/actions/task-actions';
 import type { TaskWithContext } from '@upp/db';
 import TaskActions from './TaskActions';
+import GoalPicker from './GoalPicker';
 import PriorityChips from './PriorityChips';
 import AssigneeChips from './AssigneeChips';
 import FailureCostChips from './FailureCostChips';
@@ -49,10 +50,10 @@ function SheetBody({ task, onClose }: { task: TaskWithContext; onClose: () => vo
   return (
     <div className="relative rounded-t-2xl p-5 sheet-enter max-h-[80vh] overflow-y-auto" style={{ backgroundColor: 'var(--bg-surface)' }}>
       <SheetHeader onClose={onClose} />
-      <input defaultValue={task.title} onBlur={(e) => save('title', e.target.value)}
-        className="w-full text-lg font-semibold bg-transparent border-none outline-none mb-4" style={{ color: 'var(--text-primary)' }} />
+      <TitleField defaultValue={task.title} onSave={(v) => save('title', v)} />
       <TaskActions taskId={task.id} status={task.status} onCompleted={onClose} />
-      {task.goals && <GoalLabel title={task.goals.title} />}
+      <FieldLabel text="Goal" />
+      <div className="mb-3"><GoalPicker value={task.goal_id} onChange={(goalId) => save('goal_id', goalId)} /></div>
       <FieldLabel text="Priority" />
       <PriorityChips value={task.priority} onChange={(v) => save('priority', v)} />
       <FieldLabel text="Assignee" />
@@ -81,13 +82,16 @@ function SheetHeader({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** Read-only goal label */
-function GoalLabel({ title }: { title: string }) {
+/** Auto-sizing title textarea — wraps long text, saves on blur */
+function TitleField({ defaultValue, onSave }: { defaultValue: string; onSave: (v: string) => void }) {
+  /** Resizes textarea to fit content */
+  function autoResize(el: HTMLTextAreaElement) { el.style.height = 'auto'; el.style.height = `${el.scrollHeight}px`; }
   return (
-    <div className="mb-3">
-      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Goal</span>
-      <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{title}</p>
-    </div>
+    <textarea defaultValue={defaultValue} onBlur={(e) => onSave(e.target.value)} rows={1}
+      onInput={(e) => autoResize(e.target as HTMLTextAreaElement)}
+      ref={(el) => { if (el) autoResize(el); }}
+      className="w-full text-lg font-semibold bg-transparent border-none outline-none mb-4 resize-none overflow-hidden"
+      style={{ color: 'var(--text-primary)' }} />
   );
 }
 

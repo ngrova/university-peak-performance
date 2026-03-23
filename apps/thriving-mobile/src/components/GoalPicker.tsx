@@ -3,7 +3,7 @@
 // PURPOSE: A dropdown menu for choosing which goal a new task
 //   belongs to. Goals are grouped under their life pillar headings
 //   (e.g., "Health > Run a marathon"). Loads data on mount.
-// CALLED BY: components/CaptureSheet.tsx
+// CALLED BY: components/CapturePageContent.tsx, components/TaskDetailSheet.tsx
 // DATA FLOW: Component mounts → fetchGoalsForPicker server action
 //   returns pillars + goals → dropdown renders grouped options →
 //   user picks one → onChange sends goal ID back to parent
