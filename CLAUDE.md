@@ -3,7 +3,7 @@
 ## Critical Rules (most-violated — read these first)
 
 - When a user describes a feature or fix, run the FULL pipeline automatically — no slash commands needed
-- Always create PLAN.md with STATUS: APPROVED before writing any code
+- Always create plans/{branch}.md with STATUS: APPROVED before writing any code
 - Work on feature branches only (nick/ or erin/ prefix) — never commit to main
 - Keep every file under 100 lines and every function under 25 lines
 - List explicit columns in every Supabase query — never use .select('*')
@@ -12,7 +12,7 @@
 ## Automatic Pipeline
 
 When a user describes a feature or fix, ALWAYS follow this pipeline automatically:
-1. Create PLAN.md (make-plan template) → present it → wait for approval
+1. Create plans/{branch}.md (make-plan template) → present it → wait for approval
 2. Run 9-agent review on the plan → revise until all 9 approve
 3. Build on a feature branch (nick/ or erin/ prefix)
 4. Manager stop hook runs typecheck + tests automatically
@@ -96,7 +96,7 @@ but never relaxes FEATURE safety.
 ## Critical Rules (repeated — read these last)
 
 - When a user describes a feature or fix, run the FULL pipeline automatically — no slash commands needed
-- Always create PLAN.md with STATUS: APPROVED before writing any code
+- Always create plans/{branch}.md with STATUS: APPROVED before writing any code
 - Work on feature branches only — never commit to main
 - Keep every file under 100 lines and every function under 25 lines
 - List explicit columns in every Supabase query — never use .select('*')
@@ -108,5 +108,5 @@ but never relaxes FEATURE safety.
 - 2026-03-17: Security audit found 8x .select('*') violations in packages/db/ (tasks, goals, pillars, assessments, tree) — replace with explicit columns
 - 2026-03-17: Security audit found missing .limit() pagination on all list queries — add default limit(50) per coding standards
 - 2026-03-19: Never override a review agent rejection — fix the concern and re-review, or escalate to Nick for a decision
-- 2026-03-19: Always reset PLAN.md to STATUS: COMPLETED after shipping a PR — stale approvals bypass the require-plan hook
+- 2026-03-19: Always reset plan file to STATUS: COMPLETED after shipping a PR — stale approvals bypass the require-plan hook
 - 2026-03-22: Never skip the 9-agent review, even for small fixes. The pipeline is non-negotiable — if a fix is too small for the council, it's still not too small for the council.
