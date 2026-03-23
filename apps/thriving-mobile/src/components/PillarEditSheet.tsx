@@ -40,20 +40,24 @@ export default function PillarEditSheet(): React.JSX.Element | null {
 function usePillarActions(pillarId: string, onClose: () => void) {
   const [error, setError] = useState('');
   const [archiving, setArchiving] = useState(false);
+  const onSaved = usePillarDetail((s) => s.onSaved);
+  /** Saves a single field and refreshes the pillar list cache on success */
   async function saveField(field: string, value: string) {
     setError('');
     const r = await updatePillarField(pillarId, field as Parameters<typeof updatePillarField>[1], value);
-    if (r.error) setError(r.error);
+    if (r.error) { setError(r.error); } else { onSaved?.(); }
   }
+  /** Archives the pillar and refreshes the pillar list cache on success */
   async function handleArchive() {
     setArchiving(true); setError('');
     const r = await archivePillar(pillarId);
-    if (r.error) { setError(r.error); setArchiving(false); } else { onClose(); }
+    if (r.error) { setError(r.error); setArchiving(false); } else { onSaved?.(); onClose(); }
   }
+  /** Reorders the pillar and refreshes the pillar list cache on success */
   async function handleReorder(direction: 'up' | 'down') {
     setError('');
     const r = await reorderPillar(pillarId, direction);
-    if (r.error) setError(r.error);
+    if (r.error) { setError(r.error); } else { onSaved?.(); }
   }
   return { error, archiving, saveField, handleArchive, handleReorder };
 }

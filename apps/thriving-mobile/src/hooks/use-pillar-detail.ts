@@ -12,8 +12,10 @@ import type { PillarWithProgress } from '@upp/db';
 
 interface PillarDetailState {
   pillar: PillarWithProgress | null;
+  onSaved: (() => void) | null;
   open: (pillar: PillarWithProgress) => void;
   close: () => void;
+  setOnSaved: (cb: (() => void) | null) => void;
 }
 
 /**
@@ -26,6 +28,8 @@ interface PillarDetailState {
  */
 export const usePillarDetail = create<PillarDetailState>((set) => ({
   pillar: null,
+  onSaved: null,
   open: (pillar) => set({ pillar }),
   close: () => set({ pillar: null }),
+  setOnSaved: (cb) => set({ onSaved: cb }),
 }));
