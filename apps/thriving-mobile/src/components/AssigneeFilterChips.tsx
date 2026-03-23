@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════════════════════
-// FILE: TaskFilterChips.tsx
-// PURPOSE: Horizontally scrollable filter buttons on the Tasks
-//   screen — "All", "Active", "Blocked", "Completed". Tapping
-//   one filters the task list to show only that status.
+// FILE: AssigneeFilterChips.tsx
+// PURPOSE: Horizontally scrollable filter chips for filtering
+//   tasks by assignee — "All", "Nick", "Erin", "Liz". Tapping
+//   one shows only tasks assigned to that person.
 // CALLED BY: components/TasksContent.tsx
-// DATA FLOW: User taps a chip → onChange sends the filter value
+// DATA FLOW: User taps a chip → onChange sends the assignee value
 //   to TasksContent → TasksContent passes it to TasksList which
 //   shows only matching tasks
 // ═══════════════════════════════════════════════════════════
@@ -12,30 +12,30 @@
 
 import React from 'react';
 
-type FilterValue = 'all' | 'active' | 'blocked' | 'completed';
+export type AssigneeFilter = 'all' | 'Nick' | 'Erin' | 'Liz';
 
-interface TaskFilterChipsProps {
-  value: FilterValue;
-  onChange: (value: FilterValue) => void;
+interface AssigneeFilterChipsProps {
+  value: AssigneeFilter;
+  onChange: (value: AssigneeFilter) => void;
 }
 
-const FILTERS: { label: string; value: FilterValue }[] = [
+const FILTERS: { label: string; value: AssigneeFilter }[] = [
   { label: 'All', value: 'all' },
-  { label: 'Active', value: 'active' },
-  { label: 'Blocked', value: 'blocked' },
-  { label: 'Completed', value: 'completed' },
+  { label: 'Nick', value: 'Nick' },
+  { label: 'Erin', value: 'Erin' },
+  { label: 'Liz', value: 'Liz' },
 ];
 
 /**
- * Triggered by: TasksContent renders this below the search bar.
- * Steps: renders a row of pill-shaped buttons, one per filter option.
+ * Triggered by: TasksContent renders this below the status filter row.
+ * Steps: renders a row of pill-shaped buttons, one per assignee option.
  *   The active filter gets a highlighted style. Tapping a different
- *   chip calls onChange with that filter's value.
- * Returns: a scrollable row of filter buttons.
+ *   chip calls onChange with that assignee value.
+ * Returns: a scrollable row of assignee filter buttons.
  */
-export default function TaskFilterChips({ value, onChange }: TaskFilterChipsProps): React.JSX.Element {
+export default function AssigneeFilterChips({ value, onChange }: AssigneeFilterChipsProps): React.JSX.Element {
   return (
-    <div className="flex gap-2 mb-2 overflow-x-auto" role="radiogroup" aria-label="Filter tasks">
+    <div className="flex gap-2 mb-2 overflow-x-auto" role="radiogroup" aria-label="Filter by assignee">
       {FILTERS.map((f) => {
         const active = value === f.value;
         return (
