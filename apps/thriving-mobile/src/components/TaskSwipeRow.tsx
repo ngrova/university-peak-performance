@@ -17,6 +17,7 @@ import { completeTask } from '@/actions/task-actions';
 import { deleteTaskAction } from '@/actions/tasks-page-actions';
 import { useTaskDetail } from '@/hooks/use-task-detail';
 import DeleteConfirm from './DeleteConfirm';
+import TaskCardChips from './TaskCardChips';
 
 interface TaskSwipeRowProps {
   task: TaskWithContext;
@@ -96,13 +97,14 @@ export default function TaskSwipeRow({ task, onChanged }: TaskSwipeRowProps): Re
           <p className="text-sm truncate" style={{ color: 'var(--text-primary)', textDecoration: isDone ? 'line-through' : 'none' }}>
             {task.title}
           </p>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             {task.due_date && (
               <span className="text-xs" style={{ color: isOverdue ? 'var(--danger)' : 'var(--text-muted)' }}>
                 {new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </span>
             )}
             {isBlocked && <span className="text-xs" style={{ color: 'var(--blocked)' }}>Blocked</span>}
+            <TaskCardChips priority={task.priority} assignee={task.assignee} />
           </div>
         </div>
       </div>
