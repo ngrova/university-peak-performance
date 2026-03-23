@@ -16,3 +16,5 @@ export { saveAssessment, getAssessmentHistory, getLatestAssessment, deleteAssess
 export type { Assessment, DomainKey, DomainScores, DomainAverages } from './assessments'
 export { getTreeData } from './tree'
 export type { TreeData } from './tree'
+export { getTaskAttachments, createAttachment, deleteAttachment } from './attachments'
+export type { TaskAttachment, CreateAttachmentInput } from './attachments'
