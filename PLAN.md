@@ -23,4 +23,4 @@ Voice recordings are especially critical since they can't be recreated.
 ## Scope
 small
 
-## STATUS: APPROVED
+## STATUS: COMPLETED
