@@ -39,7 +39,7 @@ export default function GoalsContent(): React.JSX.Element {
 
   return (
     <div className="pt-2 tab-enter">
-      <h1 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>Goals</h1>
+      <h1 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>Pillars</h1>
       <Breadcrumbs items={drill.breadcrumbs} onNavigate={drill.navigateTo} />
       {drill.error ? (
         <GoalsError message={drill.error.message} />
