@@ -21,7 +21,9 @@ interface DelegationWithName {
 }
 
 // Hardcoded for now — replaced by a profiles table when the invite flow is built
-const OWNER_NAMES: Record<string, string> = {};
+const OWNER_NAMES: Record<string, string> = {
+  'a0a9ed26-9394-4c94-8d57-e5ffe7f4f3c2': 'Nick Grover',
+};
 const DEFAULT_OWNER_NAME = 'Shared account';
 
 /**
