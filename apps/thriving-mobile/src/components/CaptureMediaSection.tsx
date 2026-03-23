@@ -55,7 +55,7 @@ function useCaptureProcessing(onAIResult: (s: AISuggestion) => void) {
   async function handleVoice() {
     if (recorder.state.recording) {
       const r = await recorder.stop();
-      if (r) m.addVoice(r.blob, r.duration, r.mimeType);
+      if (r) { m.addVoice(r.blob, r.duration, r.mimeType); setTranscripts([]); }
     } else { await recorder.start(); }
   }
   async function handleProcess() {
