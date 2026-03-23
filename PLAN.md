@@ -22,4 +22,4 @@ queryClient access out of PillarEditSheet — pure dependency injection via Zust
 ## Scope
 small
 
-## STATUS: APPROVED
+## STATUS: COMPLETED
