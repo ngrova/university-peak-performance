@@ -27,10 +27,12 @@ export interface CapturedPhoto {
 interface CaptureMediaState {
   voiceNotes: VoiceNote[];
   photos: CapturedPhoto[];
+  transcripts: string[];
   addVoice: (blob: Blob, duration: number, mimeType: string) => void;
   removeVoice: (id: string) => void;
   addPhoto: (file: File) => void;
   removePhoto: (id: string) => void;
+  setTranscripts: (transcripts: string[]) => void;
   clearAll: () => void;
 }
 
@@ -44,8 +46,10 @@ interface CaptureMediaState {
 export const useCaptureMedia = create<CaptureMediaState>((set, get) => ({
   voiceNotes: [],
   photos: [],
+  transcripts: [],
   addVoice: (blob, duration, mimeType) => set((s) => ({
     voiceNotes: [...s.voiceNotes, { id: crypto.randomUUID(), blob, url: URL.createObjectURL(blob), duration, mimeType }],
+    transcripts: [],
   })),
   removeVoice: (id) => set((s) => {
     const note = s.voiceNotes.find((v) => v.id === id);
@@ -60,10 +64,11 @@ export const useCaptureMedia = create<CaptureMediaState>((set, get) => ({
     if (photo) URL.revokeObjectURL(photo.url);
     return { photos: s.photos.filter((p) => p.id !== id) };
   }),
+  setTranscripts: (transcripts) => set({ transcripts }),
   clearAll: () => {
     const { voiceNotes, photos } = get();
     voiceNotes.forEach((v) => URL.revokeObjectURL(v.url));
     photos.forEach((p) => URL.revokeObjectURL(p.url));
-    set({ voiceNotes: [], photos: [] });
+    set({ voiceNotes: [], photos: [], transcripts: [] });
   },
 }));

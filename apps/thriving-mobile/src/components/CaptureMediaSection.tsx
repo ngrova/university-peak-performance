@@ -48,14 +48,15 @@ async function prepareMedia(voiceNotes: VoiceNote[], photos: CapturedPhoto[]) {
 /** Manages voice recording, photo capture, and AI processing state */
 function useCaptureProcessing(onAIResult: (s: AISuggestion) => void) {
   const m = useMediaState();
+  const transcripts = useCaptureMedia((s) => s.transcripts);
+  const setTranscripts = useCaptureMedia((s) => s.setTranscripts);
   const recorder = useVoiceRecorder();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
-  const [transcripts, setTranscripts] = useState<string[]>([]);
   async function handleVoice() {
     if (recorder.state.recording) {
       const r = await recorder.stop();
-      if (r) { m.addVoice(r.blob, r.duration, r.mimeType); setTranscripts([]); }
+      if (r) { m.addVoice(r.blob, r.duration, r.mimeType); }
     } else { await recorder.start(); }
   }
   async function handleProcess() {
