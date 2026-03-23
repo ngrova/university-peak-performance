@@ -93,6 +93,15 @@ but never relaxes FEATURE safety.
 - Agents 3, 6, and 8 apply conditional rules for intentional deletions
 - Use FEATURE (the default) for all new functionality
 
+## Sub-Agent Pipeline Rule
+
+When delegating work to sub-agents (parallel worktrees), the full pipeline is non-negotiable:
+- Every sub-agent must run the 9-agent plan review before building code
+- Every sub-agent must run the 9-agent code review before creating a PR
+- If sub-agents cannot run the council themselves, the main session must run both reviews on each agent's work before the PR is created
+- No exceptions — parallel execution does not justify skipping reviews
+- A sub-agent that ships a PR without 9-agent review has violated the pipeline, same as if the main session skipped it
+
 ## Critical Rules (repeated — read these last)
 
 - When a user describes a feature or fix, run the FULL pipeline automatically — no slash commands needed
@@ -110,3 +119,4 @@ but never relaxes FEATURE safety.
 - 2026-03-19: Never override a review agent rejection — fix the concern and re-review, or escalate to Nick for a decision
 - 2026-03-19: Always reset plan file to STATUS: COMPLETED after shipping a PR — stale approvals bypass the require-plan hook
 - 2026-03-22: Never skip the 9-agent review, even for small fixes. The pipeline is non-negotiable — if a fix is too small for the council, it's still not too small for the council.
+- 2026-03-23: Sub-agents in parallel worktrees bypassed the 9-agent review on PRs #127-129. Promoted to permanent rule: Sub-Agent Pipeline Rule.
