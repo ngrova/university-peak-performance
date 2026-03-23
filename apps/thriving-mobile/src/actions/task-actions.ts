@@ -35,7 +35,7 @@ interface CaptureInput {
  * Returns: empty object on success, or { error: message } if
  *   something went wrong (shown to the user in the sheet).
  */
-export async function captureTask(input: CaptureInput): Promise<{ error?: string }> {
+export async function captureTask(input: CaptureInput): Promise<{ taskId?: string; error?: string }> {
   try {
     const supabase = await getServerClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -54,9 +54,9 @@ export async function captureTask(input: CaptureInput): Promise<{ error?: string
     if (input.assignee) taskInput.assignee = input.assignee;
     if (input.notes) taskInput.notes = input.notes;
     if (input.failure_cost) taskInput.failure_cost = input.failure_cost;
-    await createTask(supabase, targetUserId, taskInput);
+    const task = await createTask(supabase, targetUserId, taskInput);
     revalidatePath('/today');
-    return {};
+    return { taskId: task.id };
   } catch {
     return { error: 'Failed to save — try again' };
   }

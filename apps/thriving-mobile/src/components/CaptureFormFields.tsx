@@ -13,6 +13,7 @@ import React, { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { captureTask } from '@/actions/task-actions';
 import { useCaptureMedia } from '@/hooks/use-capture-media';
+import { uploadMedia } from '@/lib/upload-media';
 import type { TaskAssignee } from '@upp/db';
 
 /**
@@ -32,6 +33,9 @@ export function useCaptureForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const voiceNotes = useCaptureMedia((s) => s.voiceNotes);
+  const photos = useCaptureMedia((s) => s.photos);
+  const transcripts = useCaptureMedia((s) => s.transcripts);
   const clearMedia = useCaptureMedia((s) => s.clearAll);
   const qc = useQueryClient();
   async function handleAdd(): Promise<boolean> {
@@ -45,6 +49,8 @@ export function useCaptureForm() {
     const result = await captureTask(input);
     setSaving(false);
     if (result.error) { setError(result.error); return false; }
+    // Best-effort media upload — task is saved regardless
+    if (result.taskId) uploadMedia(result.taskId, voiceNotes, photos, transcripts);
     setTitle(''); setPriority(null); setDeadline(''); setAssignee(null); setNotes('');
     clearMedia();
     qc.invalidateQueries({ queryKey: ['one-thing'] });

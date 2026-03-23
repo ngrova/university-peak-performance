@@ -20,6 +20,7 @@ import GoalPicker from './GoalPicker';
 import PriorityChips from './PriorityChips';
 import AssigneeChips from './AssigneeChips';
 import FailureCostChips from './FailureCostChips';
+import TaskAttachments from './TaskAttachments';
 
 /**
  * Triggered by: useTaskDetail store gets a task (user tapped one).
@@ -66,6 +67,7 @@ function SheetBody({ task, onClose }: { task: TaskWithContext; onClose: () => vo
       <FieldLabel text="Notes" />
       <textarea defaultValue={task.notes ?? ''} onBlur={(e) => save('notes', e.target.value || null)} rows={3}
         className="w-full rounded-lg px-3 py-2 text-sm resize-none mb-3" style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+      <TaskAttachments taskId={task.id} />
     </div>
   );
 }
