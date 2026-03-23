@@ -18,4 +18,4 @@ When a task is created via voice capture with full notes like "Bill from Heritag
 ## Scope
 small
 
-## STATUS: APPROVED
+## STATUS: COMPLETED
