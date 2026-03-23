@@ -17,4 +17,4 @@ Two bugs: (1) Deleting a voice note doesn't stop audio playback — the HTMLAudi
 ## Scope
 small
 
-## STATUS: APPROVED
+## STATUS: COMPLETED
