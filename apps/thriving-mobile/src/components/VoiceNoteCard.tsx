@@ -74,10 +74,23 @@ function Waveform() {
   );
 }
 
-/** X button to remove the recording */
+/** X button with confirm/cancel step — recordings can't be recreated */
 function RemoveButton({ onRemove }: { onRemove: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  if (confirming) {
+    return (
+      <div className="absolute -top-2 -right-2 flex gap-1">
+        <button type="button" onClick={() => setConfirming(false)} aria-label="Cancel remove" className="px-2 py-0.5 text-xs rounded-full" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)', backgroundColor: 'var(--bg-surface)' }}>
+          Cancel
+        </button>
+        <button type="button" onClick={onRemove} aria-label="Confirm remove" className="px-2 py-0.5 text-xs rounded-full text-white" style={{ backgroundColor: '#E24B4A' }}>
+          Remove
+        </button>
+      </div>
+    );
+  }
   return (
-    <button type="button" onClick={onRemove} aria-label="Remove recording" className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-xs text-white" style={{ backgroundColor: '#E24B4A' }}>
+    <button type="button" onClick={() => setConfirming(true)} aria-label="Remove recording" className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-xs text-white" style={{ backgroundColor: '#E24B4A' }}>
       ×
     </button>
   );
