@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useGoalsDrilldown } from '@/hooks/use-goals-drilldown';
+import { usePillarDetail } from '@/hooks/use-pillar-detail';
 import Breadcrumbs from './Breadcrumbs';
 import PillarList from './PillarList';
 import PillarDetail from './PillarDetail';
@@ -28,8 +29,11 @@ import GoalDetail from './GoalDetail';
  */
 export default function GoalsContent(): React.JSX.Element {
   const drill = useGoalsDrilldown();
+  const setOnSaved = usePillarDetail((s) => s.setOnSaved);
   const [animKey, setAnimKey] = useState(0);
   useEffect(() => { setAnimKey((k) => k + 1); }, [drill.level]);
+  // Register drill.refresh so PillarEditSheet can invalidate query caches
+  useEffect(() => { setOnSaved(drill.refresh); return () => setOnSaved(null); }, [drill.refresh, setOnSaved]);
   const activePillar = drill.pillars.find((p) => drill.breadcrumbs.some((b) => b.id === p.id));
   const pillarColor = activePillar?.color ?? 'var(--accent)';
 
