@@ -40,7 +40,7 @@ function useMediaState() {
 
 /** Converts voice blobs and photo files to base64 for the server action */
 async function prepareMedia(voiceNotes: VoiceNote[], photos: CapturedPhoto[]) {
-  const voice = await Promise.all(voiceNotes.map(async (n) => ({ data: await blobToBase64(n.blob), mimeType: n.mimeType })));
+  const voice = await Promise.all(voiceNotes.map(async (n) => ({ data: await blobToBase64(n.blob), mimeType: n.mimeType, imported: n.imported })));
   const images = await Promise.all(photos.map(async (p) => ({ data: await blobToBase64(p.file), mimeType: p.file.type })));
   return { voice, images };
 }
@@ -71,26 +71,36 @@ function useCaptureProcessing(onAIResult: (s: AISuggestion) => void) {
   return { ...m, recorder, processing, error, transcripts, handleVoice, handleProcess };
 }
 
+/** Reads duration from an imported audio file and adds it to the store */
+function importAudioFile(file: File, addVoice: (blob: Blob, duration: number, mimeType: string, imported?: boolean | undefined) => void) {
+  const url = URL.createObjectURL(file);
+  const audio = new Audio(url);
+  audio.onloadedmetadata = () => { addVoice(file, audio.duration, file.type, true); URL.revokeObjectURL(url); };
+  audio.onerror = () => { addVoice(file, 0, file.type, true); URL.revokeObjectURL(url); };
+}
+
 /**
- * Triggered by: CaptureSheet renders this above the form fields.
- * Steps: shows Voice and Scan buttons. Voice toggles recording.
- *   Scan opens camera. "Process with AI" transcribes voice via
- *   Deepgram, sends text + images to Claude for task extraction.
+ * Triggered by: CapturePageContent renders this above the form fields.
+ * Steps: shows Voice, Import, and Scan buttons. Voice toggles recording.
+ *   Import opens audio file picker. Scan opens camera. "Process with AI"
+ *   transcribes voice via Deepgram, sends labeled text to Claude.
  * Returns: the media capture + AI processing section.
  */
 export default function CaptureMediaSection({ onAIResult }: CaptureMediaSectionProps): React.JSX.Element {
   const c = useCaptureProcessing(onAIResult);
-  const photoInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null), audioInputRef = useRef<HTMLInputElement>(null);
   const hasMedia = c.voiceNotes.length > 0 || c.photos.length > 0;
   return (
     <div className="mb-4">
-      <CaptureButtons recording={c.recorder.state.recording} onVoice={c.handleVoice} onScan={() => photoInputRef.current?.click()} />
+      <CaptureButtons recording={c.recorder.state.recording} onVoice={c.handleVoice} onScan={() => photoInputRef.current?.click()} onImport={() => audioInputRef.current?.click()} />
       {(c.recorder.state.error || c.error) && <ErrorText message={c.recorder.state.error || c.error} />}
       <VoiceStack notes={c.voiceNotes} transcripts={c.transcripts} onRemove={c.removeVoice} />
       <PhotoCapture photos={c.photos} onAdd={c.addPhoto} onRemove={c.removePhoto} />
       {hasMedia && <ProcessButton processing={c.processing} onClick={c.handleProcess} />}
       <input ref={photoInputRef} type="file" accept="image/*" capture="environment" className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) c.addPhoto(f); e.target.value = ''; }} />
+      <input ref={audioInputRef} type="file" accept="audio/*" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) importAudioFile(f, c.addVoice); e.target.value = ''; }} />
       {hasMedia && <div className="h-px mb-2" style={{ backgroundColor: 'var(--border)' }} />}
     </div>
   );

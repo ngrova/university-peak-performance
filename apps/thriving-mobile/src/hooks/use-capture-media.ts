@@ -16,6 +16,7 @@ export interface VoiceNote {
   url: string;
   duration: number;
   mimeType: string;
+  imported: boolean;
 }
 
 export interface CapturedPhoto {
@@ -28,7 +29,7 @@ interface CaptureMediaState {
   voiceNotes: VoiceNote[];
   photos: CapturedPhoto[];
   transcripts: string[];
-  addVoice: (blob: Blob, duration: number, mimeType: string) => void;
+  addVoice: (blob: Blob, duration: number, mimeType: string, imported?: boolean | undefined) => void;
   removeVoice: (id: string) => void;
   addPhoto: (file: File) => void;
   removePhoto: (id: string) => void;
@@ -47,8 +48,8 @@ export const useCaptureMedia = create<CaptureMediaState>((set, get) => ({
   voiceNotes: [],
   photos: [],
   transcripts: [],
-  addVoice: (blob, duration, mimeType) => set((s) => ({
-    voiceNotes: [...s.voiceNotes, { id: crypto.randomUUID(), blob, url: URL.createObjectURL(blob), duration, mimeType }],
+  addVoice: (blob, duration, mimeType, imported) => set((s) => ({
+    voiceNotes: [...s.voiceNotes, { id: crypto.randomUUID(), blob, url: URL.createObjectURL(blob), duration, mimeType, imported: imported ?? false }],
     transcripts: [],
   })),
   removeVoice: (id) => set((s) => {
