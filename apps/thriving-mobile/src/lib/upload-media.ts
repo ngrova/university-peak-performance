@@ -27,9 +27,8 @@ export async function uploadMedia(
   transcripts: string[],
 ): Promise<void> {
   // Upload voice notes with transcripts
-  for (let i = 0; i < voiceNotes.length; i++) {
+  for (const [i, note] of voiceNotes.entries()) {
     try {
-      const note = voiceNotes[i];
       const base64 = await blobToBase64(note.blob);
       const ext = note.mimeType.includes('webm') ? 'webm' : 'mp4';
       const name = `voice-${Date.now()}-${i}.${ext}`;
@@ -37,9 +36,8 @@ export async function uploadMedia(
     } catch (err) { reportError(err); }
   }
   // Upload photos
-  for (let i = 0; i < photos.length; i++) {
+  for (const [i, photo] of photos.entries()) {
     try {
-      const photo = photos[i];
       const base64 = await blobToBase64(photo.file);
       const name = `photo-${Date.now()}-${i}.${photo.file.type.includes('png') ? 'png' : 'jpg'}`;
       await uploadAttachment(taskId, base64, name, 'image', photo.file.type, photo.file.size);
