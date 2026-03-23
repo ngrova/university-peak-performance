@@ -28,5 +28,9 @@ dist
 .claude/settings.local.json
 .claude/worktrees/
 
+# Branch-specific plan files (only exist on feature branches)
+plans/
+PLAN.md
+
 # Playwright auth state
 e2e/.auth/

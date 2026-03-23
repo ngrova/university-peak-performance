@@ -1,12 +1,12 @@
 ---
 name: make-plan
-description: Creates a PLAN.md file with approach, files to change, scope estimate, and STATUS field before any code is written. Use when starting any new feature, fix, or refactor — any task that will modify application code.
+description: Creates a branch-specific plan file (plans/{branch}.md) with approach, files to change, scope estimate, and STATUS field before any code is written. Use when starting any new feature, fix, or refactor — any task that will modify application code.
 user_invocable: true
 ---
 
 # make-plan
 
-Create a PLAN.md at the repository root for the requested feature or fix. Follow these steps:
+Create a branch-specific plan file for the requested feature or fix. Follow these steps:
 
 ## Step 1 — Understand the Request
 
@@ -21,9 +21,11 @@ Use Glob, Grep, and Read tools to understand the current code relevant to this t
 - Check `docs/DESIGN-REGISTRY.md` for canonical UI patterns — use them instead of building new versions
 - Note if any registry entries need updating as part of this plan
 
-## Step 3 — Write PLAN.md
+## Step 3 — Write the plan file
 
-Write the file `PLAN.md` at the repo root using this exact format:
+Determine the plan file path: get the current git branch name, replace `/` with `-`, and write to `plans/{slug}.md`. For example, branch `nick/fix-foo` → `plans/nick-fix-foo.md`. Create the `plans/` directory if it doesn't exist.
+
+Write the plan file using this exact format:
 
 ```
 # Plan: [Feature Name]
@@ -63,13 +65,13 @@ Then ask: **"Want me to go ahead with this plan?"**
 
 ## Step 5 — On Approval
 
-When the user approves, update PLAN.md to change `STATUS: PENDING` to `STATUS: APPROVED`. This unlocks the require-plan hook so code can be written.
+When the user approves, update the plan file to change `STATUS: PENDING` to `STATUS: APPROVED`. This unlocks the require-plan hook so code can be written.
 
 ## Rules
 
-- Never start writing application code before PLAN.md has STATUS: APPROVED
+- Never start writing application code before the plan file has STATUS: APPROVED
 - Keep the plan concise — no more than 40 lines for FEATURE, 60 lines for REDESIGN (deletion lists need space)
 - TYPE defaults to FEATURE if omitted — only set REDESIGN when the primary intent is replacing, consolidating, or removing existing code
 - REDESIGN plans must list every file being removed in "Files to Delete" with a one-line reason
 - If scope is "large", suggest breaking it into smaller pieces
-- One plan per task — delete the old PLAN.md before creating a new one
+- Each branch gets its own plan file — no shared PLAN.md. The plans/ directory is gitignored so plan files never reach main

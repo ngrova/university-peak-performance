@@ -52,7 +52,10 @@ const warnings = [];
 
 // Warn if file deletions appear in a FEATURE PR
 try {
-  const planPath = path.join(repoRoot, 'PLAN.md');
+  // Derive plan path from current branch name
+  const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8', cwd: repoRoot }).trim();
+  const slug = branch.replace(/\//g, '-');
+  const planPath = path.join(repoRoot, 'plans', slug + '.md');
   if (fs.existsSync(planPath)) {
     const plan = fs.readFileSync(planPath, 'utf8');
     const typeMatch = plan.match(/^## TYPE\s*\n\s*(\w+)/m);

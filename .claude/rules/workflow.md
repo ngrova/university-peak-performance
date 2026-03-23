@@ -12,14 +12,14 @@ Before starting any new task:
 
 When a user describes a feature or fix in plain English, ALWAYS run this full pipeline automatically:
 
-1. **Plan** — Create PLAN.md using the make-plan skill template (approach, files, scope, STATUS: PENDING). Present it to the user and wait for approval.
+1. **Plan** — Create `plans/{branch-slug}.md` using the make-plan skill template (approach, files, scope, STATUS: PENDING). Branch slug is the branch name with `/` replaced by `-` (e.g., `nick/fix-foo` → `plans/nick-fix-foo.md`). Present it to the user and wait for approval.
 2. **Review plan** — Spawn 9 sub-agents in parallel (security, data integrity, code reuse, coding standards, integration correctness, scope, pattern consistency, test coverage, silent failure detection). All 9 agents must approve. If any agent rejects, fix the concern and re-review. If you believe the rejection is wrong, explain the disagreement to Nick and let him decide. Never override a rejection.
-3. **Approve** — Set PLAN.md STATUS: APPROVED (unlocks the require-plan hook)
+3. **Approve** — Set plan file STATUS: APPROVED (unlocks the require-plan hook)
 4. **Build** — Write code on a feature branch (nick/ or erin/ prefix)
 5. **Manager check** — Stop hook auto-runs typecheck + tests. Fix failures before proceeding.
 6. **Review code** — Spawn the same 9 sub-agents on the code diff. All 9 must approve. If any reject, fix the concern and re-review. If you believe the rejection is wrong, explain the disagreement to Nick and let him decide. Never override a rejection.
 7. **Ship** — Create PR with conventional commit title and what/why/how-to-test description. After creating the PR, include a direct link to the GitHub Actions CI run so Nick can monitor test progress. Use: `gh run list --limit 1 --json url --jq '.[0].url'` to get the link.
-8. **Lock plan** — Immediately after creating the PR, set PLAN.md `STATUS: COMPLETED`. This prevents the stale approval from being reused as a free pass for the next task. The require-plan hook will block all code edits until a new plan is approved.
+8. **Lock plan** — Immediately after creating the PR, set plan file `STATUS: COMPLETED`. This prevents the stale approval from being reused as a free pass for the next task. The require-plan hook will block all code edits until a new plan is approved.
 9. **CI** — Lint, typecheck, Playwright E2E, gitleaks run automatically. CI is the merge gate.
 10. **Merge** — All CI green → auto-merge to main → deploys to Netlify.
 11. **Human tests** — Nick or Erin tests on phone after deploy. Catches feel, polish, and UX issues that become new tasks if something is off.
@@ -27,7 +27,7 @@ When a user describes a feature or fix in plain English, ALWAYS run this full pi
 The user should NEVER need to type a slash command. Just describe what you want and the system handles everything.
 
 ### Why STATUS: COMPLETED matters
-The require-plan hook blocks all code edits unless PLAN.md contains `STATUS: APPROVED`. If a completed plan is left with APPROVED, the next task can bypass the planning step entirely. Always reset to COMPLETED after shipping.
+The require-plan hook blocks all code edits unless the branch plan file contains `STATUS: APPROVED`. If a completed plan is left with APPROVED, the next task can bypass the planning step entirely. Always reset to COMPLETED after shipping.
 
 ## Git Workflow
 
@@ -48,7 +48,9 @@ The require-plan hook blocks all code edits unless PLAN.md contains `STATUS: APP
 - **Why** (the user need or bug being fixed)
 - **How to test** (steps for Nick or Erin to verify on phone)
 
-## PLAN.md Format
+## Plan File Format
+
+Plan files live in `plans/{branch-slug}.md` where the slug is the branch name with `/` replaced by `-`. The `plans/` directory is gitignored — plan files only exist on feature branches, never on main. This eliminates merge conflicts when multiple branches run in parallel.
 
 ```
 # Plan: [Feature Name]

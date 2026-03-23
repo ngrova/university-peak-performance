@@ -13,6 +13,18 @@ function getRepoRoot() {
   }
 }
 
+// Derives plan file path from current git branch name
+function getPlanPath() {
+  const root = getRepoRoot();
+  try {
+    const branch = execSync("git rev-parse --abbrev-ref HEAD", { encoding: "utf8" }).trim();
+    const slug = branch.replace(/\//g, "-");
+    return path.join(root, "plans", slug + ".md");
+  } catch {
+    return path.join(root, "plans", "unknown.md");
+  }
+}
+
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
 process.stdin.on("end", () => {
@@ -37,11 +49,11 @@ process.stdin.on("end", () => {
   // Allow edits to exempt paths
   const baseName = path.basename(normalized);
   if (
-    baseName === "PLAN.md" ||
     baseName === "CLAUDE.md" ||
+    normalized.includes("/plans/") ||
     normalized.includes("/.claude/") ||
     normalized.includes("/docs/") ||
-    // Windows-style paths
+    normalized.includes("\\plans\\") ||
     normalized.includes("\\.claude\\") ||
     normalized.includes("\\docs\\")
   ) {
@@ -49,8 +61,8 @@ process.stdin.on("end", () => {
     return;
   }
 
-  // Check for PLAN.md with STATUS: APPROVED
-  const planPath = path.join(getRepoRoot(), "PLAN.md");
+  // Check for branch-specific plan with STATUS: APPROVED
+  const planPath = getPlanPath();
   try {
     const content = fs.readFileSync(planPath, "utf8");
     if (content.includes("STATUS: APPROVED")) {
@@ -58,13 +70,13 @@ process.stdin.on("end", () => {
       return;
     }
   } catch {
-    // File doesn't exist
+    // Plan file doesn't exist for this branch
   }
 
   process.stdout.write(
     JSON.stringify({
       decision: "block",
-      reason: "No approved plan. Create PLAN.md with STATUS: APPROVED first.",
+      reason: "No approved plan. Create plans/{branch}.md with STATUS: APPROVED first.",
     })
   );
 });
