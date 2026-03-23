@@ -18,14 +18,14 @@ import { revalidatePath } from 'next/cache';
 import { reportError } from '@/lib/report-error';
 
 /**
- * Triggered by: capture flow after a task is created (best-effort).
- * Steps: gets auth, uploads file to Storage under {userId}/{taskId}/,
- *   creates a task_attachments row linking the file to the task.
- * Returns: the new attachment row, or { error } if upload fails.
+ * Triggered by: upload-media.ts after uploading a file to Storage from the browser.
+ * Steps: gets auth, resolves delegation context, creates a task_attachments row
+ *   linking the already-uploaded Storage file to the task.
+ * Returns: the new attachment row, or { error } if insert fails.
  */
-export async function uploadAttachment(
+export async function createAttachmentRow(
   taskId: string,
-  fileBase64: string,
+  filePath: string,
   fileName: string,
   fileType: 'audio' | 'image',
   mimeType: string,
@@ -38,21 +38,10 @@ export async function uploadAttachment(
     if (!user) return { error: 'Not signed in — please log in again' };
     const targetUserId = await getActingAsUserId(supabase, user.id);
 
-    // Decode base64 to buffer for Storage upload
-    const buffer = Buffer.from(fileBase64, 'base64');
-    const storagePath = `${targetUserId}/${taskId}/${fileName}`;
-
-    // Upload file to task-media bucket
-    const { error: uploadError } = await supabase.storage
-      .from('task-media')
-      .upload(storagePath, buffer, { contentType: mimeType, upsert: false });
-    if (uploadError) return { error: 'Upload failed — try again' };
-
-    // Create attachment row in database
     const attachment = await createAttachment(supabase, {
       task_id: taskId,
       user_id: targetUserId,
-      file_path: storagePath,
+      file_path: filePath,
       file_type: fileType,
       mime_type: mimeType,
       file_size: fileSize,
@@ -64,7 +53,7 @@ export async function uploadAttachment(
     return { data: attachment };
   } catch (err) {
     reportError(err);
-    return { error: 'Failed to upload attachment — try again' };
+    return { error: 'Failed to save attachment record — try again' };
   }
 }
 
