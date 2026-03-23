@@ -24,7 +24,7 @@ interface GoalPickerProps {
  * Triggered by: CaptureSheet renders this inside the capture form.
  * Steps: on mount, calls fetchGoalsForPicker to get pillars and goals
  *   from the server. Renders a <select> with <optgroup> per pillar.
- *   Auto-selects the first goal if nothing is selected yet.
+ *   Shows a "Select a goal" placeholder if nothing is selected yet.
  * Returns: a styled dropdown element.
  */
 export default function GoalPicker({ value, onChange, onGoalsLoaded }: GoalPickerProps): React.JSX.Element {
@@ -35,7 +35,6 @@ export default function GoalPicker({ value, onChange, onGoalsLoaded }: GoalPicke
     fetchGoalsForPicker().then(({ pillars: p, goals: g }) => {
       setPillars(p);
       setGoals(g);
-      if (!value && g.length > 0 && g[0]) onChange(g[0].id);
       onGoalsLoaded?.(g);
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -53,6 +52,7 @@ export default function GoalPicker({ value, onChange, onGoalsLoaded }: GoalPicke
         height: '40px',
       }}
     >
+      <option value="" disabled>Select a goal</option>
       {pillars.map((pillar) => {
         const pillarGoals = goals.filter((g) => g.pillar_id === pillar.id);
         if (pillarGoals.length === 0) return null;
