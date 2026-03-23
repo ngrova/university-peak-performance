@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Play, Square } from 'lucide-react';
 import type { VoiceNote } from '@/hooks/use-capture-media';
 
@@ -33,6 +33,15 @@ export default function VoiceNoteCard({ note, transcript, onRemove }: VoiceNoteC
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
 
+  /** Pauses audio and releases the element */
+  const stopAudio = useCallback(() => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.onended = null; }
+    setPlaying(false);
+  }, []);
+
+  /** Safety net: pause audio when the component unmounts */
+  useEffect(() => () => stopAudio(), [stopAudio]);
+
   /** Toggles audio playback */
   function togglePlay() {
     if (!audioRef.current) {
@@ -43,13 +52,16 @@ export default function VoiceNoteCard({ note, transcript, onRemove }: VoiceNoteC
     else { audioRef.current.play(); setPlaying(true); }
   }
 
+  /** Stops playback then removes the card */
+  function handleRemove() { stopAudio(); onRemove(); }
+
   return (
     <div className="rounded-lg p-3 relative" style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border)' }}>
       <div className="flex items-center gap-2">
         <PlayButton playing={playing} onToggle={togglePlay} />
         <Waveform />
         <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{formatDuration(note.duration)}</span>
-        <RemoveButton onRemove={onRemove} />
+        <RemoveButton onRemove={handleRemove} />
       </div>
       {transcript && <p className="text-xs mt-2 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{transcript}</p>}
     </div>
