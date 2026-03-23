@@ -99,7 +99,7 @@ export default function CaptureMediaSection({ onAIResult }: CaptureMediaSectionP
       {hasMedia && <ProcessButton processing={c.processing} onClick={c.handleProcess} />}
       <input ref={photoInputRef} type="file" accept="image/*" capture="environment" className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) c.addPhoto(f); e.target.value = ''; }} />
-      <input ref={audioInputRef} type="file" accept="audio/*" className="hidden"
+      <input ref={audioInputRef} type="file" accept="audio/*,video/*,.m4a,.mp3,.wav,.aac,.caf" className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) importAudioFile(f, c.addVoice); e.target.value = ''; }} />
       {hasMedia && <div className="h-px mb-2" style={{ backgroundColor: 'var(--border)' }} />}
     </div>
