@@ -91,8 +91,10 @@ ASSIGNEE DETECTION: Look for phrases like "Erin should handle", "assign to Nick"
 
 Priority: 1 (urgent/critical) to 4 (low/someday).
 
+NOTES FIELD: The "notes" value must preserve the FULL relevant detail from the transcript — names, amounts, instructions, conditions, context. Copy the important detail word-for-word from the transcript. Do NOT summarize, abbreviate, or extract keywords. If the user said "Bill from Heritage in email, only approve expansion tank part, decline the rest" the notes must contain that entire sentence, not just "email" or "Heritage bill".
+
 Respond with ONLY valid JSON (no markdown, no code fences):
-{"title":"action verb + what","goalTitle":"exact goal title from list above or null","priority":1-4,"assignee":"Nick"|"Erin"|"Liz"|null,"deadline":"YYYY-MM-DD"|null,"notes":"context, contacts, amounts"}
+{"title":"action verb + what","goalTitle":"exact goal title from list above or null","priority":1-4,"assignee":"Nick"|"Erin"|"Liz"|null,"deadline":"YYYY-MM-DD"|null,"notes":"full detail from transcript — names, amounts, instructions, conditions"}
 
 CRITICAL: goalTitle must EXACTLY match one of the goal titles listed above. Do not paraphrase or invent goals.`;
 }
