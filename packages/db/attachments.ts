@@ -27,7 +27,7 @@ export interface CreateAttachmentInput {
   mime_type: string
   file_size: number
   display_name: string
-  transcription?: string
+  transcription?: string | undefined
 }
 
 // Fetches all attachments for a given task
