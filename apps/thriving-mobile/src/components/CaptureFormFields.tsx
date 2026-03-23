@@ -47,10 +47,10 @@ export function useCaptureForm() {
     if (assignee) input.assignee = assignee;
     if (notes.trim()) input.notes = notes.trim();
     const result = await captureTask(input);
+    if (result.error) { setSaving(false); setError(result.error); return false; }
+    // Upload media before clearing — must complete before navigation kills it
+    if (result.taskId) await uploadMedia(result.taskId, voiceNotes, photos, transcripts);
     setSaving(false);
-    if (result.error) { setError(result.error); return false; }
-    // Best-effort media upload — task is saved regardless
-    if (result.taskId) uploadMedia(result.taskId, voiceNotes, photos, transcripts);
     setTitle(''); setPriority(null); setDeadline(''); setAssignee(null); setNotes('');
     clearMedia();
     qc.invalidateQueries({ queryKey: ['one-thing'] });
