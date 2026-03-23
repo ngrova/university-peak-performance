@@ -130,11 +130,22 @@ function ReorderButtons({ onMove }: { onMove: (d: 'up' | 'down') => void }) {
   );
 }
 
-/** Archive button with loading state */
+/** Archive button with confirmation step — first tap reveals Cancel/Archive, second tap fires */
 function ArchiveBtn({ archiving, onArchive }: { archiving: boolean; onArchive: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  if (confirming) {
+    return (
+      <div className="flex gap-2 mt-4">
+        <button type="button" onClick={() => setConfirming(false)} className="flex-1 py-3 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)' }}>Cancel</button>
+        <button type="button" onClick={onArchive} disabled={archiving} className="flex-1 py-3 rounded-lg text-sm font-medium" style={{ backgroundColor: 'rgba(232,72,72,0.1)', color: 'var(--danger)' }}>
+          {archiving ? 'Archiving…' : 'Archive'}
+        </button>
+      </div>
+    );
+  }
   return (
-    <button type="button" onClick={onArchive} disabled={archiving} className="w-full mt-4 py-3 rounded-lg text-sm font-medium" style={{ backgroundColor: 'rgba(232,72,72,0.1)', color: 'var(--danger)' }}>
-      {archiving ? 'Archiving…' : 'Archive Pillar'}
+    <button type="button" onClick={() => setConfirming(true)} className="w-full mt-4 py-3 rounded-lg text-sm font-medium" style={{ backgroundColor: 'rgba(232,72,72,0.1)', color: 'var(--danger)' }}>
+      Archive Pillar
     </button>
   );
 }

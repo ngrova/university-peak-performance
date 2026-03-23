@@ -25,7 +25,7 @@ const TABS: readonly TabDef[] = [
   { href: '/today', label: 'Today', Icon: Sun },
   { href: '/tasks', label: 'Tasks', Icon: ListChecks },
   { href: '/capture', label: 'Capture', Icon: PlusCircle, isCenter: true },
-  { href: '/goals', label: 'Goals', Icon: Target },
+  { href: '/goals', label: 'Pillars', Icon: Target },
   { href: '/tree', label: 'Tree', Icon: GitBranch },
 ];
 
