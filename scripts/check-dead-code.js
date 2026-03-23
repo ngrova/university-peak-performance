@@ -28,6 +28,8 @@ function isExempt(filePath) {
   if (/\.(test|spec)\.(ts|tsx)$/.test(rel)) return true;
   if (/\.types\.ts$/.test(rel)) return true;
   if (rel.startsWith("types" + path.sep) || rel.includes(path.sep + "types" + path.sep)) return true;
+  // Server actions are framework entry points (called via 'use server')
+  if (rel.startsWith("actions" + path.sep)) return true;
   if (ENTRY_PATTERNS.some((p) => p.test(rel))) return true;
   return false;
 }
