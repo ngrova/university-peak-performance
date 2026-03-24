@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: CapturePageContent.tsx
 // PURPOSE: The full-screen capture page — voice recording, camera,
-//   AI processing, and task form fields. Replaces the old bottom
-//   sheet overlay with a dedicated page at /capture.
+//   AI processing, and task form fields. Goal is optional: user can
+//   skip, pick existing, or create a new goal inline.
 // CALLED BY: app/(fullscreen)/capture/page.tsx
-// DATA FLOW: User captures media → AI populates fields → user
-//   reviews → taps Add → captureTask saves → toast → fields clear
+// DATA FLOW: User captures media → AI populates fields (may suggest
+//   new goal) → user reviews → taps Add → captureTask saves
 // ═══════════════════════════════════════════════════════════
 'use client';
 
@@ -14,19 +14,20 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { Goal } from '@upp/db';
 import GoalPicker from './GoalPicker';
+import InlineGoalCreate from './InlineGoalCreate';
 import PriorityChips from './PriorityChips';
 import DeadlineChip from './DeadlineChip';
 import AssigneeChips from './AssigneeChips';
 import CaptureMediaSection from './CaptureMediaSection';
 import SuccessToast from './SuccessToast';
 import { useCaptureForm, FieldLabel, TitleInput } from './CaptureFormFields';
-import type { AISuggestion } from '@/actions/process-capture-action';
+import { useAISuggestion } from '@/hooks/use-ai-suggestion';
 
 /**
  * Triggered by: /capture page renders this client component.
- * Steps: shows a back button header, media capture section, and
- *   task form fields. After adding, shows "Task added" toast then
- *   clears for the next entry. Back button returns to previous page.
+ * Steps: shows media capture, AI processing, and form fields.
+ *   Goal is optional — user can pick existing, create new inline,
+ *   or skip entirely. AI may suggest a new goal (rejectable).
  * Returns: the full-screen capture page content.
  */
 export default function CapturePageContent(): React.JSX.Element {
@@ -34,6 +35,9 @@ export default function CapturePageContent(): React.JSX.Element {
   const f = useCaptureForm();
   const goalsRef = useRef<Goal[]>([]);
   const [showToast, setShowToast] = useState(false);
+  const goalPickerRef = useRef<{ reload: () => void }>(null);
+
+  const ai = useAISuggestion(goalsRef.current, f);
 
   /** Navigates back or to /today if entered directly */
   function handleBack() {
@@ -47,17 +51,11 @@ export default function CapturePageContent(): React.JSX.Element {
     if (success) setShowToast(true);
   }
 
-  /** Populates form fields from AI suggestions */
-  function handleAI(s: AISuggestion) {
-    if (s.title) f.setTitle(s.title);
-    if (s.goalTitle) {
-      const match = goalsRef.current.find((g) => g.title.toLowerCase() === s.goalTitle!.toLowerCase());
-      if (match) f.setGoalId(match.id);
-    }
-    if (s.priority) f.setPriority(s.priority);
-    if (s.deadline) f.setDeadline(s.deadline);
-    if (s.assignee) f.setAssignee(s.assignee as Parameters<typeof f.setAssignee>[0]);
-    if (s.notes) f.setNotes(s.notes);
+  /** After inline goal creation, select it and refresh the picker */
+  function handleGoalCreated(goalId: string) {
+    f.setGoalId(goalId);
+    ai.setShowInlineCreate(false);
+    goalPickerRef.current?.reload();
   }
 
   const handleToastDone = useCallback(() => setShowToast(false), []);
@@ -65,10 +63,18 @@ export default function CapturePageContent(): React.JSX.Element {
   return (
     <div className="pt-2">
       <PageHeader onBack={handleBack} />
-      <CaptureMediaSection onAIResult={handleAI} />
+      <CaptureMediaSection onAIResult={ai.handleAI} />
       <SuccessToast message="Task added" visible={showToast} onDone={handleToastDone} />
       <TitleInput ref={f.inputRef} value={f.title} onChange={f.setTitle} onSubmit={handleAddWithToast} />
-      <div className="mb-3"><GoalPicker value={f.goalId} onChange={f.setGoalId} onGoalsLoaded={(g) => { goalsRef.current = g; }} /></div>
+      {ai.showInlineCreate && (
+        <InlineGoalCreate initialName={ai.suggestedGoalName} onCreated={handleGoalCreated}
+          onCancel={() => ai.setShowInlineCreate(false)} />
+      )}
+      <div className="mb-3">
+        <GoalPicker value={f.goalId} onChange={f.setGoalId}
+          onGoalsLoaded={(g) => { goalsRef.current = g; }}
+          onNewGoal={() => ai.setShowInlineCreate(true)} />
+      </div>
       <FieldLabel text="Priority" />
       <PriorityChips value={f.priority} onChange={f.setPriority} />
       <FieldLabel text="Deadline" />

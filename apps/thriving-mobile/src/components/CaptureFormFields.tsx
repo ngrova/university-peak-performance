@@ -40,9 +40,9 @@ export function useCaptureForm() {
   const qc = useQueryClient();
   async function handleAdd(): Promise<boolean> {
     if (!title.trim() || saving) return false;
-    if (!goalId) { setError('Select a goal'); return false; }
     setSaving(true); setError(null);
-    const input: Parameters<typeof captureTask>[0] = { title: title.trim(), goal_id: goalId };
+    // Goal is optional — empty string means "unsorted" (no goal)
+    const input: Parameters<typeof captureTask>[0] = { title: title.trim(), goal_id: goalId || null };
     if (priority) input.priority = priority;
     if (deadline) input.due_date = deadline;
     if (assignee) input.assignee = assignee;

@@ -42,7 +42,8 @@ function deadlineWeight(dueDate: string | null): number {
  * Returns: sorted array of scored tasks, highest first.
  */
 export function rankTasks(tasks: TaskWithContext[]): ScoredTask[] {
-  const active = tasks.filter((t) => t.status === 'todo' || t.status === 'in_progress');
+  // Exclude unsorted tasks (no goal = no pillar context = can't rank)
+  const active = tasks.filter((t) => (t.status === 'todo' || t.status === 'in_progress') && t.goal_id !== null);
   return active.map((task) => {
     const pw = PRIORITY_WEIGHT[task.priority] ?? 0;
     const dw = deadlineWeight(task.due_date);

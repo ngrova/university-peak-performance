@@ -31,7 +31,7 @@ export type TaskAssignee = 'Nick' | 'Erin' | 'Liz'
 export interface Task {
   id: string
   user_id: string
-  goal_id: string
+  goal_id: string | null
   parent_task_id: string | null
   title: string
   notes: string | null

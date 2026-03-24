@@ -25,7 +25,7 @@ import { revalidatePath } from 'next/cache';
 export async function createGoalAction(
   pillarId: string,
   title: string,
-): Promise<{ error?: string }> {
+): Promise<{ goalId?: string; error?: string }> {
   try {
     const supabase = await getServerClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -33,13 +33,13 @@ export async function createGoalAction(
     const targetUserId = await getActingAsUserId(supabase, user.id);
     // CAUTION: sort_order is int4 — use array.length, NEVER Date.now()
     const existing = await getGoals(supabase, pillarId);
-    await createGoal(supabase, targetUserId, {
+    const goal = await createGoal(supabase, targetUserId, {
       pillar_id: pillarId,
       title,
       sort_order: existing.length,
     });
     revalidatePath('/goals');
-    return {};
+    return { goalId: goal.id };
   } catch (err) {
     reportError(err);
     return { error: 'Failed to create goal — try again' };

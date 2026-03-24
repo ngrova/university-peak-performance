@@ -15,7 +15,7 @@ export interface TaskWithContext extends Task {
       color: string
       icon: string
     }
-  }
+  } | null
 }
 
 // NOTE: The * on tasks is required for Supabase's TypeScript inference on

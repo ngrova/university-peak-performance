@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: GoalPicker.tsx
 // PURPOSE: A dropdown menu for choosing which goal a new task
-//   belongs to. Goals are grouped under their life pillar headings
-//   (e.g., "Health > Run a marathon"). Loads data on mount.
+//   belongs to. Goals grouped by pillar. Includes "No goal"
+//   option for unsorted tasks and "+ New Goal" button for
+//   inline creation during capture.
 // CALLED BY: components/CapturePageContent.tsx, components/TaskDetailSheet.tsx
-// DATA FLOW: Component mounts → fetchGoalsForPicker server action
-//   returns pillars + goals → dropdown renders grouped options →
-//   user picks one → onChange sends goal ID back to parent
+// DATA FLOW: Mount → fetchGoalsForPicker → dropdown renders →
+//   user picks goal/no-goal/new-goal → onChange fires
 // ═══════════════════════════════════════════════════════════
 'use client';
 
@@ -18,52 +18,54 @@ interface GoalPickerProps {
   value: string;
   onChange: (goalId: string) => void;
   onGoalsLoaded?: (goals: Goal[]) => void;
+  onNewGoal?: () => void;
 }
 
 /**
- * Triggered by: CaptureSheet renders this inside the capture form.
- * Steps: on mount, calls fetchGoalsForPicker to get pillars and goals
- *   from the server. Renders a <select> with <optgroup> per pillar.
- *   Shows a "Select a goal" placeholder if nothing is selected yet.
- * Returns: a styled dropdown element.
+ * Triggered by: CapturePageContent or TaskDetailSheet renders this.
+ * Steps: loads pillars + goals, renders a <select> with "No goal"
+ *   as first option, existing goals grouped by pillar, and a
+ *   "+ New Goal" button below when onNewGoal is provided.
+ * Returns: the goal picker dropdown + optional new goal button.
  */
-export default function GoalPicker({ value, onChange, onGoalsLoaded }: GoalPickerProps): React.JSX.Element {
+export default function GoalPicker({ value, onChange, onGoalsLoaded, onNewGoal }: GoalPickerProps): React.JSX.Element {
   const [pillars, setPillars] = useState<LifePillar[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
 
-  useEffect(() => {
+  /** Reloads goals — called on mount and after inline creation */
+  function reload() {
     fetchGoalsForPicker().then(({ pillars: p, goals: g }) => {
       setPillars(p);
       setGoals(g);
       onGoalsLoaded?.(g);
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }
+
+  useEffect(() => { reload(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      aria-label="Goal"
-      className="w-full rounded-lg px-3 text-sm"
-      style={{
-        backgroundColor: 'var(--bg-input)',
-        border: '1px solid var(--border)',
-        color: 'var(--text-primary)',
-        height: '40px',
-      }}
-    >
-      <option value="" disabled>Select a goal</option>
-      {pillars.map((pillar) => {
-        const pillarGoals = goals.filter((g) => g.pillar_id === pillar.id);
-        if (pillarGoals.length === 0) return null;
-        return (
-          <optgroup key={pillar.id} label={pillar.name}>
-            {pillarGoals.map((g) => (
-              <option key={g.id} value={g.id}>{g.title}</option>
-            ))}
-          </optgroup>
-        );
-      })}
-    </select>
+    <div>
+      <select value={value} onChange={(e) => onChange(e.target.value)} aria-label="Goal"
+        className="w-full rounded-lg px-3 text-sm"
+        style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-primary)', height: '40px' }}>
+        <option value="">No goal — unsorted</option>
+        {pillars.map((pillar) => {
+          const pg = goals.filter((g) => g.pillar_id === pillar.id);
+          if (pg.length === 0) return null;
+          return (
+            <optgroup key={pillar.id} label={pillar.name}>
+              {pg.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
+            </optgroup>
+          );
+        })}
+      </select>
+      {onNewGoal && (
+        <button type="button" onClick={onNewGoal} className="text-xs mt-1 px-1" style={{ color: 'var(--accent)' }}>
+          ＋ New goal
+        </button>
+      )}
+    </div>
   );
 }
+
+export { type GoalPickerProps };

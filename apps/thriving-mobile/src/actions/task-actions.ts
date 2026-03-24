@@ -19,7 +19,7 @@ import { revalidatePath } from 'next/cache';
 
 interface CaptureInput {
   title: string;
-  goal_id?: string;
+  goal_id?: string | null;
   due_date?: string;
   priority?: 1 | 2 | 3 | 4;
   assignee?: TaskAssignee;
@@ -40,14 +40,16 @@ export async function captureTask(input: CaptureInput): Promise<{ taskId?: strin
     const supabase = await getServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { error: 'Not signed in — please log in again' };
-    if (!input.goal_id) return { error: 'Select a goal for this task' };
     const targetUserId = await getActingAsUserId(supabase, user.id);
-    const existing = await getTasksByGoal(supabase, input.goal_id);
+    // Coerce empty string to null — GoalPicker sends '' for "no goal"
+    const goalId = input.goal_id || null;
+    // Sort order: count siblings under the same goal, or 0 for unsorted tasks
+    const sortOrder = goalId ? (await getTasksByGoal(supabase, goalId)).length : 0;
     const taskInput: Parameters<typeof createTask>[2] = {
-      goal_id: input.goal_id,
+      goal_id: goalId,
       title: input.title,
       // CAUTION: sort_order is int4 (max 2.1B) — use array.length, NEVER Date.now()
-      sort_order: existing.length,
+      sort_order: sortOrder,
     };
     if (input.due_date) taskInput.due_date = input.due_date;
     if (input.priority) taskInput.priority = input.priority;

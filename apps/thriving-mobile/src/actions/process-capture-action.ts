@@ -15,12 +15,14 @@ import { getPillars, getGoals } from '@upp/db';
 import type { Goal, LifePillar } from '@upp/db';
 import { reportError } from '@/lib/report-error';
 import { transcribeAudio } from '@/lib/transcribe-audio';
+import { buildCapturePrompt } from '@/lib/capture-prompt';
 
 type MediaPayload = { voice: { data: string; mimeType: string; imported: boolean }[]; images: { data: string; mimeType: string }[] };
 
 export interface AISuggestion {
   title?: string;
   goalTitle?: string;
+  isNewGoal?: boolean;
   priority?: 1 | 2 | 3 | 4;
   assignee?: string;
   deadline?: string;
@@ -56,7 +58,7 @@ export async function processCapture(
     for (const p of pillars) { const g = await getGoals(supabase, p.id); allGoals.push(...g); }
     const content = buildContent(txResult.items, media.images);
     if (content.length <= 1) return { error: 'No media to process' };
-    const suggestion = await callClaude(apiKey, buildPrompt(pillars, allGoals), content);
+    const suggestion = await callClaude(apiKey, buildCapturePrompt(pillars, allGoals), content);
     if ('error' in suggestion) return suggestion;
     return { suggestion, transcripts: txResult.items.map((t) => t.text) };
   } catch (err) {
@@ -76,26 +78,6 @@ async function transcribeAll(voice: MediaPayload['voice']): Promise<{ items: Tra
     items.push({ text: result.transcript, imported: v.imported });
   }
   return { items };
-}
-
-/** Builds system prompt with the user's pillar → goal hierarchy */
-function buildPrompt(pillars: LifePillar[], goals: Goal[]): string {
-  const hierarchy = pillars.map((p) => {
-    const pg = goals.filter((g) => g.pillar_id === p.id).map((g) => `  - ${g.title}`).join('\n');
-    return `${p.icon} ${p.name}\n${pg || '  (no goals)'}`;
-  }).join('\n\n');
-  return `You extract tasks from voice recordings and photos. GOALS (exact titles for goalTitle):
-${hierarchy}
-
-DIRECTIVE vs EVIDENCE (CRITICAL): Transcripts are labeled [DIRECTIVE] or [EVIDENCE].
-[DIRECTIVE] = user's voice recording = INSTRUCTIONS. Use to set title, goalTitle, priority, assignee, deadline, notes.
-[EVIDENCE] = imported file (voicemail, call recording) = REFERENCE ONLY. Summarize in notes prefixed "Attachment: ". Do NOT use evidence to set title, goalTitle, priority, or assignee.
-
-Assignees: Nick, Erin, Liz. "Aaron" = "Erin". Only detect from [DIRECTIVE]. Priority: 1-4, only from [DIRECTIVE].
-Notes: preserve FULL detail from directives word-for-word. For evidence, prefix summary with "Attachment: ".
-
-Respond with ONLY valid JSON: {"title":"action verb + what","goalTitle":"exact title or null","priority":1-4,"assignee":"Nick"|"Erin"|"Liz"|null,"deadline":"YYYY-MM-DD"|null,"notes":"full detail"}
-goalTitle must EXACTLY match a goal above.`;
 }
 
 /** Builds Claude content blocks: labeled transcripts as text + images */
