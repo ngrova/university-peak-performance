@@ -76,6 +76,9 @@ Plan files live in `plans/{branch-slug}.md` where the slug is the branch name wi
 ## Scope
 [small / medium / large]
 
+## Pushback
+[None — proceeding as specified.] OR [Specific concern, what needs to be decided, and a recommendation. If pushback exists, STOP and wait for human response before setting STATUS: APPROVED.]
+
 ## STATUS: PENDING
 ```
 

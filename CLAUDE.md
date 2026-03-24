@@ -104,20 +104,30 @@ When delegating work to sub-agents (parallel worktrees), the full pipeline is no
 
 ## Pushback Enforcement
 
-When you have pushback — a concern, a question, a proposed change, a risk — you MUST:
-1. Create `plans/PUSHBACK-{branch-slug}.md` with your concern, what you propose instead, and what you need the user to decide
-2. STOP completely. The `block-on-pushback` hook blocks all Write, Edit, and Bash operations until the pushback is resolved.
-3. Do NOT plan, review, or build until the user has responded.
-4. The user will either delete the file, edit it with a decision, or tell you to proceed.
-5. Only after explicit human confirmation: delete the PUSHBACK file and continue.
+Two-layer system — proactive declaration at plan time, reactive brake during implementation.
 
-**When to create a PUSHBACK file:**
+**Layer 1 — Plan file (proactive):**
+Every plan file requires a `## Pushback` section. This forces an explicit declaration before any code is written.
+- Write `None — proceeding as specified.` if there are no concerns
+- Write the specific concern, what needs to be decided, and your recommendation if there IS pushback
+- If the Pushback section contains a concern, STOP and wait for human response before setting STATUS: APPROVED
+- The `require-plan` hook blocks code edits if the Pushback section is missing
+- Agent 6 rejects plans with missing or empty Pushback sections
+
+**Layer 2 — PUSHBACK file (reactive):**
+If pushback surfaces DURING implementation (after the plan is approved), create `plans/PUSHBACK-{branch-slug}.md`.
+1. Describe the concern, what you propose instead, and what needs to be decided
+2. STOP completely — the `block-on-pushback` hook blocks all Write, Edit, and Bash operations
+3. Wait for the user to respond (delete file, edit it, or confirm verbally)
+4. Only after explicit human confirmation: delete the PUSHBACK file and continue
+
+**When to declare pushback (either layer):**
 - You want to change something about the task (different approach, scope, or files)
 - You found a risk or pre-existing bug that affects the plan
 - You need a decision from the user before you can proceed correctly
 - You disagree with any part of the instructions
 
-**When NOT to create a PUSHBACK file:**
+**When NOT to declare pushback:**
 - You have relevant context to share but no concern (just share it and keep moving)
 - Everything looks good and you're ready to proceed (just proceed)
 - Minor observations that don't affect the plan
