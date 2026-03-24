@@ -31,7 +31,7 @@ describe('buildWhyThis', () => {
   it('mentions deadline when due soon', () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 3);
-    const result = buildWhyThis(scored({ due_date: tomorrow.toISOString().split('T')[0] }), 2);
+    const result = buildWhyThis(scored({ due_date: tomorrow.toISOString().slice(0, 10) }), 2);
     expect(result).toContain('Due in');
   });
 
