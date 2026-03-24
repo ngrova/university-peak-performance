@@ -26,7 +26,7 @@ const OVERDUE_ROW = 'border-l-4 border-red-400 bg-red-50'
 
 function TaskRow({ task, isOverdue }: { task: TaskWithContext; isOverdue: boolean }): React.JSX.Element {
   const goal = task.goals
-  const href = goal ? `/pillars/${goal.pillar_id}/goals/${task.goal_id}` : '#'
+  const href = `/pillars/${goal.pillar_id}/goals/${task.goal_id}`
   const dateStr = new Date(`${task.due_date}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   return (
@@ -36,7 +36,7 @@ function TaskRow({ task, isOverdue }: { task: TaskWithContext; isOverdue: boolea
     >
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">{task.title}</p>
-        <p className="text-xs text-gray-500">{goal?.title ?? 'Unsorted'}</p>
+        <p className="text-xs text-gray-500">{goal.title}</p>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         <FailureCostBadge cost={task.failure_cost} />

@@ -25,7 +25,7 @@ function TaskRow({ task }: { task: TaskWithContext }): React.JSX.Element {
     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 p-3 rounded-lg border bg-white">
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">{task.title}</p>
-        <p className="text-xs text-gray-500">{task.goals?.title ?? 'Unsorted'}</p>
+        <p className="text-xs text-gray-500">{task.goals.title}</p>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         <FailureCostBadge cost={task.failure_cost} />

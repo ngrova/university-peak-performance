@@ -31,16 +31,16 @@ export default async function OneThingPage(): Promise<React.JSX.Element> {
   }
 
   const goal = task.goals
-  const pillar = goal?.life_pillars
+  const pillar = goal.life_pillars
 
   return (
     <div className="max-w-xl mx-auto py-8 md:py-16 px-4">
       {/* Breadcrumb: Pillar › Goal */}
       <p className="text-xs mb-3" style={{ color: 'var(--text-light)' }}>
-        <span style={{ color: pillar?.color }}>{pillar?.icon}</span>
-        {' '}{pillar?.name ?? 'Unsorted'}
+        <span style={{ color: pillar.color }}>{pillar.icon}</span>
+        {' '}{pillar.name}
         <span className="mx-1" style={{ color: 'var(--text-light)' }}>›</span>
-        <span style={{ color: 'var(--text-secondary)' }}>{goal?.title ?? 'No goal'}</span>
+        <span style={{ color: 'var(--text-secondary)' }}>{goal.title}</span>
       </p>
 
       <p
