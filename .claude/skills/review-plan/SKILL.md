@@ -230,6 +230,9 @@ Review the scope and plan fidelity of this change. Answer APPROVED or REJECTED w
 
 PUSHBACK CHECK:
 - If plans/PUSHBACK-{branch-slug}.md exists, REJECT with "pushback not resolved — resolve the pushback file before reviewing."
+- If the plan has no ## Pushback section → REJECT with "plan missing required ## Pushback section."
+- If the ## Pushback section is empty (no text after the heading) → REJECT with "## Pushback section must not be empty."
+- If ## Pushback contains a concern (anything other than "None") → flag: "Pushback declared — verify human has acknowledged before approving."
 
 SCOPE:
 - Does the change address ONE concern? Unrelated fixes bundled together → REJECT.

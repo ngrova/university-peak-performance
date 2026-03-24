@@ -61,10 +61,19 @@ process.stdin.on("end", () => {
     return;
   }
 
-  // Check for branch-specific plan with STATUS: APPROVED
+  // Check for branch-specific plan with STATUS: APPROVED and ## Pushback section
   const planPath = getPlanPath();
   try {
     const content = fs.readFileSync(planPath, "utf8");
+    if (!content.includes("## Pushback")) {
+      process.stdout.write(
+        JSON.stringify({
+          decision: "block",
+          reason: "Plan file missing required ## Pushback section.",
+        })
+      );
+      return;
+    }
     if (content.includes("STATUS: APPROVED")) {
       process.stdout.write(JSON.stringify({ decision: "approve" }));
       return;
