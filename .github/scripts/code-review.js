@@ -66,7 +66,7 @@ async function runInBatches(agents, diff, plan) {
     const batch = agents.slice(i, i + 3);
     const batchResults = await Promise.all(batch.map((a) => reviewAgent(a, diff, plan)));
     results.push(...batchResults);
-    if (i + 3 < agents.length) await new Promise((r) => setTimeout(r, 15000));
+    if (i + 3 < agents.length) await new Promise((r) => setTimeout(r, 20000));
   }
   return results;
 }
