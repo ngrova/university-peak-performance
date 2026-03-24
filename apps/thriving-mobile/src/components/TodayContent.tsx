@@ -1,70 +1,77 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: TodayContent.tsx
-// PURPOSE: The main Today screen — shows a greeting, the user's
-//   #1 focus task ("One Thing"), a priority queue of what's next,
-//   and any overdue or due-today tasks. This is the first thing
-//   users see when they open the app.
+// PURPOSE: The redesigned Today screen — a coach-style focus view.
+//   Shows one hero card (the One Thing) with a "Why this?" explanation
+//   and Mark Complete button, plus a muted "Up Next" section with 2-3
+//   upcoming tasks. Feels like a coach handing you one card, not a list.
 // CALLED BY: app/(app)/today/page.tsx
-// DATA FLOW: Page renders this → TanStack Query calls three server
-//   actions (fetchOneThing, fetchQueue, fetchDeadlineTasks) → data
-//   flows down to child components as props
+// DATA FLOW: Page renders this → TanStack Query fetches all tasks →
+//   client-side scoring picks the One Thing + Up Next → renders layout
 // ═══════════════════════════════════════════════════════════
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchOneThing, fetchQueue, fetchDeadlineTasks } from '@/actions/today-actions';
+import { fetchTodayTasks } from '@/actions/today-actions';
+import { rankTasks } from '@/lib/one-thing-score';
+import { buildWhyThis } from '@/lib/why-this';
 import GreetingBar from './GreetingBar';
-import OneThingCard from './OneThingCard';
-import QueueList from './QueueList';
-import OverdueList from './OverdueList';
+import TodayHero from './TodayHero';
+import UpNextSection from './UpNextSection';
 
 /**
  * Triggered by: navigating to the Today tab (page.tsx renders this).
- * Steps: fires three parallel data fetches (One Thing, queue, deadlines),
- *   renders GreetingBar, OneThingCard, QueueList, and OverdueList with
- *   the fetched data, and provides a callback to refresh everything
- *   when a task is completed.
- * Returns: the full Today screen UI as a React element.
+ * Steps: fetches all tasks, scores them client-side, renders the top
+ *   task as a hero card with "Why this?" and the next 3 as Up Next.
+ *   Completing the One Thing refreshes and the next slides in.
+ * Returns: the full Today screen UI.
  */
 export default function TodayContent(): React.JSX.Element {
-  const queryClient = useQueryClient();
+  const qc = useQueryClient();
+  const { data: tasks } = useQuery({ queryKey: ['today-tasks'], queryFn: () => fetchTodayTasks() });
 
-  // CAUTION: Arrow wrapper required on ALL server action queryFn/mutationFn calls
-  // Direct reference causes AbortSignal serialization failure (silent empty data)
-  const { data: oneThing } = useQuery({
-    queryKey: ['one-thing'],
-    queryFn: () => fetchOneThing(),
-  });
+  // Score and rank tasks, pick hero + up-next
+  const ranked = useMemo(() => rankTasks(tasks ?? []), [tasks]);
+  const hero = ranked[0] ?? null;
+  const upNext = ranked.slice(1, 4);
 
-  const { data: queue } = useQuery({
-    queryKey: ['queue'],
-    queryFn: () => fetchQueue(),
-  });
+  // Count open tasks in the hero's pillar for "Why this?" context
+  const pillarTaskCount = useMemo(() => {
+    if (!hero) return 0;
+    const pillarId = hero.task.goals?.life_pillars?.id;
+    if (!pillarId) return 0;
+    return ranked.filter((s) => s.task.goals?.life_pillars?.id === pillarId).length;
+  }, [hero, ranked]);
 
-  const { data: deadlines } = useQuery({
-    queryKey: ['deadlines'],
-    queryFn: () => fetchDeadlineTasks(),
-  });
+  const whyText = hero ? buildWhyThis(hero, pillarTaskCount) : '';
 
-  /** When a task is completed, tells TanStack Query to re-fetch all three sections */
+  // Refresh everything when a task is completed
   const handleCompleted = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['one-thing'] });
-    queryClient.invalidateQueries({ queryKey: ['queue'] });
-    queryClient.invalidateQueries({ queryKey: ['deadlines'] });
-  }, [queryClient]);
+    qc.invalidateQueries({ queryKey: ['today-tasks'] });
+    qc.invalidateQueries({ queryKey: ['all-tasks'] });
+    qc.invalidateQueries({ queryKey: ['pillars'] });
+    qc.invalidateQueries({ queryKey: ['goals'] });
+  }, [qc]);
 
   return (
     <div className="pt-2 tab-enter">
       <GreetingBar />
-      <OneThingCard task={oneThing ?? null} />
-      <section className="mt-2">
-        <h2 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-          Up Next
-        </h2>
-        <QueueList tasks={queue ?? []} onTaskCompleted={handleCompleted} />
-      </section>
-      <OverdueList tasks={deadlines ?? []} onTaskCompleted={handleCompleted} />
+      {hero ? (
+        <TodayHero scored={hero} whyText={whyText} onCompleted={handleCompleted} />
+      ) : (
+        <EmptyState />
+      )}
+      <UpNextSection items={upNext} />
+    </div>
+  );
+}
+
+/** Shown when there are no active tasks at all */
+function EmptyState(): React.JSX.Element {
+  return (
+    <div className="text-center py-12">
+      <p className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>All clear</p>
+      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No active tasks. Capture something to get started.</p>
     </div>
   );
 }
