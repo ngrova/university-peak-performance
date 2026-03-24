@@ -1,16 +1,16 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: providers.tsx
-// PURPOSE: Sets up TanStack Query (our data-fetching library)
-//   so every component in the app can load and cache server data.
-//   This is "plumbing" — users never see it directly.
+// PURPOSE: Sets up TanStack Query and global UI overlays (like
+//   the PWA update banner) so they're available on every page.
 // CALLED BY: app/layout.tsx (root layout wraps children in this)
 // DATA FLOW: Creates a QueryClient → wraps the app in its Provider
-//   → all useQuery/useMutation calls throughout the app use this
+//   → renders UpdateBanner for PWA updates → children render inside
 // ═══════════════════════════════════════════════════════════
 'use client';
 
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import UpdateBanner from '@/components/UpdateBanner';
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -37,6 +37,7 @@ export function Providers({ children }: ProvidersProps): React.JSX.Element {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <UpdateBanner />
       {children}
     </QueryClientProvider>
   );
