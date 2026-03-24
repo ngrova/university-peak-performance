@@ -22,7 +22,7 @@ function readInputs() {
   const planFile = process.env.PLAN_FILE || "";
   const diff = diffFile ? fs.readFileSync(diffFile, "utf8") : "";
   const plan = planFile && fs.existsSync(planFile) ? fs.readFileSync(planFile, "utf8") : "(no plan file found)";
-  return { diff: diff.slice(0, 100000), plan: plan.slice(0, 10000) };
+  return { diff: diff.slice(0, 50000), plan: plan.slice(0, 10000) };
 }
 
 // Loads all 9 agent prompts from .claude/review-agents/
@@ -59,7 +59,19 @@ async function reviewAgent(agent, diff, plan) {
   return { name: agent.name, verdict: approved ? "APPROVED" : "REJECTED", reason: text.slice(0, 500) };
 }
 
-// Main: run all 9 agents in parallel, output results
+// Runs agents in batches to avoid rate limits (3 at a time with delay)
+async function runInBatches(agents, diff, plan) {
+  const results = [];
+  for (let i = 0; i < agents.length; i += 3) {
+    const batch = agents.slice(i, i + 3);
+    const batchResults = await Promise.all(batch.map((a) => reviewAgent(a, diff, plan)));
+    results.push(...batchResults);
+    if (i + 3 < agents.length) await new Promise((r) => setTimeout(r, 15000));
+  }
+  return results;
+}
+
+// Main: run agents in batches, output results
 async function main() {
   const { diff, plan } = readInputs();
   const agents = loadAgents();
@@ -69,7 +81,7 @@ async function main() {
     process.exit(1);
   }
 
-  const results = await Promise.all(agents.map((a) => reviewAgent(a, diff, plan)));
+  const results = await runInBatches(agents, diff, plan);
   const approved = results.every((r) => r.verdict === "APPROVED");
 
   process.stdout.write(JSON.stringify({ approved, results }));

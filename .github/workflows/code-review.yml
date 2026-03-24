@@ -9,6 +9,10 @@ concurrency:
   group: code-review-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
   review:
     name: 9-Agent Code Review
