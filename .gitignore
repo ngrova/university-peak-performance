@@ -28,8 +28,7 @@ dist
 .claude/settings.local.json
 .claude/worktrees/
 
-# Branch-specific plan files (only exist on feature branches)
-plans/
+# Legacy plan file (replaced by plans/ directory)
 PLAN.md
 
 # Playwright auth state

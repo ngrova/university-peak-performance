@@ -50,7 +50,7 @@ The require-plan hook blocks all code edits unless the branch plan file contains
 
 ## Plan File Format
 
-Plan files live in `plans/{branch-slug}.md` where the slug is the branch name with `/` replaced by `-`. The `plans/` directory is gitignored — plan files only exist on feature branches, never on main. This eliminates merge conflicts when multiple branches run in parallel.
+Plan files live in `plans/{branch-slug}.md` where the slug is the branch name with `/` replaced by `-`. Plan files are committed to feature branches so the GitHub Action code review can read them. They are preserved in squash merge history as documentation of what was planned.
 
 ```
 # Plan: [Feature Name]
