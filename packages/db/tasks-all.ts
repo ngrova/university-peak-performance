@@ -18,11 +18,12 @@ export async function getAllTasksWithContext(
     .order('sort_order', { ascending: true })
     .limit(200)
   if (error) throw error
-  // Supabase returns nested joins as arrays; flatten to single objects
+  // PostgREST returns many-to-one joins as objects, not arrays — handle both shapes
   return (data ?? []).map((row): TaskWithContext => {
-    const goalsArr = row.goals as Record<string, unknown>[] | undefined
-    const goal = goalsArr?.[0] as Record<string, unknown> | undefined
-    const pillarsArr = goal?.life_pillars as Record<string, unknown>[] | undefined
-    return { ...row, goals: { ...goal, life_pillars: pillarsArr?.[0] } } as TaskWithContext
+    const raw = row.goals as Record<string, unknown> | Record<string, unknown>[] | null
+    const goal = Array.isArray(raw) ? raw[0] as Record<string, unknown> | undefined : raw
+    const rawPillar = goal?.life_pillars as Record<string, unknown> | Record<string, unknown>[] | null
+    const pillar = Array.isArray(rawPillar) ? rawPillar[0] as Record<string, unknown> | undefined : rawPillar
+    return { ...row, goals: { ...goal, life_pillars: pillar } } as TaskWithContext
   })
 }

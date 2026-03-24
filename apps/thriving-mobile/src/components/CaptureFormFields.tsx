@@ -40,6 +40,7 @@ export function useCaptureForm() {
   const qc = useQueryClient();
   async function handleAdd(): Promise<boolean> {
     if (!title.trim() || saving) return false;
+    if (!goalId) { setError('Select a goal'); return false; }
     setSaving(true); setError(null);
     const input: Parameters<typeof captureTask>[0] = { title: title.trim(), goal_id: goalId };
     if (priority) input.priority = priority;
