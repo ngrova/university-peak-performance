@@ -61,19 +61,48 @@ process.stdin.on("end", () => {
     return;
   }
 
-  // Check for branch-specific plan with STATUS: APPROVED and ## Pushback section
+  // Checks if pushback content is a "None" variant (no concern declared)
+  function isNonePushback(text) {
+    return /^\s*(none|n\/a)/i.test(text.trim());
+  }
+
+  // Extracts text between ## Pushback and the next ## heading (or EOF)
+  function extractPushbackContent(content) {
+    const match = content.match(/## Pushback\s*\n([\s\S]*?)(?=\n## |\n$|$)/);
+    return match ? match[1].trim() : "";
+  }
+
+  // Multi-gate plan validation
   const planPath = getPlanPath();
   try {
     const content = fs.readFileSync(planPath, "utf8");
+
+    // Gate 1: ## Pushback section must exist
     if (!content.includes("## Pushback")) {
       process.stdout.write(
-        JSON.stringify({
-          decision: "block",
-          reason: "Plan file missing required ## Pushback section.",
-        })
+        JSON.stringify({ decision: "block", reason: "Plan file missing required ## Pushback section." })
       );
       return;
     }
+
+    // Gate 2: If pushback is non-None, require PUSHBACK_ACKNOWLEDGED
+    const pushbackText = extractPushbackContent(content);
+    if (pushbackText && !isNonePushback(pushbackText) && !content.includes("PUSHBACK_ACKNOWLEDGED: YES")) {
+      process.stdout.write(
+        JSON.stringify({ decision: "block", reason: "Pushback declared but not acknowledged — wait for human response before building." })
+      );
+      return;
+    }
+
+    // Gate 3: Plan review must be completed
+    if (!content.includes("COUNCIL_PLAN_REVIEW: PASS")) {
+      process.stdout.write(
+        JSON.stringify({ decision: "block", reason: "Plan review not completed — run the 9-agent review before building." })
+      );
+      return;
+    }
+
+    // Gate 4: Plan must be approved
     if (content.includes("STATUS: APPROVED")) {
       process.stdout.write(JSON.stringify({ decision: "approve" }));
       return;

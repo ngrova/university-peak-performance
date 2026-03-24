@@ -98,6 +98,10 @@ but never relaxes FEATURE safety.
 - Agents 3, 6, and 8 apply conditional rules for intentional deletions
 - Use FEATURE (the default) for all new functionality
 
+## PIPELINE-INFRA PRs
+
+Use TYPE: PIPELINE-INFRA for changes to hooks, wrappers, settings, rules, and review agents. The `block-infra-edit` hook blocks all edits to `.claude/hooks/`, `.claude/settings.json`, `.claude/rules/`, `.claude/pipeline/`, and `.claude/skills/` unless the plan has TYPE: PIPELINE-INFRA and STATUS: APPROVED. Infrastructure changes require human approval and extra scrutiny.
+
 ## Sub-Agent Pipeline Rule
 
 When delegating work to sub-agents (parallel worktrees), the full pipeline is non-negotiable:
@@ -116,7 +120,8 @@ Every plan file requires a `## Pushback` section. This forces an explicit declar
 - Write `None — proceeding as specified.` if there are no concerns
 - Write the specific concern, what needs to be decided, and your recommendation if there IS pushback
 - If the Pushback section contains a concern, STOP and wait for human response before setting STATUS: APPROVED
-- The `require-plan` hook blocks code edits if the Pushback section is missing
+- After human acknowledges the pushback, add `PUSHBACK_ACKNOWLEDGED: YES` to the plan file
+- The `require-plan` hook blocks code edits if: Pushback section is missing, pushback is non-None without PUSHBACK_ACKNOWLEDGED, or COUNCIL_PLAN_REVIEW: PASS is missing
 - Agent 6 rejects plans with missing or empty Pushback sections
 
 **Layer 2 — PUSHBACK file (reactive):**

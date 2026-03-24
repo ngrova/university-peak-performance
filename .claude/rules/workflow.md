@@ -56,7 +56,7 @@ Plan files live in `plans/{branch-slug}.md` where the slug is the branch name wi
 # Plan: [Feature Name]
 
 ## TYPE
-[FEATURE | REDESIGN — defaults to FEATURE if omitted]
+[FEATURE | REDESIGN | PIPELINE-INFRA — defaults to FEATURE if omitted]
 
 ## Task
 [Plain English description from Nick or Erin]
@@ -78,6 +78,9 @@ Plan files live in `plans/{branch-slug}.md` where the slug is the branch name wi
 
 ## Pushback
 [None — proceeding as specified.] OR [Specific concern, what needs to be decided, and a recommendation. If pushback exists, STOP and wait for human response before setting STATUS: APPROVED.]
+
+## Lessons Addressed
+[List which lessons from CLAUDE.md apply to this task and how they'll be handled. Write "None applicable" if no lessons apply.]
 
 ## STATUS: PENDING
 ```
