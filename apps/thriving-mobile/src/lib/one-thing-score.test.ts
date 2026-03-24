@@ -49,4 +49,12 @@ describe('rankTasks', () => {
     expect(result[0]?.deadlineWeight).toBe(50);
     expect(result[0]?.score).toBe(90);
   });
+
+  it('excludes tasks with null goal_id (unsorted tasks)', () => {
+    const withGoal = task({ id: 'with', goal_id: 'g1' });
+    const withoutGoal = task({ id: 'without', goal_id: null, goals: null });
+    const result = rankTasks([withGoal, withoutGoal]);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.task.id).toBe('with');
+  });
 });

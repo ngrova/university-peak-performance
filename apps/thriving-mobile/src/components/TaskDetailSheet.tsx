@@ -54,7 +54,7 @@ function SheetBody({ task, onClose }: { task: TaskWithContext; onClose: () => vo
       <TitleField defaultValue={task.title} onSave={(v) => save('title', v)} />
       <TaskActions taskId={task.id} status={task.status} onCompleted={onClose} />
       <FieldLabel text="Goal" />
-      <div className="mb-3"><GoalPicker value={task.goal_id} onChange={(goalId) => save('goal_id', goalId)} /></div>
+      <div className="mb-3"><GoalPicker value={task.goal_id ?? ''} onChange={(goalId) => save('goal_id', goalId || null)} /></div>
       <FieldLabel text="Priority" />
       <PriorityChips value={task.priority} onChange={(v) => save('priority', v)} />
       <FieldLabel text="Assignee" />

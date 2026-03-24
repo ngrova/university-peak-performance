@@ -19,10 +19,12 @@ export async function getAllTasksWithContext(
     .limit(200)
   if (error) throw error
   // PostgREST returns many-to-one joins as objects, not arrays — handle both shapes
+  // Tasks with null goal_id get goals: null (unsorted tasks)
   return (data ?? []).map((row): TaskWithContext => {
     const raw = row.goals as Record<string, unknown> | Record<string, unknown>[] | null
     const goal = Array.isArray(raw) ? raw[0] as Record<string, unknown> | undefined : raw
-    const rawPillar = goal?.life_pillars as Record<string, unknown> | Record<string, unknown>[] | null
+    if (!goal) return { ...row, goals: null } as TaskWithContext
+    const rawPillar = goal.life_pillars as Record<string, unknown> | Record<string, unknown>[] | null
     const pillar = Array.isArray(rawPillar) ? rawPillar[0] as Record<string, unknown> | undefined : rawPillar
     return { ...row, goals: { ...goal, life_pillars: pillar } } as TaskWithContext
   })

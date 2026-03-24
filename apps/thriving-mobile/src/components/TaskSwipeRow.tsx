@@ -104,7 +104,7 @@ export default function TaskSwipeRow({ task, onChanged }: TaskSwipeRowProps): Re
               </span>
             )}
             {isBlocked && <span className="text-xs" style={{ color: 'var(--blocked)' }}>Blocked</span>}
-            <TaskCardChips priority={task.priority} assignee={task.assignee} />
+            <TaskCardChips priority={task.priority} assignee={task.assignee} hasGoal={task.goal_id !== null} />
           </div>
         </div>
       </div>

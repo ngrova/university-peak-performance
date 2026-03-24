@@ -22,7 +22,7 @@ export async function getTasksByGoal(
 }
 
 export interface CreateTaskInput {
-  goal_id: string
+  goal_id?: string | null
   title: string
   notes?: string
   due_date?: string

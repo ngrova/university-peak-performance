@@ -22,6 +22,7 @@ const PRIORITY_MAP: Record<1 | 2 | 3 | 4, { label: string; color: string }> = {
 interface TaskCardChipsProps {
   priority: 1 | 2 | 3 | 4 | null;
   assignee: TaskAssignee | null;
+  hasGoal?: boolean;
 }
 
 /**
@@ -30,11 +31,17 @@ interface TaskCardChipsProps {
  *   pills for each. Skips rendering entirely if both are null.
  * Returns: a fragment of inline chip elements, or null.
  */
-export default function TaskCardChips({ priority, assignee }: TaskCardChipsProps): React.JSX.Element | null {
-  if (!priority && !assignee) return null;
+export default function TaskCardChips({ priority, assignee, hasGoal = true }: TaskCardChipsProps): React.JSX.Element | null {
+  if (!priority && !assignee && hasGoal) return null;
 
   return (
     <>
+      {!hasGoal && (
+        <span className="inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium"
+          style={{ backgroundColor: 'rgba(239, 159, 39, 0.22)', color: '#EF9F27' }}>
+          Unsorted
+        </span>
+      )}
       {priority && (
         <span
           className="inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium"
