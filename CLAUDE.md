@@ -51,12 +51,17 @@ Never guess and ship. The cost of one round trip to check the logs is always les
 - **Testing:** Vitest (unit) + Playwright (E2E)
 - **Hosting:** Netlify (auto-deploys from main)
 
+## Active App Rule
+
+The active application is `apps/thriving-mobile`. Do NOT read, modify, or update any files under `apps/_archived-thriving-desktop/` unless explicitly instructed to reference it. That app is archived and exists only as a reference for future assessment porting. When a task says "the app" or "the capture screen" or any feature name, it ALWAYS means thriving-mobile. No exceptions.
+
 ## Monorepo Structure
 
 ```
-apps/thriving/          Commercial SaaS — task management with Life Pillars
-apps/mission-control/   Internal dashboard
-docs/                   Architecture docs, decisions log, specs
+apps/thriving-mobile/                Active PWA — task management with Life Pillars
+apps/_archived-thriving-desktop/     ARCHIVED — desktop app, reference only
+apps/mission-control/                Internal dashboard
+docs/                                Architecture docs, decisions log, specs
 ```
 
 - Supabase project ID: kemmvxnmlmvspfxgfvhl

@@ -83,7 +83,7 @@ const errors = [];
 // Run typecheck
 try {
   execSync('npx tsc --noEmit', {
-    cwd: path.join(repoRoot, 'apps', 'thriving'),
+    cwd: path.join(repoRoot, 'apps', 'thriving-mobile'),
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
     timeout: 120000,
@@ -96,7 +96,7 @@ try {
 // Run tests
 try {
   execSync('npx vitest run --reporter=verbose', {
-    cwd: path.join(repoRoot, 'apps', 'thriving'),
+    cwd: path.join(repoRoot, 'apps', 'thriving-mobile'),
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
     timeout: 120000,

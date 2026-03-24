@@ -24,6 +24,10 @@
           {
             "type": "command",
             "command": "node .claude/hooks/block-on-pushback.js"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/block-archived.js"
           }
         ]
       }
