@@ -29,8 +29,8 @@ process.stdin.on("end", () => {
 
   const cmd = (data.tool_input && data.tool_input.command) || "";
 
-  // Block force push to ANY branch
-  if (/git\s+push\s+.*(-f|--force)/.test(cmd) || /git\s+push\s+(-f|--force)/.test(cmd)) {
+  // Block force push to ANY branch (flags must be standalone, not substrings of branch names)
+  if (/git\s+push/.test(cmd) && /\s(-f|--force)(\s|$)/.test(cmd)) {
     process.stdout.write(
       JSON.stringify({ decision: "block", reason: "Force push is blocked on all branches." })
     );
