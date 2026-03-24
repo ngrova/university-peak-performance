@@ -102,6 +102,26 @@ When delegating work to sub-agents (parallel worktrees), the full pipeline is no
 - No exceptions — parallel execution does not justify skipping reviews
 - A sub-agent that ships a PR without 9-agent review has violated the pipeline, same as if the main session skipped it
 
+## Pushback Enforcement
+
+When you have pushback — a concern, a question, a proposed change, a risk — you MUST:
+1. Create `plans/PUSHBACK-{branch-slug}.md` with your concern, what you propose instead, and what you need the user to decide
+2. STOP completely. The `block-on-pushback` hook blocks all Write, Edit, and Bash operations until the pushback is resolved.
+3. Do NOT plan, review, or build until the user has responded.
+4. The user will either delete the file, edit it with a decision, or tell you to proceed.
+5. Only after explicit human confirmation: delete the PUSHBACK file and continue.
+
+**When to create a PUSHBACK file:**
+- You want to change something about the task (different approach, scope, or files)
+- You found a risk or pre-existing bug that affects the plan
+- You need a decision from the user before you can proceed correctly
+- You disagree with any part of the instructions
+
+**When NOT to create a PUSHBACK file:**
+- You have relevant context to share but no concern (just share it and keep moving)
+- Everything looks good and you're ready to proceed (just proceed)
+- Minor observations that don't affect the plan
+
 ## Critical Rules (repeated — read these last)
 
 - When a user describes a feature or fix, run the FULL pipeline automatically — no slash commands needed
@@ -110,6 +130,7 @@ When delegating work to sub-agents (parallel worktrees), the full pipeline is no
 - Keep every file under 100 lines and every function under 25 lines
 - List explicit columns in every Supabase query — never use .select('*')
 - Handle loading, success, and error states on every user-facing action
+- When pushing back, create plans/PUSHBACK-{branch-slug}.md — the hook blocks all work until resolved
 
 ## Lessons Learned
 

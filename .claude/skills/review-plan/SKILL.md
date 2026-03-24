@@ -8,6 +8,15 @@ user_invocable: true
 
 Review a PLAN.md or code diff by spawning 9 independent sub-agents in parallel. Each answers one focused question with APPROVED or REJECTED plus a specific reason.
 
+## Step 0 — Pushback Pre-Check
+
+Before doing anything else, check if a PUSHBACK file exists for the current branch:
+1. Get the current branch: `git rev-parse --abbrev-ref HEAD`
+2. Compute the slug: replace `/` with `-`
+3. Check if `plans/PUSHBACK-{slug}.md` exists
+
+If the PUSHBACK file exists: **STOP. Do not run the review.** Tell the user: "Pushback is pending on this branch. Resolve plans/PUSHBACK-{slug}.md before running the review."
+
 ## Step 1 — Determine Review Mode
 
 - **Plan review:** Read PLAN.md at the repo root
@@ -218,6 +227,9 @@ If all checks pass, answer APPROVED.
 
 ```
 Review the scope and plan fidelity of this change. Answer APPROVED or REJECTED with a specific reason.
+
+PUSHBACK CHECK:
+- If plans/PUSHBACK-{branch-slug}.md exists, REJECT with "pushback not resolved — resolve the pushback file before reviewing."
 
 SCOPE:
 - Does the change address ONE concern? Unrelated fixes bundled together → REJECT.
