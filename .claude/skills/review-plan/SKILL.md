@@ -234,6 +234,10 @@ PUSHBACK CHECK:
 - If the ## Pushback section is empty (no text after the heading) → REJECT with "## Pushback section must not be empty."
 - If ## Pushback contains a concern (anything other than "None") → flag: "Pushback declared — verify human has acknowledged before approving."
 
+LESSONS ADDRESSED CHECK:
+- If the plan has no ## Lessons Addressed section → REJECT with "plan missing required ## Lessons Addressed section."
+- If the ## Lessons Addressed section is empty → REJECT with "## Lessons Addressed must list applicable lessons or state None applicable."
+
 SCOPE:
 - Does the change address ONE concern? Unrelated fixes bundled together → REJECT.
 - Scope estimate in PLAN.md: small (1-3 files), medium (4-7), large (8+). If actual file count exceeds the estimate by more than 2 → REJECT with "scope grew beyond plan estimate."
@@ -401,7 +405,8 @@ Wait for all 9 agents to complete. Present results as:
 
 ## Step 4 — Handle Results
 
-- **All 9 APPROVED:** Tell the user the plan/code passed review. Proceed with the next step in the workflow.
+- **All 9 APPROVED (plan review):** Write `COUNCIL_PLAN_REVIEW: PASS` to the plan file. This marker is required by the require-plan hook before code edits are allowed. Then tell the user the plan passed review.
+- **All 9 APPROVED (code review):** Write `COUNCIL_CODE_REVIEW: PASS` to the plan file. Then tell the user the code passed review.
 - **Any REJECTED:** List the specific rejections. Revise the plan or code to address each rejection. Then re-run the review on the revised version.
 
 ## Rules

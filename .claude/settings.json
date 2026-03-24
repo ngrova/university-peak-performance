@@ -32,6 +32,10 @@
           {
             "type": "command",
             "command": "node .claude/hooks/block-archived.js"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/block-infra-edit.js"
           }
         ]
       }
