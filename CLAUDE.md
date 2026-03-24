@@ -137,6 +137,14 @@ If pushback surfaces DURING implementation (after the plan is approved), create 
 - Everything looks good and you're ready to proceed (just proceed)
 - Minor observations that don't affect the plan
 
+## CI Merge Gate
+
+The `require-ci-pass` hook mechanically blocks `gh pr merge` unless all CI checks are passing.
+- `gh pr merge --auto` is always allowed — GitHub gates CI itself
+- `gh pr merge` or `gh pr merge --admin` without `--auto` is blocked until `gh pr checks` shows all SUCCESS
+- If CI status can't be queried, the merge is blocked (fail closed)
+- Always monitor CI after pushing — do not attempt to merge until you have confirmed all checks pass
+
 ## Critical Rules (repeated — read these last)
 
 - When a user describes a feature or fix, run the FULL pipeline automatically — no slash commands needed
