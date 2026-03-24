@@ -386,8 +386,43 @@ Wait for all 9 agents to complete. Present results as:
 
 ## Step 4 — Handle Results
 
-- **All 9 APPROVED:** Tell the user the plan/code passed review. Proceed with the next step in the workflow.
-- **Any REJECTED:** List the specific rejections. Revise the plan or code to address each rejection. Then re-run the review on the revised version.
+- **Any REJECTED:** List the specific rejections. Revise the plan or code to address each rejection. Then re-run the review on the revised version. Do NOT proceed to Step 5.
+- **All 9 APPROVED:** Write the results to the plan file and proceed to Step 5.
+
+## Step 5 — Write Council Marker to Plan File
+
+After all 9 agents approve, write the review results and pass marker to the branch plan file (`plans/{branch-slug}.md`). This is REQUIRED — the enforcement hooks block the next pipeline step without it.
+
+**For plan review mode**, append to the plan file:
+```
+## Council Plan Review Results
+
+| # | Agent | Verdict |
+|---|-------|---------|
+| 1 | Security Audit | APPROVED |
+| 2 | Data Integrity | APPROVED |
+... (all 9 rows with actual verdicts)
+| 9 | Silent Failure Detector | APPROVED |
+
+COUNCIL_PLAN_REVIEW: PASS
+```
+
+Then update `STATUS: PENDING` to `STATUS: APPROVED`.
+
+**For code review mode**, append to the plan file:
+```
+## Council Code Review Results
+
+| # | Agent | Verdict |
+|---|-------|---------|
+| 1 | Security Audit | APPROVED |
+... (all 9 rows with actual verdicts)
+| 9 | Silent Failure Detector | APPROVED |
+
+COUNCIL_CODE_REVIEW: PASS
+```
+
+**Important:** The enforcement hooks validate that the review table has exactly 9 APPROVED verdicts with no rejections before allowing the marker. Write the table and marker in a single edit so the hook can validate them together.
 
 ## Rules
 
