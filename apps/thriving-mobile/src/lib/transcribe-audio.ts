@@ -36,6 +36,8 @@ export async function transcribeAudio(
   try {
     const audioBuffer = Buffer.from(base64Data, 'base64');
     const contentType = mimeType.split(';')[0] || 'audio/webm';
+    // Diagnostic: log MIME type to Sentry/stderr so we can debug device-specific failures
+    reportError(new Error(`[diag] Deepgram request: content-type=${contentType}, raw-mime=${mimeType}, size=${audioBuffer.length}`));
 
     const resp = await fetch('https://api.deepgram.com/v1/listen?model=nova-3&smart_format=true&keyterm=Erin:2&keyterm=Liz:2&keyterm=Nick:2', {
       method: 'POST',
@@ -49,7 +51,7 @@ export async function transcribeAudio(
 
     if (!resp.ok) {
       const errBody = await resp.text().catch(() => 'no body');
-      reportError(new Error(`Deepgram API ${resp.status}: ${errBody}`));
+      reportError(new Error(`Deepgram API ${resp.status} (content-type: ${contentType}): ${errBody}`));
       return { error: 'Transcription failed — add fields manually' };
     }
 
