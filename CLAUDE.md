@@ -16,9 +16,12 @@ When a user describes a feature or fix, ALWAYS follow this pipeline automaticall
 2. Run 9-agent review on the plan → revise until all 9 approve
 3. Build on a feature branch (nick/ or erin/ prefix)
 4. Manager stop hook runs typecheck + tests automatically
-5. Run 9-agent review on the code diff → fix until all 9 approve
-6. Create PR with conventional commit title
+5. Run local advisory code review (optional, for fast feedback)
+6. Create PR with conventional commit title — commit plan file to the branch
+7. GitHub Action runs independent 9-agent code review (required merge check)
 The user just describes what they want. The system handles everything.
+
+The local code review Claude runs is advisory. The authoritative code review runs in GitHub Actions as a required merge check — an independent process Claude Code cannot skip, forge, or influence.
 
 ## Bug Fix Protocol
 
@@ -148,6 +151,7 @@ The `require-ci-pass` hook mechanically blocks `gh pr merge` unless all CI check
 - `gh pr merge --auto` is always allowed — GitHub gates CI itself
 - `gh pr merge` or `gh pr merge --admin` without `--auto` is blocked until `gh pr checks` shows all SUCCESS
 - If CI status can't be queried, the merge is blocked (fail closed)
+- The "9-Agent Code Review" GitHub Action check must also pass — this is the independent trust boundary
 - Always monitor CI after pushing — do not attempt to merge until you have confirmed all checks pass
 
 ## Critical Rules (repeated — read these last)

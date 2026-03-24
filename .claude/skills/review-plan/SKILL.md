@@ -28,6 +28,10 @@ If PLAN.md exists and has `STATUS: APPROVED`, and there are staged/unstaged code
 
 Use the Agent tool to spawn all 9 agents simultaneously. Each agent receives ONLY the plan text or diff — never the main conversation context. Each returns a single verdict: `APPROVED` or `REJECTED: [specific reason]`.
 
+**Note:** The canonical review prompts are in `.claude/review-agents/agent-N-name.md`. The prompts below are kept inline for convenience during local advisory reviews. The GitHub Action code review reads from the shared files. If prompts need updating, update the files in `.claude/review-agents/` first, then sync the inline versions here.
+
+**Important:** The local review is advisory — for fast feedback during development. The authoritative code review runs in GitHub Actions as a required merge check.
+
 ### Agent 1 — Security Audit
 
 ```
