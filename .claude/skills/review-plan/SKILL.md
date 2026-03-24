@@ -218,7 +218,7 @@ NEXT.JS APP ROUTER RULES:
 - Client Components must not pass server actions to non-serializable contexts (event handlers are fine, queryFn direct reference is not).
 
 CROSS-APP CONSISTENCY:
-- If the same operation exists in apps/thriving/ (desktop), verify the new code in apps/thriving-mobile/ uses a compatible approach. Flag divergences with a specific reason.
+- The desktop app is archived at apps/_archived-thriving-desktop/. Do not flag divergences unless the plan explicitly references porting from the archived app. All new work targets apps/thriving-mobile/ only.
 
 If all checks pass, answer APPROVED.
 ```

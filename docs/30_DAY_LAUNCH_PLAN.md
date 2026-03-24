@@ -64,7 +64,8 @@ Goal: Mac Mini running, OpenClaw connected, Coder agent responding.
   ```
   university-peak-performance/
   ├── apps/
-  │   ├── thriving/
+  │   ├── thriving-mobile/          (active PWA)
+  │   ├── _archived-thriving-desktop/ (archived, reference only)
   │   └── silver-trading/
   ├── packages/
   │   ├── ui/

@@ -138,11 +138,11 @@ jobs:
           version: latest
 
       - name: Start local Supabase
-        working-directory: apps/thriving
+        working-directory: apps/thriving-mobile
         run: supabase start
 
       - name: Run RLS test
-        working-directory: apps/thriving
+        working-directory: apps/thriving-mobile
         run: |
           export SUPABASE_URL=$(supabase status --output json | jq -r '.API_URL')
           export SUPABASE_ANON_KEY=$(supabase status --output json | jq -r '.ANON_KEY')
@@ -152,7 +152,7 @@ jobs:
 
       - name: Stop local Supabase
         if: always()
-        working-directory: apps/thriving
+        working-directory: apps/thriving-mobile
         run: supabase stop
 
   e2e:
