@@ -30,7 +30,8 @@ async function gitInfo(): Promise<{ subject: string; files: string }> {
 
 function detectApp(files: string): string {
   if (files.includes('apps/mission-control')) return 'Mission Control';
-  if (files.includes('apps/thriving')) return 'Thriving';
+  if (files.includes('apps/thriving-mobile')) return 'Thriving Mobile';
+  if (files.includes('apps/_archived-thriving-desktop')) return 'Thriving (Archived)';
   if (files.includes('apps/silver-trading')) return 'Silver Trading';
   return 'University of Peak Performance';
 }

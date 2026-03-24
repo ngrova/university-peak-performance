@@ -80,10 +80,10 @@ try {
 
 const errors = [];
 
-// Run typecheck
+// Run typecheck on the active app (thriving-mobile)
 try {
   execSync('npx tsc --noEmit', {
-    cwd: path.join(repoRoot, 'apps', 'thriving'),
+    cwd: path.join(repoRoot, 'apps', 'thriving-mobile'),
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
     timeout: 120000,
@@ -93,10 +93,10 @@ try {
   errors.push(`Typecheck failed:\n${output.slice(0, 500)}`);
 }
 
-// Run tests
+// Run tests on the active app (thriving-mobile)
 try {
   execSync('npx vitest run --reporter=verbose', {
-    cwd: path.join(repoRoot, 'apps', 'thriving'),
+    cwd: path.join(repoRoot, 'apps', 'thriving-mobile'),
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
     timeout: 120000,
