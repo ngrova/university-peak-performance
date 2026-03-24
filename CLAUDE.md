@@ -102,6 +102,10 @@ When delegating work to sub-agents (parallel worktrees), the full pipeline is no
 - No exceptions — parallel execution does not justify skipping reviews
 - A sub-agent that ships a PR without 9-agent review has violated the pipeline, same as if the main session skipped it
 
+## Post-PR Rule
+
+After creating a PR, run `bash scripts/pr-watch.sh <PR_NUMBER>`. Do not tell Nick to test until this script completes successfully. No exceptions, no manual alternatives.
+
 ## Critical Rules (repeated — read these last)
 
 - When a user describes a feature or fix, run the FULL pipeline automatically — no slash commands needed
