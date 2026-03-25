@@ -18,8 +18,15 @@ export interface TaskWithContext extends Task {
   } | null
 }
 
-// Explicit task columns + goal/pillar join for context display
-const TASK_COLUMNS = 'id, user_id, goal_id, parent_task_id, title, notes, due_date, priority, status, is_one_thing, sort_order, assignee, failure_cost, created_at, completed_at, updated_at'
+// Explicit task columns — no .select('*') per security rules
+const TASK_COLUMNS = [
+  'id', 'user_id', 'goal_id', 'parent_task_id',
+  'title', 'notes', 'due_date', 'priority',
+  'status', 'is_one_thing', 'sort_order', 'assignee',
+  'failure_cost', 'created_at', 'completed_at', 'updated_at',
+].join(', ')
+
+// Task columns + goal/pillar join for context display
 const CONTEXT_SELECT = `${TASK_COLUMNS}, goals(title, pillar_id, priority_rank, life_pillars(id, name, color, icon))`
 
 const FAILURE_COST_ORDER: Record<string, number> = {
@@ -82,7 +89,7 @@ export async function getOneThingTask(
     .neq('status', 'done')
     .limit(200)
   if (error) throw error
-  const tasks: TaskWithContext[] = data ?? []
+  const tasks = (data ?? []) as TaskWithContext[]
   const pinned = tasks.find((t) => t.is_one_thing)
   if (pinned) return pinned
   const active = tasks.filter(
@@ -105,7 +112,7 @@ export async function getTasksWithDeadlines(
     .order('due_date', { ascending: true })
     .limit(200)
   if (error) throw error
-  return data ?? []
+  return (data ?? []) as TaskWithContext[]
 }
 
 export async function getTasksForQueue(
@@ -123,7 +130,7 @@ export async function getTasksForQueue(
   }
   const { data, error } = await query.limit(200)
   if (error) throw error
-  return (data ?? []).sort(sortByCost)
+  return ((data ?? []) as TaskWithContext[]).sort(sortByCost)
 }
 
 /** Fetches tasks for a goal with goal/pillar context for display */
@@ -138,7 +145,7 @@ export async function getTasksByGoalWithContext(
     .order('sort_order', { ascending: true })
     .limit(50)
   if (error) throw error
-  return data ?? []
+  return (data ?? []) as TaskWithContext[]
 }
 
 export { FAILURE_COST_ORDER }
