@@ -40,14 +40,16 @@ export default function TaskDetailSheet(): React.JSX.Element | null {
   );
 }
 
-/** Auto-saves a single task field */
-async function saveField(taskId: string, field: string, value: string | number | null) {
-  await updateTaskField(taskId, field, value);
-}
-
 /** Form content — all editable task fields */
 function SheetBody({ task, onClose }: { task: TaskWithContext; onClose: () => void }) {
-  const save = (field: string, value: string | number | null) => saveField(task.id, field, value);
+  const updateField = useTaskDetail((s) => s.updateField);
+  /** Optimistically updates the store, then persists — rolls back on failure */
+  const save = async (field: string, value: string | number | null) => {
+    const original = task[field as keyof TaskWithContext] as string | number | null;
+    updateField(field, value);
+    const result = await updateTaskField(task.id, field, value);
+    if (result.error) updateField(field, original);
+  };
   return (
     <div className="relative rounded-t-2xl p-5 sheet-enter max-h-[80vh] overflow-y-auto" style={{ backgroundColor: 'var(--bg-surface)' }}>
       <SheetHeader onClose={onClose} />
