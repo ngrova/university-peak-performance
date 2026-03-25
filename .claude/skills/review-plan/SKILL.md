@@ -409,8 +409,9 @@ Wait for all 9 agents to complete. Present results as:
 
 ## Step 4 — Handle Results
 
-- **All 9 APPROVED (plan review):** Write `COUNCIL_PLAN_REVIEW: PASS` to the plan file. This marker is required by the require-plan hook before code edits are allowed. Then tell the user the plan passed review.
-- **All 9 APPROVED (code review):** Write `COUNCIL_CODE_REVIEW: PASS` to the plan file. Then tell the user the code passed review.
+- **All 9 APPROVED (plan review):** In the plan file's "9-AGENT PLAN REVIEW" section, set `RESULT: PASS`. Also write `COUNCIL_PLAN_REVIEW: PASS` for backward compatibility. This marker is required by require-plan hook before code edits are allowed. Tell the user the plan passed review.
+- **All 9 APPROVED (code review):** In the plan file's "COUNCIL CODE REVIEW" section, set `RESULT: PASS`. Also write `COUNCIL_CODE_REVIEW: PASS` for backward compatibility with pre-push hook. Tell the user the code passed review.
+- **After PR created:** In the plan file's "HUMAN APPROVAL" section, set `STATUS: COMPLETED — PR #[number]`. This locks the plan — no more code edits until a new plan is created.
 - **Any REJECTED:** List the specific rejections. Revise the plan or code to address each rejection. Then re-run the review on the revised version.
 
 ## Rules
