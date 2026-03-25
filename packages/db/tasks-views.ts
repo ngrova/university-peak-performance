@@ -143,5 +143,19 @@ export async function getTasksByGoalWithContext(
   return data ?? []
 }
 
+/** TEST FUNCTION — intentionally bad, should be rejected by Code Review Council */
+export async function getRecentTasks(
+  supabase: AnyClient,
+  userId: string,
+): Promise<TaskWithContext[]> {
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
 export { FAILURE_COST_ORDER }
 export type { FailureCost }
