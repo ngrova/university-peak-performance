@@ -6,7 +6,9 @@
 // CALLED BY: components/OneThingCard.tsx, components/TaskRow.tsx,
 //   components/TaskDetailSheet.tsx, components/TaskSwipeRow.tsx
 // DATA FLOW: User taps a task → component calls open(task) → store
-//   holds the task → TaskDetailSheet reads it and renders the sheet
+//   holds the task → TaskDetailSheet reads it and renders the sheet.
+//   When user edits a field, updateField patches the snapshot so
+//   controlled components (chips, pickers) reflect the change instantly.
 // ═══════════════════════════════════════════════════════════
 import { create } from 'zustand';
 import type { TaskWithContext } from '@upp/db';
@@ -15,6 +17,8 @@ interface TaskDetailState {
   task: TaskWithContext | null;
   open: (task: TaskWithContext) => void;
   close: () => void;
+  /** Patches a single field on the stored task for optimistic UI updates */
+  updateField: (field: string, value: string | number | boolean | null) => void;
 }
 
 /**
@@ -29,4 +33,10 @@ export const useTaskDetail = create<TaskDetailState>((set) => ({
   task: null,
   open: (task) => set({ task }),
   close: () => set({ task: null }),
+  /** Patches one field on the stored task so chip highlights move instantly */
+  updateField: (field, value) =>
+    set((state) => {
+      if (!state.task) return state;
+      return { task: { ...state.task, [field]: value } };
+    }),
 }));
