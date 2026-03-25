@@ -8,9 +8,9 @@
 //   insert fleet_messages → update agent sync time → return ID.
 // ═══════════════════════════════════════════════════════════
 
-import { getFleetClient } from '../db.ts'
-import { withMeta } from '../meta.ts'
-import { requireString, checkLength, checkEnum } from '../validation.ts'
+import { getFleetClient } from '../db'
+import { withMeta } from '../meta'
+import { requireString, checkLength, checkEnum } from '../validation'
 
 const DIRECTED_KINDS = ['recommendation', 'question', 'warning', 'blocker']
 const VALID_KINDS = [

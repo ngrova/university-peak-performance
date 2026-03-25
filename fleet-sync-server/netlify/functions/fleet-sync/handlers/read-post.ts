@@ -8,9 +8,9 @@
 //   return post + thread array.
 // ═══════════════════════════════════════════════════════════
 
-import { getFleetClient } from '../db.ts'
-import { withMeta } from '../meta.ts'
-import { requireString } from '../validation.ts'
+import { getFleetClient } from '../db'
+import { withMeta } from '../meta'
+import { requireString } from '../validation'
 
 const POST_COLUMNS =
   'id, agent_id, kind, thread_id, summary, body, tags, to_agent, ' +

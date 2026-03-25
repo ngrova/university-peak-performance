@@ -9,9 +9,9 @@
 //   return decision_id.
 // ═══════════════════════════════════════════════════════════
 
-import { getFleetClient } from '../db.ts'
-import { withMeta } from '../meta.ts'
-import { requireString } from '../validation.ts'
+import { getFleetClient } from '../db'
+import { withMeta } from '../meta'
+import { requireString } from '../validation'
 
 interface RecordDecisionArgs {
   decision: string

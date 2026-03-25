@@ -8,8 +8,8 @@
 //   matching decisions.
 // ═══════════════════════════════════════════════════════════
 
-import { getFleetClient } from '../db.ts'
-import { withMeta } from '../meta.ts'
+import { getFleetClient } from '../db'
+import { withMeta } from '../meta'
 
 interface ReadDecisionsArgs {
   domain?: string
