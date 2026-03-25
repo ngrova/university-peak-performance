@@ -1,7 +1,12 @@
 Review this code diff for security issues in this Next.js + Supabase + Netlify stack.
-Answer APPROVED or REJECTED with a specific reason citing the exact line or file.
 
-Checklist — reject if ANY item fails:
+Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
+- Use APPROVED if no issues exist in lines added by this diff (lines starting with +).
+- Use WARN if the only issues are pre-existing (visible in context lines, not added by this PR). List them but they do not block.
+- Use REJECTED only for issues in lines the PR author actually added.
+Then explain your reasoning below.
+
+Checklist — applies only to lines ADDED by this diff:
 
 1. SUPABASE QUERY SAFETY
    - Any .select('*') → REJECT. Must list explicit columns.

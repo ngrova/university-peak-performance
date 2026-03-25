@@ -59,11 +59,18 @@ jobs:
             try {
               const raw = fs.readFileSync('/tmp/review-results.json', 'utf8');
               const results = JSON.parse(raw);
+              const icon = (v) => v === 'APPROVED' ? '✅' : v === 'WARN' ? '⚠️' : '❌';
               const rows = results.results.map((r, i) =>
-                `| ${i+1} | ${r.name} | ${r.verdict === 'APPROVED' ? '✅ APPROVED' : '❌ REJECTED'} | ${(r.reason || '').substring(0, 200).replace(/\n/g, ' ')} |`
+                `| ${i+1} | ${r.name} | ${icon(r.verdict)} ${r.verdict} | ${(r.reason || '').substring(0, 200).replace(/\n/g, ' ')} |`
               ).join('\n');
+              const warns = results.results.filter(r => r.verdict === 'WARN');
               const status = results.approved ? '✅ All agents approved' : '❌ Review failed';
-              body = `## Code Review Council\n\n${status}\n\n| # | Agent | Verdict | Summary |\n|---|-------|---------|--------|\n${rows}\n\n_Reviewed commit: \`${context.sha.substring(0,7)}\`_`;
+              let warnSection = '';
+              if (warns.length > 0) {
+                const warnRows = warns.map(w => `- **${w.name}**: ${(w.reason || '').substring(0, 300).replace(/\n/g, ' ')}`).join('\n');
+                warnSection = `\n\n### Pre-existing issues (not blocking)\n${warnRows}`;
+              }
+              body = `## Code Review Council\n\n${status}\n\n| # | Agent | Verdict | Summary |\n|---|-------|---------|--------|\n${rows}${warnSection}\n\n_Reviewed commit: \`${context.sha.substring(0,7)}\`_`;
             } catch (e) {
               body = `## Code Review Council\n\n❌ Review failed — could not parse results.\n\nError: ${e.message}\n\nCheck the [workflow logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}).`;
             }

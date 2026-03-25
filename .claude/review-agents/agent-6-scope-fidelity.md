@@ -1,4 +1,10 @@
-Review the scope and plan fidelity of this change. Answer APPROVED or REJECTED with a specific reason.
+Review the scope and plan fidelity of this change.
+
+Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
+- Use APPROVED if no issues found.
+- Use WARN for pre-existing issues noted for future cleanup (do not block).
+- Use REJECTED only for issues that must block this PR.
+Then explain your reasoning below.
 
 PUSHBACK CHECK:
 - If the plan has no ## Pushback section → REJECT with "plan missing required ## Pushback section."

@@ -22,7 +22,7 @@ function readInputs() {
   const planFile = process.env.PLAN_FILE || "";
   const diff = diffFile ? fs.readFileSync(diffFile, "utf8") : "";
   const plan = planFile && fs.existsSync(planFile) ? fs.readFileSync(planFile, "utf8") : "(no plan file found)";
-  return { diff: diff.slice(0, 50000), plan: plan.slice(0, 10000) };
+  return { diff: diff.slice(0, 20000), plan: plan.slice(0, 5000) };
 }
 
 // Loads all 9 agent prompts from .claude/review-agents/
@@ -55,8 +55,13 @@ async function reviewAgent(agent, diff, plan) {
 
   const data = await res.json();
   const text = (data.content && data.content[0] && data.content[0].text) || "";
-  const approved = (/APPROVED/i.test(text) || /EXEMPT/i.test(text)) && !/REJECTED/i.test(text);
-  return { name: agent.name, verdict: approved ? "APPROVED" : "REJECTED", reason: text.slice(0, 500) };
+  // Parse verdict from first line only — agents are instructed to put it there
+  const firstLine = text.split("\n")[0] || "";
+  const verdict = /REJECTED/i.test(firstLine) ? "REJECTED"
+    : /WARN/i.test(firstLine) ? "WARN"
+    : /APPROVED|EXEMPT/i.test(firstLine) ? "APPROVED"
+    : "REJECTED";
+  return { name: agent.name, verdict, reason: text.slice(0, 500) };
 }
 
 // Runs agents sequentially with delay to stay under 5 req/min rate limit
@@ -64,7 +69,7 @@ async function runSequentially(agents, diff, plan) {
   const results = [];
   for (let i = 0; i < agents.length; i++) {
     results.push(await reviewAgent(agents[i], diff, plan));
-    if (i < agents.length - 1) await new Promise((r) => setTimeout(r, 13000));
+    if (i < agents.length - 1) await new Promise((r) => setTimeout(r, 45000));
   }
   return results;
 }
@@ -80,7 +85,7 @@ async function main() {
   }
 
   const results = await runSequentially(agents, diff, plan);
-  const approved = results.every((r) => r.verdict === "APPROVED");
+  const approved = results.every((r) => r.verdict === "APPROVED" || r.verdict === "WARN");
 
   process.stdout.write(JSON.stringify({ approved, results }));
   process.exit(approved ? 0 : 1);

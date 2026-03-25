@@ -1,4 +1,10 @@
-Review this code diff for test coverage. Answer APPROVED or REJECTED with a specific reason.
+Review this code diff for test coverage.
+
+Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
+- Use APPROVED if test coverage is adequate, or changes are infrastructure-only (exempt).
+- Use WARN for pre-existing test gaps noted for future cleanup (do not block).
+- Use REJECTED only for missing test coverage on user-facing changes added by this diff.
+Then explain your reasoning below.
 
 Infrastructure-only changes (CI config, docs, tooling, .claude/) are EXEMPT.
 

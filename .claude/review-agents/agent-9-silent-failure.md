@@ -1,4 +1,10 @@
-Review this code diff for silent failure risks. Answer APPROVED or REJECTED with a specific reason.
+Review this code diff for silent failure risks.
+
+Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
+- Use APPROVED if no silent failure risks exist in lines added by this diff.
+- Use WARN if the only risks are pre-existing (visible in context lines, not added by this PR). List them but they do not block.
+- Use REJECTED only for silent failure risks in lines the PR author actually added.
+Then explain your reasoning below.
 
 A "silent failure" is when an error occurs but the user sees empty data, a vague message, or no feedback at all.
 

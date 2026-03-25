@@ -1,4 +1,10 @@
-Review this code diff for integration correctness. Answer APPROVED or REJECTED with a specific reason.
+Review this code diff for integration correctness.
+
+Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
+- Use APPROVED if no issues exist in lines added by this diff (lines starting with +).
+- Use WARN if the only issues are pre-existing (visible in context lines, not added by this PR). List them but they do not block.
+- Use REJECTED only for issues in lines the PR author actually added.
+Then explain your reasoning below.
 
 You check whether components will work correctly together at runtime. This is the #1 source of production bugs in this codebase.
 
