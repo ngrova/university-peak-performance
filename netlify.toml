@@ -10,7 +10,6 @@
 
 [functions."fleet-sync"]
   node_bundler = "esbuild"
-  included_files = ["node_modules/.pnpm/**"]
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
