@@ -21,7 +21,7 @@ SCOPE:
 
 PLAN FIDELITY (code review only):
 - Compare changed files in the diff against the plan's "Files to Change" section.
-- If the diff modifies files NOT listed in the plan (excluding test files, config like tsconfig/package.json, and CI) → REJECT with "unplanned file change: [filename]."
+- If the diff modifies files NOT listed in the plan (excluding test files, config like tsconfig/package.json, CI, and plan files in plans/) → REJECT with "unplanned file change: [filename]."
 - If the plan lists a file with NO changes in the diff, flag it (may indicate incomplete work).
 
 REDESIGN PLAN FIDELITY (applies only when plan TYPE is REDESIGN):
