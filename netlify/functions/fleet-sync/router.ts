@@ -8,14 +8,14 @@
 //   call tool handler → wrap in JSON-RPC response envelope.
 // ═══════════════════════════════════════════════════════════
 
-import { TOOLS, TOOL_MAP } from './tools'
-import { checkRateLimit } from './rate-limiter'
-import { handleSync } from './handlers/sync'
-import { handlePost } from './handlers/post'
-import { handleRespond } from './handlers/respond'
-import { handleRecordDecision } from './handlers/record-decision'
-import { handleReadDecisions } from './handlers/read-decisions'
-import { handleReadPost } from './handlers/read-post'
+import { TOOLS, TOOL_MAP } from './tools.ts'
+import { checkRateLimit } from './rate-limiter.ts'
+import { handleSync } from './handlers/sync.ts'
+import { handlePost } from './handlers/post.ts'
+import { handleRespond } from './handlers/respond.ts'
+import { handleRecordDecision } from './handlers/record-decision.ts'
+import { handleReadDecisions } from './handlers/read-decisions.ts'
+import { handleReadPost } from './handlers/read-post.ts'
 
 interface JsonRpcRequest {
   jsonrpc: string

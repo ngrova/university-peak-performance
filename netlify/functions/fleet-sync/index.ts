@@ -8,8 +8,8 @@
 //   router.ts → convert Response back to v1 format.
 // ═══════════════════════════════════════════════════════════
 
-import { isAuthorized } from './auth'
-import { route } from './router'
+import { isAuthorized } from './auth.ts'
+import { route } from './router.ts'
 
 const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
