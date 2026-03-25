@@ -13,16 +13,27 @@ function getRepoRoot() {
   }
 }
 
-// Derives plan file path from current git branch name
-function getPlanPath() {
+// Returns branch name and plan file path
+function getBranchAndPlan() {
   const root = getRepoRoot();
   try {
     const branch = execSync("git rev-parse --abbrev-ref HEAD", { encoding: "utf8" }).trim();
     const slug = branch.replace(/\//g, "-");
-    return path.join(root, "plans", slug + ".md");
+    return { branch, planPath: path.join(root, "plans", slug + ".md") };
   } catch {
-    return path.join(root, "plans", "unknown.md");
+    return { branch: "", planPath: path.join(root, "plans", "unknown.md") };
   }
+}
+
+// Checks if pushback content is a "None" variant
+function isNonePushback(text) {
+  return /^\s*(none|n\/a)/i.test(text.trim());
+}
+
+// Extracts text between ## Pushback and the next ## heading
+function extractPushbackContent(content) {
+  const match = content.match(/## Pushback[\s\S]*?\n([\s\S]*?)(?=\n## |$)/);
+  return match ? match[1].trim() : "";
 }
 
 let input = "";
@@ -42,7 +53,6 @@ process.stdin.on("end", () => {
     return;
   }
 
-  // Determine the file path being edited
   const filePath = (data.tool_input && (data.tool_input.file_path || data.tool_input.path)) || "";
   const normalized = filePath.replace(/\\/g, "/");
 
@@ -61,19 +71,17 @@ process.stdin.on("end", () => {
     return;
   }
 
-  // Checks if pushback content is a "None" variant (no concern declared)
-  function isNonePushback(text) {
-    return /^\s*(none|n\/a)/i.test(text.trim());
-  }
+  const { branch, planPath } = getBranchAndPlan();
 
-  // Extracts text between ## Pushback and the next ## heading (or EOF)
-  function extractPushbackContent(content) {
-    const match = content.match(/## Pushback\s*\n([\s\S]*?)(?=\n## |\n$|$)/);
-    return match ? match[1].trim() : "";
+  // Branch naming check — nick/ or erin/ prefix required (skip on main)
+  if (branch && branch !== "main" && branch !== "master" && !/^(nick|erin)\//.test(branch)) {
+    process.stdout.write(
+      JSON.stringify({ decision: "block", reason: "Feature branches must use nick/ or erin/ prefix." })
+    );
+    return;
   }
 
   // Multi-gate plan validation
-  const planPath = getPlanPath();
   try {
     const content = fs.readFileSync(planPath, "utf8");
 
@@ -85,36 +93,46 @@ process.stdin.on("end", () => {
       return;
     }
 
-    // Gate 2: If pushback is non-None, require PUSHBACK_ACKNOWLEDGED
+    // Gate 2: If pushback is non-None, require acknowledgment
     const pushbackText = extractPushbackContent(content);
-    if (pushbackText && !isNonePushback(pushbackText) && !content.includes("PUSHBACK_ACKNOWLEDGED: YES")) {
+    const pushbackAcked = content.includes("ACKNOWLEDGED") || content.includes("PUSHBACK_ACKNOWLEDGED: YES");
+    if (pushbackText && !isNonePushback(pushbackText) && !pushbackAcked) {
       process.stdout.write(
-        JSON.stringify({ decision: "block", reason: "Pushback declared but not acknowledged — wait for human response before building." })
+        JSON.stringify({ decision: "block", reason: "Pushback declared but not acknowledged — wait for human response." })
       );
       return;
     }
 
-    // Gate 3: Plan review must be completed
-    if (!content.includes("COUNCIL_PLAN_REVIEW: PASS")) {
+    // Gate 3: Plan review must be completed (new or old marker)
+    const reviewPassed = content.includes("RESULT: PASS") || content.includes("COUNCIL_PLAN_REVIEW: PASS");
+    if (!reviewPassed) {
       process.stdout.write(
         JSON.stringify({ decision: "block", reason: "Plan review not completed — run the 9-agent review before building." })
       );
       return;
     }
 
-    // Gate 4: Plan must be approved
-    if (content.includes("STATUS: APPROVED")) {
+    // Gate 4: Human must have confirmed (new or old marker) — NOT completed/locked
+    const confirmed = content.includes("STATUS: CONFIRMED") || content.includes("STATUS: APPROVED");
+    const locked = /^STATUS: COMPLETED/im.test(content);
+    if (confirmed && !locked) {
       process.stdout.write(JSON.stringify({ decision: "approve" }));
       return;
     }
+    if (locked) {
+      process.stdout.write(
+        JSON.stringify({ decision: "block", reason: "Plan is locked (COMPLETED). Create a new plan for the next task." })
+      );
+      return;
+    }
   } catch {
-    // Plan file doesn't exist for this branch
+    // Plan file doesn't exist
   }
 
   process.stdout.write(
     JSON.stringify({
       decision: "block",
-      reason: "No approved plan. Create plans/{branch}.md with STATUS: APPROVED first.",
+      reason: "No confirmed plan. Create plans/{branch}.md and get human approval first.",
     })
   );
 });

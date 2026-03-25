@@ -3,7 +3,7 @@
 ## Critical Rules (most-violated — read these first)
 
 - When a user describes a feature or fix, run the FULL pipeline automatically — no slash commands needed
-- Always create plans/{branch}.md with STATUS: APPROVED before writing any code
+- Always create plans/{branch}.md — human must confirm "build it" before writing any code
 - Work on feature branches only (nick/ or erin/ prefix) — never commit to main
 - Keep every file under 100 lines and every function under 25 lines
 - List explicit columns in every Supabase query — never use .select('*')
@@ -11,17 +11,13 @@
 
 ## Automatic Pipeline
 
-When a user describes a feature or fix, ALWAYS follow this pipeline automatically:
-1. Create plans/{branch}.md (make-plan template) → present it → wait for approval
-2. Run 9-agent review on the plan → revise until all 9 approve
-3. Build on a feature branch (nick/ or erin/ prefix)
-4. Manager stop hook runs typecheck + tests automatically
-5. Run local advisory code review (optional, for fast feedback)
-6. Create PR with conventional commit title — commit plan file to the branch
-7. GitHub Action runs independent 9-agent code review (required merge check)
-The user just describes what they want. The system handles everything.
+17-step pipeline in 3 phases. See `.claude/rules/workflow.md` for the full detailed flow.
 
-The local code review Claude runs is advisory. The authoritative code review runs in GitHub Actions as a required merge check — an independent process Claude Code cannot skip, forge, or influence.
+**Phase A (Before Code):** Pre-flight checks → pushback check → create branch → write plan → 9-agent plan review → present to human → human confirms "build it"
+**Phase B (Writing Code):** Build (hooks enforce safety) → mid-task pushback if needed → local advisory code review
+**Phase C (Ship):** Create PR → lock plan → monitor CI → GitHub Action code review (hard gate) → CI (hard gate) → auto-merge → deploy monitoring
+
+The local code review is advisory. The authoritative code review runs in GitHub Actions — an independent process Claude Code cannot skip, forge, or influence.
 
 ## Bug Fix Protocol
 
@@ -103,7 +99,7 @@ but never relaxes FEATURE safety.
 
 ## PIPELINE-INFRA PRs
 
-Use TYPE: PIPELINE-INFRA for changes to hooks, wrappers, settings, rules, and review agents. The `block-infra-edit` hook blocks all edits to `.claude/hooks/`, `.claude/settings.json`, `.claude/rules/`, `.claude/pipeline/`, and `.claude/skills/` unless the plan has TYPE: PIPELINE-INFRA and STATUS: APPROVED. Infrastructure changes require human approval and extra scrutiny.
+Use TYPE: PIPELINE-INFRA for changes to hooks, wrappers, settings, rules, and review agents. The `block-infra-edit` hook blocks all edits to `.claude/hooks/`, `.claude/settings.json`, `.claude/rules/`, `.claude/pipeline/`, and `.claude/skills/` unless the plan has TYPE: PIPELINE-INFRA and human approval. Infrastructure changes require extra scrutiny.
 
 ## Sub-Agent Pipeline Rule
 
@@ -116,34 +112,14 @@ When delegating work to sub-agents (parallel worktrees), the full pipeline is no
 
 ## Pushback Enforcement
 
-Two-layer system — proactive declaration at plan time, reactive brake during implementation.
+Two layers — proactive (plan time) and reactive (mid-task).
 
-**Layer 1 — Plan file (proactive):**
-Every plan file requires a `## Pushback` section. This forces an explicit declaration before any code is written.
-- Write `None — proceeding as specified.` if there are no concerns
-- Write the specific concern, what needs to be decided, and your recommendation if there IS pushback
-- If the Pushback section contains a concern, STOP and wait for human response before setting STATUS: APPROVED
-- After human acknowledges the pushback, add `PUSHBACK_ACKNOWLEDGED: YES` to the plan file
-- The `require-plan` hook blocks code edits if: Pushback section is missing, pushback is non-None without PUSHBACK_ACKNOWLEDGED, or COUNCIL_PLAN_REVIEW: PASS is missing
-- Agent 6 rejects plans with missing or empty Pushback sections
+**Layer 1 — Plan file:** Every plan requires a `## Pushback` section. If you have concerns, write them and STOP. The `require-plan` hook blocks code edits until pushback is acknowledged by the human. If no concerns, write "None — proceeding as specified."
 
-**Layer 2 — PUSHBACK file (reactive):**
-If pushback surfaces DURING implementation (after the plan is approved), create `plans/PUSHBACK-{branch-slug}.md`.
-1. Describe the concern, what you propose instead, and what needs to be decided
-2. STOP completely — the `block-on-pushback` hook blocks all Write, Edit, and Bash operations
-3. Wait for the user to respond (delete file, edit it, or confirm verbally)
-4. Only after explicit human confirmation: delete the PUSHBACK file and continue
+**Layer 2 — PUSHBACK file:** If concerns surface DURING implementation, create `plans/PUSHBACK-{branch-slug}.md`. The `block-on-pushback` hook locks ALL operations until the human resolves it.
 
-**When to declare pushback (either layer):**
-- You want to change something about the task (different approach, scope, or files)
-- You found a risk or pre-existing bug that affects the plan
-- You need a decision from the user before you can proceed correctly
-- You disagree with any part of the instructions
-
-**When NOT to declare pushback:**
-- You have relevant context to share but no concern (just share it and keep moving)
-- Everything looks good and you're ready to proceed (just proceed)
-- Minor observations that don't affect the plan
+**When to pushback:** Different approach needed, risk found, decision needed, disagree with instructions.
+**When NOT to:** Just sharing context (no concern), ready to proceed, minor observations.
 
 ## CI Merge Gate
 
@@ -157,7 +133,7 @@ The `require-ci-pass` hook mechanically blocks `gh pr merge` unless all CI check
 ## Critical Rules (repeated — read these last)
 
 - When a user describes a feature or fix, run the FULL pipeline automatically — no slash commands needed
-- Always create plans/{branch}.md with STATUS: APPROVED before writing any code
+- Always create plans/{branch}.md — human must confirm "build it" before writing any code
 - Work on feature branches only — never commit to main
 - Keep every file under 100 lines and every function under 25 lines
 - List explicit columns in every Supabase query — never use .select('*')

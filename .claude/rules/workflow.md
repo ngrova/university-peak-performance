@@ -1,68 +1,68 @@
 # Workflow
 
-## Pre-Flight Check
+## The Pipeline — 17 Steps, 3 Phases
 
-Before starting any new task:
+The user describes what they want in plain English. The system handles everything. No slash commands needed.
 
-1. **Clean working tree** — Run `git status`. If there are dirty files from a previous task, either commit them in a dedicated cleanup PR or discard them. Never leave uncommitted changes in the working tree. A clean working tree is a prerequisite for starting work.
-2. **Verify last PR** — Run `gh pr list --state merged --limit 1` and check its status. If the last PR failed CI or is still open, flag it to Nick before proceeding.
-3. **Act on lessons** — Check CLAUDE.md lessons buffer. If any lesson describes a code pattern to fix (e.g., "replace .select('*') with explicit columns"), the CURRENT session must include those fixes in its work — do not just record lessons and move on. Lessons that describe fixes are action items, not notes.
+### Phase A: Before Code
 
-## Automatic Pipeline — No Slash Commands Needed
+1. **Human prompts** — Describes what they want.
 
-When a user describes a feature or fix in plain English, ALWAYS run this full pipeline automatically:
+2. **Pre-flight checks** — Before doing anything else:
+   - Clean working tree: `git status --porcelain`. If dirty, commit or discard before proceeding.
+   - Main CI health: `gh run list --branch main --limit 1 --json conclusion`. If failed, warn the human.
+   - Last PR: verify previous PR isn't stuck or broken. If it is, flag it.
+   - Lessons buffer: check CLAUDE.md Lessons Learned. Address in the plan's ## Lessons Addressed section.
 
-1. **Plan** — Create `plans/{branch-slug}.md` using the make-plan skill template (approach, files, scope, STATUS: PENDING). Branch slug is the branch name with `/` replaced by `-` (e.g., `nick/fix-foo` → `plans/nick-fix-foo.md`). Present it to the user and wait for approval.
-2. **Review plan** — Spawn 9 sub-agents in parallel (security, data integrity, code reuse, coding standards, integration correctness, scope, pattern consistency, test coverage, silent failure detection). All 9 agents must approve. If any agent rejects, fix the concern and re-review. If you believe the rejection is wrong, explain the disagreement to Nick and let him decide. Never override a rejection.
-3. **Approve** — Set plan file STATUS: APPROVED (unlocks the require-plan hook)
-4. **Build** — Write code on a feature branch (nick/ or erin/ prefix)
-5. **Manager check** — Stop hook auto-runs typecheck + tests. Fix failures before proceeding.
-6. **Review code** — Spawn the same 9 sub-agents on the code diff. All 9 must approve. If any reject, fix the concern and re-review. If you believe the rejection is wrong, explain the disagreement to Nick and let him decide. Never override a rejection.
-7. **Ship** — Create PR with conventional commit title and what/why/how-to-test description. After creating the PR, include a direct link to the GitHub Actions CI run so Nick can monitor test progress. Use: `gh run list --limit 1 --json url --jq '.[0].url'` to get the link.
-8. **Lock plan** — Immediately after creating the PR, set plan file `STATUS: COMPLETED`. This prevents the stale approval from being reused as a free pass for the next task. The require-plan hook will block all code edits until a new plan is approved.
-9. **CI** — Lint, typecheck, Playwright E2E, gitleaks run automatically. CI is the merge gate.
-10. **Merge** — All CI green → auto-merge to main → deploys to Netlify.
-11. **Human tests** — Nick or Erin tests on phone after deploy. Catches feel, polish, and UX issues that become new tasks if something is off.
+3. **Pushback check** — Do I have concerns about what the human asked for? If yes → report and STOP. If no → continue.
 
-The user should NEVER need to type a slash command. Just describe what you want and the system handles everything.
+4. **Create feature branch** — `nick/short-description` or `erin/short-description`. No other prefixes.
 
-### Why STATUS: COMPLETED matters
-The require-plan hook blocks all code edits unless the branch plan file contains `STATUS: APPROVED`. If a completed plan is left with APPROVED, the next task can bypass the planning step entirely. Always reset to COMPLETED after shipping.
+5. **Plan creation** — Write `plans/{branch-slug}.md` using the template below.
 
-## Git Workflow
+6. **9-agent plan review** (local) — Spawn all 9 agents. Fix rejections, re-run until all 9 approve. Set `RESULT: PASS` in the plan.
 
-- Feature branches only: `nick/short-description` or `erin/short-description`
-- Never commit directly to main — all changes go through PRs
-- Never force push any branch
-- Conventional commit messages:
-  - `feat(scope): description` — new feature
-  - `fix(scope): description` — bug fix
-  - `refactor(scope): description` — code restructuring
-  - `docs(scope): description` — documentation
-  - `test(scope): description` — tests
-  - `chore(scope): description` — maintenance
+7. **Present to human** — Show the plan and results. Wait for the human to say "build it." Set `STATUS: CONFIRMED` only after explicit approval.
 
-## PR Descriptions
+### Phase B: Writing Code
 
-- **What** changed (1-3 bullet points)
-- **Why** (the user need or bug being fixed)
-- **How to test** (steps for Nick or Erin to verify on phone)
+8. **Build** — Write code on the feature branch. Hooks enforce: require-plan, block-on-pushback, block-archived, block-infra-edit (Write/Edit); block-dangerous, block-on-pushback, require-ci-pass (Bash).
 
-## Plan File Format
+9. **Mid-task pushback** (if needed) — If a concern surfaces during implementation, create `plans/PUSHBACK-{branch-slug}.md`. The hook locks ALL operations until the human resolves it.
 
-Plan files live in `plans/{branch-slug}.md` where the slug is the branch name with `/` replaced by `-`. Plan files are committed to feature branches so the GitHub Action code review can read them. They are preserved in squash merge history as documentation of what was planned.
+10. **9-agent code review** (local, advisory) — Spawn all 9 agents on the diff. Fix rejections. This is fast feedback — the authoritative review runs in GitHub Actions.
+
+### Phase C: Ship
+
+11. **Create PR** — Conventional commit title. Include what/why/how-to-test. Commit the plan file. Get CI run link AFTER the final push: `gh run list --limit 1 --json url --jq '.[0].url'`.
+
+12. **Lock the plan** — Set `STATUS: COMPLETED — PR #[number]`. This consumes the approval — require-plan blocks further edits until a new plan is confirmed.
+
+13. **Monitor CI** — Use `gh run watch` or poll with `gh run view`. Report all-pass or which jobs failed. Do not start new work until CI status is known.
+
+14. **External code review** (GitHub Action, hard gate) — Runs automatically. Independent 9-agent review. Must pass to merge. If rejected, read the PR comment, fix, push — Action re-runs.
+
+15. **CI** (hard gate) — Tests, lint, typecheck, E2E. Must pass to merge.
+
+16. **Merge** — Auto-merge proceeds when both external review and CI pass.
+
+17. **Deploy monitoring** — After merge, confirm Netlify deploy succeeds. A merge that doesn't deploy is not done.
+
+## Plan File Template
+
+Plan files live in `plans/{branch-slug}.md` (slug = branch name with `/` → `-`). Committed to branches so the GitHub Action can read them.
 
 ```
 # Plan: [Feature Name]
 
 ## TYPE
-[FEATURE | REDESIGN | PIPELINE-INFRA — defaults to FEATURE if omitted]
+[FEATURE | REDESIGN | PIPELINE-INFRA]
 
 ## Task
-[Plain English description from Nick or Erin]
+[What and why — plain English from the human]
 
 ## Approach
-[How to build it]
+[How to build it — step by step]
 
 ## Files to Change
 - path/to/file.tsx — what changes
@@ -71,39 +71,68 @@ Plan files live in `plans/{branch-slug}.md` where the slug is the branch name wi
 - path/to/new-file.tsx — what it does (skip if none)
 
 ## Files to Delete
-- path/to/old-file.tsx — replaced by [new file] (REDESIGN only; skip for FEATURE)
+- path/to/old-file.tsx — reason (REDESIGN only; skip for FEATURE)
 
 ## Scope
-[small / medium / large]
+[small | medium | large]
 
 ## Pushback
-[None — proceeding as specified.] OR [Specific concern, what needs to be decided, and a recommendation. If pushback exists, STOP and wait for human response before setting STATUS: APPROVED.]
+[Before planning, did you identify any concerns, risks, or improvements?]
+[Write "None — proceeding as specified." if no concerns.]
+[If concerns: describe, recommend alternative, state what the human needs to decide. Then STOP.]
 
 ## Lessons Addressed
-[List which lessons from CLAUDE.md apply to this task and how they'll be handled. Write "None applicable" if no lessons apply.]
+[Which lessons from CLAUDE.md apply? How are they handled?]
+[Write "None applicable to this task." if none apply.]
 
-## STATUS: PENDING
+## 9-AGENT PLAN REVIEW: Have all 9 review agents reviewed and approved this plan?
+RESULT: [PENDING | PASS | FAIL]
+
+## PUSHBACK RESOLVED: If pushback was declared above, has the human acknowledged it?
+[N/A — no pushback declared.]
+[ACKNOWLEDGED — set only after explicit human confirmation.]
+
+## HUMAN APPROVAL: Has the human reviewed this plan and confirmed "build it"?
+STATUS: [AWAITING | CONFIRMED | COMPLETED — PR #[number]]
+
+## COUNCIL CODE REVIEW (local, advisory): Have all 9 agents reviewed the code diff?
+RESULT: [PENDING | PASS | FAIL]
 ```
+
+## Variable Reset Rules
+
+1. **After PR created:** HUMAN APPROVAL advances to `COMPLETED — PR #[number]`. The hook only allows code edits when status is `CONFIRMED`, not `COMPLETED`.
+2. **After pushback resolved + plan revised:** 9-AGENT PLAN REVIEW resets to `PENDING`. HUMAN APPROVAL resets to `AWAITING`.
+3. **New task = new branch = new plan file.** Nothing carries over between branches.
+
+## Branch Naming
+
+Feature branches must use `nick/short-description` or `erin/short-description`. The require-plan hook blocks code edits on branches without the `nick/` or `erin/` prefix.
+
+## Git Conventions
+
+- Never commit directly to main — all changes go through PRs
+- Never force push any branch
+- Conventional commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`
+
+## PR Descriptions
+
+- **What** changed (1-3 bullet points)
+- **Why** (the user need or bug being fixed)
+- **How to test** (steps to verify on phone)
 
 ## REDESIGN PRs
 
-REDESIGN plans are for cleanup, consolidation, and replacement work where the primary intent is removing or restructuring existing code.
+- TYPE: REDESIGN for replacing, consolidating, or removing existing code
+- Unlocks "Files to Delete" section — every deletion needs a reason
+- Agents 3, 6, 8 apply conditional REDESIGN rules
+- REDESIGN PRs deleting 10+ files should be split
 
-- TYPE: REDESIGN unlocks the "Files to Delete" section and tells review agents to expect deliberate deletions
-- Every file in "Files to Delete" must include a one-line reason
-- Review agents 3, 6, and 8 apply conditional REDESIGN rules (see review-plan skill)
-- REDESIGN PRs deleting 10+ files should be split into smaller PRs
-- Plan line limit is 60 lines for REDESIGN (vs. 40 for FEATURE) to accommodate deletion lists
-- Use FEATURE (the default) for all new functionality, even if it touches existing files
+## E2E Testing
 
-## E2E Testing Requirement
-
-Every feature PR that adds or changes user-facing screens or interactions must include Playwright smoke tests covering the acceptance criteria. The Testing Agent (Agent 8) will reject PRs with missing or insufficient test coverage. Infrastructure-only changes (config, CI, docs) are exempt.
-
-Tests live in `apps/thriving-mobile/e2e/` and verify user-facing behavior: navigate to a page, see expected content, tap buttons, type in inputs. Do not test implementation details.
+Feature PRs with user-facing changes must include Playwright tests. Infrastructure-only changes are exempt. Tests live in `apps/thriving-mobile/e2e/`.
 
 ## Learning from Corrections
 
-- When Nick or Erin corrects something, append a dated one-liner to the Lessons Learned section in CLAUDE.md
-- Example: `- 2026-03-17: Use Zustand selectors, not full store subscriptions`
-- Lessons that repeat 3+ times get promoted to permanent rules in .claude/rules/
+- Append dated one-liners to CLAUDE.md Lessons Learned
+- Lessons that repeat 3x get promoted to permanent rules in .claude/rules/
