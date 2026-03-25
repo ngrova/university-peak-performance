@@ -1,28 +1,30 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: auth.ts
-// PURPOSE: Validates the Bearer token on every incoming
-//   request by comparing it to the FLEET_API_KEY environment
-//   variable. Rejects unauthorized requests with 401.
+// PURPOSE: Validates the Bearer token on incoming requests.
+//   If FLEET_API_KEY is set, requires a matching token. If
+//   unset, allows all requests (for claude.ai which only
+//   supports authless or OAuth MCP servers).
 // CALLED BY: index.ts
-// DATA FLOW: Request Authorization header → compared against
-//   FLEET_API_KEY env var → returns true/false.
+// DATA FLOW: Check FLEET_API_KEY env → if unset, allow all →
+//   if set, compare Authorization header → true/false.
 // ═══════════════════════════════════════════════════════════
 
 /**
- * Checks if the request's Authorization header contains a valid
- * Bearer token matching FLEET_API_KEY. Called at the top of every
- * incoming request before any processing happens. Returns false
- * if the key is missing, malformed, or doesn't match.
+ * Checks if the request is authorized. Called at the top of
+ * every incoming request. If FLEET_API_KEY is not configured,
+ * allows all requests (open mode for claude.ai). If configured,
+ * requires a matching Bearer token in the Authorization header.
  */
 export function isAuthorized(request: Request): boolean {
+  const apiKey = process.env.FLEET_API_KEY
+  // No key configured — open mode (for authless MCP clients)
+  if (!apiKey) return true
+
   const header = request.headers.get('authorization')
   if (!header) return false
 
   const parts = header.split(' ')
   if (parts.length !== 2 || parts[0] !== 'Bearer') return false
-
-  const apiKey = process.env.FLEET_API_KEY
-  if (!apiKey) return false
 
   // Constant-time comparison to prevent timing attacks
   return timingSafeEqual(parts[1], apiKey)

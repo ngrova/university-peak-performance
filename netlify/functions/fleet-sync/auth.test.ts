@@ -35,12 +35,9 @@ describe('isAuthorized', () => {
     expect(isAuthorized(req)).toBe(true)
   })
 
-  it('rejects when FLEET_API_KEY env is missing', () => {
+  it('allows all requests when FLEET_API_KEY is not set (open mode)', () => {
     vi.stubEnv('FLEET_API_KEY', '')
-    const req = new Request('http://localhost', {
-      method: 'POST',
-      headers: { Authorization: 'Bearer test-secret-key' },
-    })
-    expect(isAuthorized(req)).toBe(false)
+    const req = new Request('http://localhost', { method: 'POST' })
+    expect(isAuthorized(req)).toBe(true)
   })
 })
