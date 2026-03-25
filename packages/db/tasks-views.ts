@@ -18,11 +18,9 @@ export interface TaskWithContext extends Task {
   } | null
 }
 
-// NOTE: The * on tasks is required for Supabase's TypeScript inference on
-// join queries. Replacing with explicit columns breaks type narrowing and
-// returns Record<string, any>. The TaskWithContext interface constrains
-// which columns are actually consumed by the application.
-const CONTEXT_SELECT = `*, goals(title, pillar_id, priority_rank, life_pillars(id, name, color, icon))`
+// Explicit task columns + goal/pillar join for context display
+const TASK_COLUMNS = 'id, user_id, goal_id, parent_task_id, title, notes, due_date, priority, status, is_one_thing, sort_order, assignee, failure_cost, created_at, completed_at, updated_at'
+const CONTEXT_SELECT = `${TASK_COLUMNS}, goals(title, pillar_id, priority_rank, life_pillars(id, name, color, icon))`
 
 const FAILURE_COST_ORDER: Record<string, number> = {
   critical: 0,
@@ -82,6 +80,7 @@ export async function getOneThingTask(
     .select(CONTEXT_SELECT)
     .eq('user_id', userId)
     .neq('status', 'done')
+    .limit(200)
   if (error) throw error
   const tasks: TaskWithContext[] = data ?? []
   const pinned = tasks.find((t) => t.is_one_thing)
@@ -104,6 +103,7 @@ export async function getTasksWithDeadlines(
     .neq('status', 'done')
     .not('due_date', 'is', null)
     .order('due_date', { ascending: true })
+    .limit(200)
   if (error) throw error
   return data ?? []
 }
@@ -121,7 +121,7 @@ export async function getTasksForQueue(
   if (assignee) {
     query = query.eq('assignee', assignee)
   }
-  const { data, error } = await query
+  const { data, error } = await query.limit(200)
   if (error) throw error
   return (data ?? []).sort(sortByCost)
 }
