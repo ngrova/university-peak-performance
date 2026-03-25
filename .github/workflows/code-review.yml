@@ -59,7 +59,7 @@ jobs:
             try {
               const raw = fs.readFileSync('/tmp/review-results.json', 'utf8');
               const results = JSON.parse(raw);
-              const icon = (v) => v === 'APPROVED' ? '✅' : v === 'WARN' ? '⚠️' : '❌';
+              const icon = (v) => v === 'APPROVED' ? '✅' : v === 'EXEMPT' ? '🔘' : v === 'WARN' ? '⚠️' : '❌';
               const rows = results.results.map((r, i) =>
                 `| ${i+1} | ${r.name} | ${icon(r.verdict)} ${r.verdict} | ${(r.reason || '').substring(0, 200).replace(/\n/g, ' ')} |`
               ).join('\n');
