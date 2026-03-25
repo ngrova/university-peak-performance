@@ -89,7 +89,7 @@ export async function getOneThingTask(
     .neq('status', 'done')
     .limit(200)
   if (error) throw error
-  const tasks = (data ?? []) as TaskWithContext[]
+  const tasks = (data ?? []) as unknown as TaskWithContext[]
   const pinned = tasks.find((t) => t.is_one_thing)
   if (pinned) return pinned
   const active = tasks.filter(
@@ -112,7 +112,7 @@ export async function getTasksWithDeadlines(
     .order('due_date', { ascending: true })
     .limit(200)
   if (error) throw error
-  return (data ?? []) as TaskWithContext[]
+  return (data ?? []) as unknown as TaskWithContext[]
 }
 
 export async function getTasksForQueue(
@@ -130,7 +130,7 @@ export async function getTasksForQueue(
   }
   const { data, error } = await query.limit(200)
   if (error) throw error
-  return ((data ?? []) as TaskWithContext[]).sort(sortByCost)
+  return ((data ?? []) as unknown as TaskWithContext[]).sort(sortByCost)
 }
 
 /** Fetches tasks for a goal with goal/pillar context for display */
@@ -145,7 +145,7 @@ export async function getTasksByGoalWithContext(
     .order('sort_order', { ascending: true })
     .limit(50)
   if (error) throw error
-  return (data ?? []) as TaskWithContext[]
+  return (data ?? []) as unknown as TaskWithContext[]
 }
 
 export { FAILURE_COST_ORDER }
