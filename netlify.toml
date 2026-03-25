@@ -11,5 +11,13 @@
 [functions."fleet-sync"]
   node_bundler = "esbuild"
 
+# Route fleet-sync requests to our function before the Next.js
+# plugin's catch-all rewrite intercepts them
+[[redirects]]
+  from = "/.netlify/functions/fleet-sync"
+  to = "/.netlify/functions/fleet-sync"
+  status = 200
+  force = true
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
