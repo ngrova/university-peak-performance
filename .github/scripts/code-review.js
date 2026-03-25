@@ -34,6 +34,20 @@ function loadAgents() {
   }));
 }
 
+const RETRY_STATUSES = [429, 529];
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 30000;
+
+// Wraps fetch with retry on 429/529 — waits 30s between attempts
+async function fetchWithRetry(url, options) {
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const res = await fetch(url, options);
+    if (!RETRY_STATUSES.includes(res.status) || attempt === MAX_RETRIES) return res;
+    console.error(`API returned ${res.status}, retrying in 30s (attempt ${attempt}/${MAX_RETRIES})...`);
+    await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+  }
+}
+
 // Calls the Anthropic API for a single agent review
 async function reviewAgent(agent, diff, plan) {
   const body = JSON.stringify({
@@ -42,7 +56,7 @@ async function reviewAgent(agent, diff, plan) {
     messages: [{ role: "user", content: `${agent.prompt}\n\nPLAN:\n${plan}\n\nCODE DIFF:\n${diff}` }],
   });
 
-  const res = await fetch(API_URL, {
+  const res = await fetchWithRetry(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-api-key": API_KEY, "anthropic-version": "2023-06-01" },
     body,
@@ -55,11 +69,12 @@ async function reviewAgent(agent, diff, plan) {
 
   const data = await res.json();
   const text = (data.content && data.content[0] && data.content[0].text) || "";
-  // Parse verdict from first line only — agents are instructed to put it there
+  // Parse verdict from first line — EXEMPT is a distinct passing verdict
   const firstLine = text.split("\n")[0] || "";
   const verdict = /REJECTED/i.test(firstLine) ? "REJECTED"
     : /WARN/i.test(firstLine) ? "WARN"
-    : /APPROVED|EXEMPT/i.test(firstLine) ? "APPROVED"
+    : /EXEMPT/i.test(firstLine) ? "EXEMPT"
+    : /APPROVED/i.test(firstLine) ? "APPROVED"
     : "REJECTED";
   return { name: agent.name, verdict, reason: text.slice(0, 500) };
 }
@@ -85,7 +100,8 @@ async function main() {
   }
 
   const results = await runSequentially(agents, diff, plan);
-  const approved = results.every((r) => r.verdict === "APPROVED" || r.verdict === "WARN");
+  const PASS_VERDICTS = ["APPROVED", "WARN", "EXEMPT"];
+  const approved = results.every((r) => PASS_VERDICTS.includes(r.verdict));
 
   process.stdout.write(JSON.stringify({ approved, results }));
   process.exit(approved ? 0 : 1);
