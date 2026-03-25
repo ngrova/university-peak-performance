@@ -52,7 +52,7 @@ export function useCaptureForm() {
     // Upload media before clearing — must complete before navigation kills it
     if (result.taskId) await uploadMedia(result.taskId, voiceNotes, photos, transcripts);
     setSaving(false);
-    setTitle(''); setPriority(null); setDeadline(''); setAssignee(null); setNotes('');
+    setTitle(''); setGoalId(''); setPriority(null); setDeadline(''); setAssignee(null); setNotes('');
     clearMedia();
     qc.invalidateQueries({ queryKey: ['one-thing'] });
     qc.invalidateQueries({ queryKey: ['queue'] });

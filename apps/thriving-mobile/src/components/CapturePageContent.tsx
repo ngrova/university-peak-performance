@@ -13,7 +13,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { Goal } from '@upp/db';
-import GoalPicker from './GoalPicker';
+import GoalPicker, { type GoalPickerHandle } from './GoalPicker';
 import InlineGoalCreate from './InlineGoalCreate';
 import PriorityChips from './PriorityChips';
 import DeadlineChip from './DeadlineChip';
@@ -35,7 +35,7 @@ export default function CapturePageContent(): React.JSX.Element {
   const f = useCaptureForm();
   const goalsRef = useRef<Goal[]>([]);
   const [showToast, setShowToast] = useState(false);
-  const goalPickerRef = useRef<{ reload: () => void }>(null);
+  const goalPickerRef = useRef<GoalPickerHandle>(null);
 
   const ai = useAISuggestion(goalsRef.current, f);
 
@@ -71,7 +71,7 @@ export default function CapturePageContent(): React.JSX.Element {
           onCancel={() => ai.setShowInlineCreate(false)} />
       )}
       <div className="mb-3">
-        <GoalPicker value={f.goalId} onChange={f.setGoalId}
+        <GoalPicker ref={goalPickerRef} value={f.goalId} onChange={f.setGoalId}
           onGoalsLoaded={(g) => { goalsRef.current = g; }}
           onNewGoal={() => ai.setShowInlineCreate(true)} />
       </div>
