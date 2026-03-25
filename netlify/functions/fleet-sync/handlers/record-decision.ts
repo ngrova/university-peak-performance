@@ -34,13 +34,14 @@ interface RecordDecisionArgs {
 export async function handleRecordDecision(args: RecordDecisionArgs) {
   const db = getFleetClient()
 
-  // Idempotency check
+  // Idempotency check — maybeSingle returns null (not error) when no row
   if (args.idempotency_key) {
-    const { data: existing } = await db
+    const { data: existing, error: dupErr } = await db
       .from('fleet_decisions')
       .select('id')
       .eq('idempotency_key', args.idempotency_key)
-      .single()
+      .maybeSingle()
+    if (dupErr) throw new Error(`Idempotency check failed — ${dupErr.message}`)
     if (existing) {
       return withMeta({ decision_id: existing.id, status: 'duplicate_ignored' })
     }
@@ -69,12 +70,14 @@ export async function handleRecordDecision(args: RecordDecisionArgs) {
 
   // Check for domain conflicts (advisory, not blocking)
   let domainConflictWarning: string | null = null
-  const { data: existing } = await db
+  const { data: existing, error: conflictErr } = await db
     .from('fleet_decisions')
     .select('id, decision')
     .eq('domain', args.domain)
     .eq('status', 'active')
+    .order('created_at', { ascending: false })
     .limit(5)
+  if (conflictErr) throw new Error(`Conflict check failed — ${conflictErr.message}`)
 
   const conflicts = (existing ?? []).filter((d) => d.id !== args.supersedes)
   if (conflicts.length > 0) {
@@ -103,10 +106,11 @@ export async function handleRecordDecision(args: RecordDecisionArgs) {
 
   // Mark old decision as superseded
   if (supersededId) {
-    await db
+    const { error: superErr } = await db
       .from('fleet_decisions')
       .update({ status: 'superseded', superseded_by: data.id })
       .eq('id', supersededId)
+    if (superErr) throw new Error(`Failed to mark superseded — ${superErr.message}`)
   }
 
   return withMeta({

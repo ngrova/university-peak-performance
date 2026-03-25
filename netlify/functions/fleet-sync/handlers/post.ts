@@ -41,14 +41,15 @@ interface PostArgs {
 export async function handlePost(args: PostArgs) {
   const db = getFleetClient()
 
-  // Idempotency check
+  // Idempotency check — maybeSingle returns null (not error) when no row
   if (args.idempotency_key) {
-    const { data: existing } = await db
+    const { data: existing, error: dupErr } = await db
       .from('fleet_messages')
       .select('id, thread_id')
       .eq('idempotency_key', args.idempotency_key)
-      .single()
+      .maybeSingle()
 
+    if (dupErr) throw new Error(`Idempotency check failed — ${dupErr.message}`)
     if (existing) {
       return withMeta({
         post_id: existing.id,
@@ -96,10 +97,11 @@ export async function handlePost(args: PostArgs) {
   if (error) throw new Error(`Failed to post message — ${error.message}`)
 
   // Update agent's last_synced_at
-  await db
+  const { error: syncErr } = await db
     .from('fleet_agents')
     .update({ last_synced_at: new Date().toISOString() })
     .eq('agent_id', args.agent_id)
+  if (syncErr) throw new Error(`Failed to update sync time — ${syncErr.message}`)
 
   return withMeta({
     post_id: data.id,

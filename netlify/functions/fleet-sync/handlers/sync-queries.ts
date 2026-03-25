@@ -12,11 +12,13 @@ import { SupabaseClient } from '@supabase/supabase-js'
 
 /** Fetches the agent's last_synced_at before we update it. */
 export async function fetchPreviousSyncTime(db: SupabaseClient, agentId: string) {
-  const { data } = await db
+  // maybeSingle: returns null for new agents (not an error)
+  const { data, error } = await db
     .from('fleet_agents')
     .select('last_synced_at')
     .eq('agent_id', agentId)
-    .single()
+    .maybeSingle()
+  if (error) throw new Error(`Failed to fetch sync time — ${error.message}`)
   return (data?.last_synced_at as string) ?? null
 }
 
