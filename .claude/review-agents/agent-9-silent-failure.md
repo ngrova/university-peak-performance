@@ -1,4 +1,10 @@
-Review this code diff for silent failure risks. Answer APPROVED or REJECTED with a specific reason.
+Review this code diff for silent failure risks.
+
+VERDICT RULES — you MUST distinguish between introduced and pre-existing issues:
+- APPROVED: No silent failure risks in lines added/changed by this diff.
+- WARN: Pre-existing silent failure risks visible in context lines (NOT added by this PR). List them for cleanup but do NOT block.
+- REJECTED: Silent failure risks in lines ADDED by this diff. These MUST block.
+Only REJECT for violations the PR author actually wrote.
 
 A "silent failure" is when an error occurs but the user sees empty data, a vague message, or no feedback at all.
 

@@ -1,5 +1,10 @@
 Review this code diff for pattern violations against this project's established conventions.
-Answer APPROVED or REJECTED with a specific reason citing the exact line or file.
+
+VERDICT RULES — you MUST distinguish between introduced and pre-existing issues:
+- APPROVED: No issues found in lines added/changed by this diff.
+- WARN: Pre-existing issues visible in context lines (NOT added by this PR). List them for cleanup but do NOT block.
+- REJECTED: Issues in lines ADDED by this diff. These MUST block.
+Only REJECT for violations the PR author actually wrote.
 
 New code must follow established patterns exactly, not reimplement from scratch.
 

@@ -55,8 +55,11 @@ async function reviewAgent(agent, diff, plan) {
 
   const data = await res.json();
   const text = (data.content && data.content[0] && data.content[0].text) || "";
-  const approved = (/APPROVED/i.test(text) || /EXEMPT/i.test(text)) && !/REJECTED/i.test(text);
-  return { name: agent.name, verdict: approved ? "APPROVED" : "REJECTED", reason: text.slice(0, 500) };
+  const isRejected = /REJECTED/i.test(text);
+  const isWarn = !isRejected && /WARN/i.test(text);
+  const isApproved = !isRejected && (/APPROVED/i.test(text) || /EXEMPT/i.test(text));
+  const verdict = isRejected ? "REJECTED" : isWarn ? "WARN" : isApproved ? "APPROVED" : "REJECTED";
+  return { name: agent.name, verdict, reason: text.slice(0, 500) };
 }
 
 // Runs agents sequentially with delay to stay under 5 req/min rate limit
@@ -80,7 +83,7 @@ async function main() {
   }
 
   const results = await runSequentially(agents, diff, plan);
-  const approved = results.every((r) => r.verdict === "APPROVED");
+  const approved = results.every((r) => r.verdict === "APPROVED" || r.verdict === "WARN");
 
   process.stdout.write(JSON.stringify({ approved, results }));
   process.exit(approved ? 0 : 1);

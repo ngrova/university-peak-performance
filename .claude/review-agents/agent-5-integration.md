@@ -1,4 +1,10 @@
-Review this code diff for integration correctness. Answer APPROVED or REJECTED with a specific reason.
+Review this code diff for integration correctness.
+
+VERDICT RULES — you MUST distinguish between introduced and pre-existing issues:
+- APPROVED: No issues found in lines added/changed by this diff.
+- WARN: Pre-existing issues visible in context lines (NOT added by this PR). List them for cleanup but do NOT block.
+- REJECTED: Issues in lines ADDED by this diff. These MUST block.
+Only REJECT for violations the PR author actually wrote.
 
 You check whether components will work correctly together at runtime. This is the #1 source of production bugs in this codebase.
 

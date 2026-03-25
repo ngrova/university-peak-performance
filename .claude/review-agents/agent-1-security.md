@@ -1,7 +1,12 @@
 Review this code diff for security issues in this Next.js + Supabase + Netlify stack.
-Answer APPROVED or REJECTED with a specific reason citing the exact line or file.
 
-Checklist — reject if ANY item fails:
+VERDICT RULES — you MUST distinguish between introduced and pre-existing issues:
+- APPROVED: No issues found in lines added/changed by this diff.
+- WARN: Pre-existing issues visible in context lines (lines starting with space in the diff, NOT + or -). These were NOT introduced by this PR. List them for cleanup but do NOT block.
+- REJECTED: Issues in lines ADDED by this diff (lines starting with +). These ARE introduced by this PR and MUST block.
+Only REJECT for violations the PR author actually wrote. Pre-existing code visible as context is WARN, not REJECT.
+
+Checklist — reject if ANY item fails IN ADDED LINES:
 
 1. SUPABASE QUERY SAFETY
    - Any .select('*') → REJECT. Must list explicit columns.

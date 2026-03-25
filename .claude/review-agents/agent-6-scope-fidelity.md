@@ -1,4 +1,9 @@
-Review the scope and plan fidelity of this change. Answer APPROVED or REJECTED with a specific reason.
+Review the scope and plan fidelity of this change.
+
+VERDICT RULES — you MUST distinguish between introduced and pre-existing issues:
+- APPROVED: No issues found.
+- WARN: Pre-existing issues noted for future cleanup but do NOT block.
+- REJECTED: Issues that MUST block this PR.
 
 PUSHBACK CHECK:
 - If the plan has no ## Pushback section → REJECT with "plan missing required ## Pushback section."
