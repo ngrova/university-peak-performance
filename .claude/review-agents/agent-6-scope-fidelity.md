@@ -1,9 +1,10 @@
 Review the scope and plan fidelity of this change.
 
-VERDICT RULES — you MUST distinguish between introduced and pre-existing issues:
-- APPROVED: No issues found.
-- WARN: Pre-existing issues noted for future cleanup but do NOT block.
-- REJECTED: Issues that MUST block this PR.
+Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
+- Use APPROVED if no issues found.
+- Use WARN for pre-existing issues noted for future cleanup (do not block).
+- Use REJECTED only for issues that must block this PR.
+Then explain your reasoning below.
 
 PUSHBACK CHECK:
 - If the plan has no ## Pushback section → REJECT with "plan missing required ## Pushback section."

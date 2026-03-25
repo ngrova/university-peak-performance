@@ -55,10 +55,12 @@ async function reviewAgent(agent, diff, plan) {
 
   const data = await res.json();
   const text = (data.content && data.content[0] && data.content[0].text) || "";
-  const isRejected = /REJECTED/i.test(text);
-  const isWarn = !isRejected && /WARN/i.test(text);
-  const isApproved = !isRejected && (/APPROVED/i.test(text) || /EXEMPT/i.test(text));
-  const verdict = isRejected ? "REJECTED" : isWarn ? "WARN" : isApproved ? "APPROVED" : "REJECTED";
+  // Parse verdict from first line only — agents are instructed to put it there
+  const firstLine = text.split("\n")[0] || "";
+  const verdict = /REJECTED/i.test(firstLine) ? "REJECTED"
+    : /WARN/i.test(firstLine) ? "WARN"
+    : /APPROVED|EXEMPT/i.test(firstLine) ? "APPROVED"
+    : "REJECTED";
   return { name: agent.name, verdict, reason: text.slice(0, 500) };
 }
 

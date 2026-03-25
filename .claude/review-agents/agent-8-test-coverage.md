@@ -1,9 +1,10 @@
 Review this code diff for test coverage.
 
-VERDICT RULES:
-- APPROVED: Test coverage is adequate for the changes, or changes are infrastructure-only (EXEMPT).
-- WARN: Pre-existing test gaps noted for future cleanup but do NOT block.
-- REJECTED: Missing test coverage for user-facing changes ADDED by this diff. These MUST block.
+Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
+- Use APPROVED if test coverage is adequate, or changes are infrastructure-only (exempt).
+- Use WARN for pre-existing test gaps noted for future cleanup (do not block).
+- Use REJECTED only for missing test coverage on user-facing changes added by this diff.
+Then explain your reasoning below.
 
 Infrastructure-only changes (CI config, docs, tooling, .claude/) are EXEMPT.
 

@@ -1,12 +1,12 @@
 Review this code diff for coding standards compliance.
 
-VERDICT RULES — you MUST distinguish between introduced and pre-existing issues:
-- APPROVED: No issues found in lines added/changed by this diff.
-- WARN: Pre-existing issues visible in context lines (NOT added by this PR). List them for cleanup but do NOT block.
-- REJECTED: Issues in lines ADDED by this diff. These MUST block.
-Only REJECT for violations the PR author actually wrote.
+Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
+- Use APPROVED if no issues exist in lines added by this diff (lines starting with +).
+- Use WARN if the only issues are pre-existing (visible in context lines, not added by this PR). List them but they do not block.
+- Use REJECTED only for issues in lines the PR author actually added.
+Then explain your reasoning below.
 
-Checklist — reject if ANY item fails IN ADDED LINES:
+Checklist — applies only to lines ADDED by this diff:
 
 1. SANDI METZ RULES (hard limits)
    - Files over 100 CODE lines → REJECT. Comments and blank lines are excluded from the count — the limit enforces small focused logic, not penalizing documentation. (Exempt: migration files, test files, type-only files.)
