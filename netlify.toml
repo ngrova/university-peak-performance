@@ -8,5 +8,9 @@
   NODE_VERSION = "20"
   NEXT_TELEMETRY_DISABLED = "1"
 
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["node_modules/.pnpm/**"]
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
