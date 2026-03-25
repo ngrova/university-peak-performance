@@ -69,7 +69,7 @@ async function runSequentially(agents, diff, plan) {
   const results = [];
   for (let i = 0; i < agents.length; i++) {
     results.push(await reviewAgent(agents[i], diff, plan));
-    if (i < agents.length - 1) await new Promise((r) => setTimeout(r, 13000));
+    if (i < agents.length - 1) await new Promise((r) => setTimeout(r, 45000));
   }
   return results;
 }
