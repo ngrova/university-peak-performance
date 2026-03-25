@@ -10,6 +10,16 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/mcp',
+          destination: '/.netlify/functions/fleet-sync',
+        },
+      ],
+    };
+  },
 };
 
 export default nextConfig;
