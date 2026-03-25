@@ -9,10 +9,10 @@
 // ═══════════════════════════════════════════════════════════
 
 import { SupabaseClient } from '@supabase/supabase-js'
-import { getFleetClient } from '../db'
-import { withMeta } from '../meta'
-import { fetchPreviousSyncTime, upsertAgent, bumpSessionCount } from './sync-queries'
-import { fetchRecentMessages, fetchOpenItems, fetchUnackedDecisions } from './sync-briefing'
+import { getFleetClient } from '../db.ts'
+import { withMeta } from '../meta.ts'
+import { fetchPreviousSyncTime, upsertAgent, bumpSessionCount } from './sync-queries.ts'
+import { fetchRecentMessages, fetchOpenItems, fetchUnackedDecisions } from './sync-briefing.ts'
 
 interface SyncArgs {
   agent_id: string

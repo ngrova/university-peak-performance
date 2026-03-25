@@ -8,9 +8,9 @@
 //   not already resolved → update resolution fields → return.
 // ═══════════════════════════════════════════════════════════
 
-import { getFleetClient } from '../db'
-import { withMeta } from '../meta'
-import { requireString, checkEnum } from '../validation'
+import { getFleetClient } from '../db.ts'
+import { withMeta } from '../meta.ts'
+import { requireString, checkEnum } from '../validation.ts'
 
 const VALID_STATUSES = ['accepted', 'rejected', 'discussed'] as const
 
