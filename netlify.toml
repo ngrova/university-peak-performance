@@ -8,7 +8,7 @@
   NODE_VERSION = "20"
   NEXT_TELEMETRY_DISABLED = "1"
 
-[functions]
+[functions."fleet-sync"]
   node_bundler = "esbuild"
   included_files = ["node_modules/.pnpm/**"]
 
