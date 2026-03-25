@@ -34,7 +34,7 @@ Checklist — reject if ANY item fails:
    - Every .ts and .tsx file in apps/ must have a header block with FILE, PURPOSE, CALLED BY, and DATA FLOW.
    - PURPOSE must be understandable by a non-technical person.
    - CALLED BY must list actual files that import this module — not generic descriptions.
-   - Missing header on any new or modified file → REJECT.
-   - Exempt: config files, migrations, package.json, generated files.
+   - Missing header on any new or modified .ts/.tsx file in apps/ → REJECT.
+   - Exempt: config files, migrations, package.json, generated files, .md files, plan files, .claude/ files, .github/ files, packages/ files.
 
 If all checks pass, answer APPROVED.
