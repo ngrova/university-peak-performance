@@ -34,6 +34,43 @@ test.describe('Phase 1 — Capture + Complete', () => {
     await expect(page.locator(`text=${taskName}`)).toBeVisible({ timeout: 10_000 });
   });
 
+  test('capture: inline goal creation → goal appears in picker → task saves', async ({ page }) => {
+    await page.goto('/today');
+    await page.waitForLoadState('networkidle');
+    const goalName = `E2E Goal ${Date.now()}`;
+    const taskName = `E2E InlineGoal ${Date.now()}`;
+
+    // Navigate to capture page
+    await page.locator('a[aria-label="Capture"]').click();
+    await page.waitForURL('/capture');
+    await expect(page.locator('select[aria-label="Goal"]')).toBeVisible({ timeout: 5_000 });
+
+    // Tap + New goal
+    await page.locator('button:has-text("New goal")').click();
+    const nameInput = page.locator('input[placeholder="Goal name"]');
+    await expect(nameInput).toBeVisible({ timeout: 3_000 });
+
+    // Fill goal name and pick first pillar
+    await nameInput.fill(goalName);
+    const pillarChip = page.locator('button').filter({ hasText: /^.+ \w+/ }).first();
+    await pillarChip.click();
+
+    // Create the goal
+    await page.locator('button:has-text("Create")').click();
+
+    // Verify new goal appears in the picker dropdown
+    const goalSelect = page.locator('select[aria-label="Goal"]');
+    await expect(goalSelect.locator(`option:has-text("${goalName}")`)).toBeVisible({ timeout: 5_000 });
+
+    // Fill title and save task under the new goal
+    await page.locator('input[placeholder="What needs to be done?"]').fill(taskName);
+    await page.locator('button:has-text("Add task")').click();
+    await expect(page.locator('input[placeholder="What needs to be done?"]')).toHaveValue('', { timeout: 5_000 });
+
+    // Verify goal picker reset to "No goal" after submission
+    await expect(goalSelect).toHaveValue('', { timeout: 3_000 });
+  });
+
   test('complete: swipe right on task → disappears from queue', async ({ page }) => {
     await page.goto('/today');
     await page.waitForLoadState('networkidle');

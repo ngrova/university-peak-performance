@@ -10,7 +10,7 @@
 // ═══════════════════════════════════════════════════════════
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useState } from 'react';
 import type { Goal, LifePillar } from '@upp/db';
 import { fetchGoalsForPicker } from '@/actions/goal-actions';
 
@@ -21,6 +21,9 @@ interface GoalPickerProps {
   onNewGoal?: () => void;
 }
 
+/** Handle type for imperative reload calls from parent */
+export interface GoalPickerHandle { reload: () => void }
+
 /**
  * Triggered by: CapturePageContent or TaskDetailSheet renders this.
  * Steps: loads pillars + goals, renders a <select> with "No goal"
@@ -28,7 +31,7 @@ interface GoalPickerProps {
  *   "+ New Goal" button below when onNewGoal is provided.
  * Returns: the goal picker dropdown + optional new goal button.
  */
-export default function GoalPicker({ value, onChange, onGoalsLoaded, onNewGoal }: GoalPickerProps): React.JSX.Element {
+const GoalPicker = React.forwardRef<GoalPickerHandle, GoalPickerProps>(function GoalPicker({ value, onChange, onGoalsLoaded, onNewGoal }, ref) {
   const [pillars, setPillars] = useState<LifePillar[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
 
@@ -40,6 +43,8 @@ export default function GoalPicker({ value, onChange, onGoalsLoaded, onNewGoal }
       onGoalsLoaded?.(g);
     });
   }
+
+  useImperativeHandle(ref, () => ({ reload }));
 
   useEffect(() => { reload(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -66,6 +71,7 @@ export default function GoalPicker({ value, onChange, onGoalsLoaded, onNewGoal }
       )}
     </div>
   );
-}
+});
 
+export default GoalPicker;
 export { type GoalPickerProps };
