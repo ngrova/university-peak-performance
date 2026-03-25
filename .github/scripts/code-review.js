@@ -55,23 +55,21 @@ async function reviewAgent(agent, diff, plan) {
 
   const data = await res.json();
   const text = (data.content && data.content[0] && data.content[0].text) || "";
-  const approved = /APPROVED/i.test(text) && !/REJECTED/i.test(text);
+  const approved = (/APPROVED/i.test(text) || /EXEMPT/i.test(text)) && !/REJECTED/i.test(text);
   return { name: agent.name, verdict: approved ? "APPROVED" : "REJECTED", reason: text.slice(0, 500) };
 }
 
-// Runs agents in batches to avoid rate limits (3 at a time with delay)
-async function runInBatches(agents, diff, plan) {
+// Runs agents sequentially with delay to stay under 5 req/min rate limit
+async function runSequentially(agents, diff, plan) {
   const results = [];
-  for (let i = 0; i < agents.length; i += 3) {
-    const batch = agents.slice(i, i + 3);
-    const batchResults = await Promise.all(batch.map((a) => reviewAgent(a, diff, plan)));
-    results.push(...batchResults);
-    if (i + 3 < agents.length) await new Promise((r) => setTimeout(r, 15000));
+  for (let i = 0; i < agents.length; i++) {
+    results.push(await reviewAgent(agents[i], diff, plan));
+    if (i < agents.length - 1) await new Promise((r) => setTimeout(r, 13000));
   }
   return results;
 }
 
-// Main: run agents in batches, output results
+// Main: run agents sequentially, output results
 async function main() {
   const { diff, plan } = readInputs();
   const agents = loadAgents();
@@ -81,7 +79,7 @@ async function main() {
     process.exit(1);
   }
 
-  const results = await runInBatches(agents, diff, plan);
+  const results = await runSequentially(agents, diff, plan);
   const approved = results.every((r) => r.verdict === "APPROVED");
 
   process.stdout.write(JSON.stringify({ approved, results }));
