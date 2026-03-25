@@ -22,7 +22,7 @@ function readInputs() {
   const planFile = process.env.PLAN_FILE || "";
   const diff = diffFile ? fs.readFileSync(diffFile, "utf8") : "";
   const plan = planFile && fs.existsSync(planFile) ? fs.readFileSync(planFile, "utf8") : "(no plan file found)";
-  return { diff: diff.slice(0, 20000), plan: plan.slice(0, 5000) };
+  return { diff: diff.slice(0, 80000), plan: plan.slice(0, 5000) };
 }
 
 // Loads all 9 agent prompts from .claude/review-agents/
