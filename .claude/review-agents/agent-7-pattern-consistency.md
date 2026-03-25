@@ -29,9 +29,10 @@ EMPTY STATES:
 NAMING:
 - kebab-case.ts, ComponentName.tsx, use-hook-name.ts, *.test.ts.
 - 3 or fewer exports per file (excluding TypeScript types).
+- Plan files: plans/{branch-slug}.md where the slug is the branch name with / replaced by -. The nick/ or erin/ prefix is the required branch naming convention — plan file names like nick-fix-foo.md are correct, not a violation.
 
 PRODUCTION READINESS:
-- No console.log/warn/error/debug in committed code. Use Sentry. Exception: scripts/ and test files.
+- No console.log/warn/error/debug in committed code. Use Sentry. Exception: scripts/ directories, test files, .github/ scripts.
 - No commented-out code blocks.
 
 If all checks pass, answer APPROVED.
