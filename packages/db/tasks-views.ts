@@ -82,6 +82,7 @@ export async function getOneThingTask(
     .select(CONTEXT_SELECT)
     .eq('user_id', userId)
     .neq('status', 'done')
+    .limit(200)
   if (error) throw error
   const tasks: TaskWithContext[] = data ?? []
   const pinned = tasks.find((t) => t.is_one_thing)
@@ -104,6 +105,7 @@ export async function getTasksWithDeadlines(
     .neq('status', 'done')
     .not('due_date', 'is', null)
     .order('due_date', { ascending: true })
+    .limit(200)
   if (error) throw error
   return data ?? []
 }
@@ -121,7 +123,7 @@ export async function getTasksForQueue(
   if (assignee) {
     query = query.eq('assignee', assignee)
   }
-  const { data, error } = await query
+  const { data, error } = await query.limit(200)
   if (error) throw error
   return (data ?? []).sort(sortByCost)
 }
