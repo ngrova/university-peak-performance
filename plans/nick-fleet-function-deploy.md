@@ -10,7 +10,8 @@ The fleet-sync Netlify function returns 404. The `@netlify/plugin-nextjs` plugin
 Add `functions = "netlify/functions"` to the `[build]` section of netlify.toml.
 
 ## Files to Change
-- `netlify.toml` — add functions directory declaration
+- `netlify.toml` — add functions directory + esbuild config + included_files for pnpm
+- `netlify/functions/fleet-sync/package.json` — remove "type": "module"
 
 ## Scope
 small
@@ -30,6 +31,12 @@ N/A — no pushback declared.
 
 ## HUMAN APPROVAL: Has the human reviewed this plan and confirmed "build it"?
 STATUS: CONFIRMED
+
+## Fix Round 2 — Function still 404 after adding functions directory
+Root causes:
+1. `"type": "module"` in function package.json conflicts with esbuild CommonJS output
+2. pnpm symlinks not followed by esbuild during Netlify bundling
+Fix: Remove ESM type, add node_bundler + included_files config
 
 ## COUNCIL CODE REVIEW (local, advisory): Have all 9 agents reviewed the code diff?
 RESULT: PASS
