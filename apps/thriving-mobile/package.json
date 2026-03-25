@@ -19,7 +19,7 @@
     "@upp/ui": "workspace:*",
     "@upp/utils": "workspace:*",
     "lucide-react": "^0.460.0",
-    "next": "^14.0.0",
+    "next": "^15.5.14",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "zustand": "^4.0.0"
