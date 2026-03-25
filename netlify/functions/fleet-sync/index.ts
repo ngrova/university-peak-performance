@@ -35,7 +35,7 @@ export default async function handler(request: Request): Promise<Response> {
   let body: unknown
   try {
     body = await request.json()
-  } catch {
+  } catch (_parseErr) {
     return Response.json(
       { jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } },
       { status: 400 }

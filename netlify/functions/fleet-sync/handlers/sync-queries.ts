@@ -44,8 +44,19 @@ export async function upsertAgent(
   if (error) throw new Error(`Failed to upsert agent — ${error.message}`)
 }
 
-/** Atomically increments session_count via Postgres function. */
+/** Reads current session_count, adds 1, writes back. */
 export async function bumpSessionCount(db: SupabaseClient, agentId: string) {
-  const { error } = await db.rpc('fleet_increment_session', { p_agent_id: agentId })
-  if (error) throw new Error(`Failed to increment session — ${error.message}`)
+  const { data, error: readErr } = await db
+    .from('fleet_agents')
+    .select('session_count')
+    .eq('agent_id', agentId)
+    .single()
+  if (readErr) throw new Error(`Failed to read session count — ${readErr.message}`)
+
+  const newCount = ((data?.session_count as number) ?? 0) + 1
+  const { error: writeErr } = await db
+    .from('fleet_agents')
+    .update({ session_count: newCount })
+    .eq('agent_id', agentId)
+  if (writeErr) throw new Error(`Failed to update session count — ${writeErr.message}`)
 }

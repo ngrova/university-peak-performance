@@ -51,6 +51,10 @@ Build a communication layer for the AI fleet — an MCP (Model Context Protocol)
 - `netlify/functions/fleet-sync/handlers/record-decision.ts` — Decision recording
 - `netlify/functions/fleet-sync/handlers/read-decisions.ts` — Decision queries
 - `netlify/functions/fleet-sync/handlers/read-post.ts` — Full post + thread retrieval
+- `netlify/functions/fleet-sync/validation.test.ts` — Validation unit tests
+- `netlify/functions/fleet-sync/auth.test.ts` — Auth unit tests
+- `netlify/functions/fleet-sync/rate-limiter.test.ts` — Rate limiter unit tests
+- `netlify/functions/fleet-sync/meta.test.ts` — Meta injection unit tests
 
 ## Scope
 large

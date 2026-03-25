@@ -65,14 +65,24 @@ export async function handleSync(args: SyncArgs) {
   })
 }
 
-/** Appends agent_id to acknowledged_by on each decision. */
+/** Appends agent_id to acknowledged_by if not already present. */
 async function ackDecisions(db: SupabaseClient, agentId: string, decisions: Array<{ id: string }>) {
   for (const d of decisions) {
-    const { error } = await db.rpc('fleet_ack_decision', {
-      p_decision_id: d.id,
-      p_agent_id: agentId,
-    })
-    if (error) throw new Error(`Failed to ack decision ${d.id} — ${error.message}`)
+    const { data, error: readErr } = await db
+      .from('fleet_decisions')
+      .select('acknowledged_by')
+      .eq('id', d.id)
+      .single()
+    if (readErr) throw new Error(`Failed to read decision ${d.id} — ${readErr.message}`)
+
+    const current = (data?.acknowledged_by as string[]) ?? []
+    if (!current.includes(agentId)) {
+      const { error: writeErr } = await db
+        .from('fleet_decisions')
+        .update({ acknowledged_by: [...current, agentId] })
+        .eq('id', d.id)
+      if (writeErr) throw new Error(`Failed to ack decision ${d.id} — ${writeErr.message}`)
+    }
   }
 }
 

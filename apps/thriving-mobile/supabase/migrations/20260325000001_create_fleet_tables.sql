@@ -92,23 +92,3 @@ CREATE INDEX idx_decisions_status ON fleet_decisions(status);
 CREATE INDEX idx_decisions_domain ON fleet_decisions(domain);
 CREATE INDEX idx_decisions_created ON fleet_decisions(created_at DESC);
 
--- ═══════════════════════════════════════════════════════════
--- HELPER FUNCTIONS
--- ═══════════════════════════════════════════════════════════
-
--- Atomically increment session_count for an agent
-CREATE OR REPLACE FUNCTION fleet_increment_session(p_agent_id TEXT)
-RETURNS void AS $$
-  UPDATE fleet_agents
-  SET session_count = session_count + 1
-  WHERE agent_id = p_agent_id;
-$$ LANGUAGE sql SECURITY DEFINER;
-
--- Append agent_id to acknowledged_by if not already present
-CREATE OR REPLACE FUNCTION fleet_ack_decision(p_decision_id UUID, p_agent_id TEXT)
-RETURNS void AS $$
-  UPDATE fleet_decisions
-  SET acknowledged_by = array_append(acknowledged_by, p_agent_id)
-  WHERE id = p_decision_id
-  AND NOT (p_agent_id = ANY(acknowledged_by));
-$$ LANGUAGE sql SECURITY DEFINER;
