@@ -1,5 +1,9 @@
 [build]
+  publish = "."
   functions = "netlify/functions"
 
 [functions."fleet-sync"]
+  node_bundler = "esbuild"
+
+[functions."fleet-dashboard"]
   node_bundler = "esbuild"
