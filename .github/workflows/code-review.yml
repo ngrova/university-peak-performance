@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   review:
-    name: 9-Agent Code Review
+    name: Code Review Council
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
             echo "file=" >> $GITHUB_OUTPUT
           fi
 
-      - name: Run 9-agent review
+      - name: Run council review
         id: review
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -61,16 +61,26 @@ jobs:
               const results = JSON.parse(raw);
               const icon = (v) => v === 'APPROVED' ? '✅' : v === 'EXEMPT' ? '🔘' : v === 'WARN' ? '⚠️' : '❌';
               const rows = results.results.map((r, i) =>
-                `| ${i+1} | ${r.name} | ${icon(r.verdict)} ${r.verdict} | ${(r.reason || '').substring(0, 200).replace(/\n/g, ' ')} |`
+                `| ${i+1} | ${r.name} | ${icon(r.verdict)} ${r.verdict} |`
               ).join('\n');
-              const warns = results.results.filter(r => r.verdict === 'WARN');
               const status = results.approved ? '✅ All agents approved' : '❌ Review failed';
+              let details = '';
+              const rejected = results.results.filter(r => r.verdict === 'REJECTED');
+              if (rejected.length > 0) {
+                const blocks = rejected.map(r =>
+                  `<details>\n<summary>❌ ${r.name}</summary>\n\n${r.reason || 'No reason provided'}\n\n</details>`
+                ).join('\n\n');
+                details = `\n\n### Rejection Details\n\n${blocks}`;
+              }
+              const warns = results.results.filter(r => r.verdict === 'WARN');
               let warnSection = '';
               if (warns.length > 0) {
-                const warnRows = warns.map(w => `- **${w.name}**: ${(w.reason || '').substring(0, 300).replace(/\n/g, ' ')}`).join('\n');
-                warnSection = `\n\n### Pre-existing issues (not blocking)\n${warnRows}`;
+                const warnBlocks = warns.map(w =>
+                  `<details>\n<summary>⚠️ ${w.name}</summary>\n\n${w.reason || ''}\n\n</details>`
+                ).join('\n\n');
+                warnSection = `\n\n### Pre-existing issues (not blocking)\n\n${warnBlocks}`;
               }
-              body = `## Code Review Council\n\n${status}\n\n| # | Agent | Verdict | Summary |\n|---|-------|---------|--------|\n${rows}${warnSection}\n\n_Reviewed commit: \`${context.sha.substring(0,7)}\`_`;
+              body = `## Code Review Council\n\n${status}\n\n| # | Agent | Verdict |\n|---|-------|---------|\n${rows}${details}${warnSection}\n\n_Reviewed commit: \`${context.sha.substring(0,7)}\`_`;
             } catch (e) {
               body = `## Code Review Council\n\n❌ Review failed — could not parse results.\n\nError: ${e.message}\n\nCheck the [workflow logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}).`;
             }

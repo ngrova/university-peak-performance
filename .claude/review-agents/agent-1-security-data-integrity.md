@@ -1,4 +1,4 @@
-Review this code diff for security issues in this Next.js + Supabase + Netlify stack.
+Review this code diff for security and data integrity issues in this Next.js + Supabase + Netlify stack.
 
 Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
 - Use APPROVED if no issues exist in lines added by this diff (lines starting with +).
@@ -12,6 +12,7 @@ Checklist — applies only to lines ADDED by this diff:
    - Any .select('*') → REJECT. Must list explicit columns.
      Note: .select('*, relation(col1, col2)') also counts — the top-level * is the problem.
    - Any list query missing .limit() → REJECT. All queries returning arrays must have .limit(N) or be scoped by a unique key (.eq('id', ...) + .single()).
+   - Explicit column selects and .limit() on all list queries — no exceptions.
 
 2. RLS AND AUTH
    - Tables must have RLS enabled with policies filtering by auth.uid().
@@ -23,14 +24,31 @@ Checklist — applies only to lines ADDED by this diff:
    - dangerouslySetInnerHTML → REJECT.
    - eval() or new Function() → REJECT.
    - Raw SQL string concatenation → REJECT.
-   - console.log/warn/error/debug in app code → REJECT. Use Sentry. Exception: scripts/ directories and test files.
+   - console.log/warn/error/debug in app code → REJECT. Use Sentry. Exception: scripts/ directories, test files, .github/ scripts.
    - Hardcoded secrets, API keys, or Supabase URLs as string literals (not process.env) → REJECT.
 
 4. ENVIRONMENT VARIABLE SAFETY
    - SUPABASE_SERVICE_ROLE_KEY must only appear in server-side files (API routes, 'use server' files, middleware).
    - NEXT_PUBLIC_ variables are OK in any file.
 
-5. SILENT AUTH FAILURE
+5. VALUE-TO-COLUMN COMPATIBILITY
+   - For every value being INSERTed or UPDATEd, verify it fits the column type. PostgreSQL integer columns max at 2,147,483,647. Date.now() returns ~1.7 trillion. If a number assigned to sort_order, priority, or any integer column could exceed 2,147,483,647 → REJECT. Use array.length or MAX(col)+1 instead.
+   - String values going into columns with CHECK constraints: verify the value satisfies the constraint.
+
+6. SILENT FAILURE DETECTION
    - Could any auth or permission check fail silently (returning empty data instead of an error)? If a server action returns [] or null when auth fails, the UI cannot distinguish "no data" from "access denied" — flag it.
+   - Server actions that catch errors must return an error message to the caller. A catch block that silently returns {} or [] without logging → REJECT.
+   - Supabase queries: if { data, error } is returned but error is not checked → REJECT.
+   - Every mutation's success path and error path must return distinguishable shapes — if both return {} the UI cannot tell them apart → flag it.
+
+7. DUPLICATE PREVENTION
+   - Mutation-triggering buttons must disable during processing (disabled={isPending} or equivalent).
+   - If a mutation creates a record, is there a UNIQUE constraint or idempotency check preventing duplicates on retry?
+
+8. SCHEMA CHANGES
+   - Any new table, column, constraint, or index must have a migration file in supabase/migrations/. Dashboard-only changes → REJECT.
+
+9. DATA PRESERVATION
+   - User input (form fields, text areas) must not be cleared on error. If a mutation fails, the form should retain the user's typed data.
 
 If all checks pass, answer APPROVED.

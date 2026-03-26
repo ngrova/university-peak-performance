@@ -1,31 +1,21 @@
 #!/usr/bin/env node
-// Runs the 9-agent code review council via the Anthropic Messages API.
-// Reads diff and plan from files, calls all 9 agents in parallel, outputs JSON results.
+// Runs the Code Review Council via the Anthropic Messages API.
+// Loads agent prompts from .claude/review-agents/, runs them sequentially, outputs JSON results.
 // Exit 0 = all approved, exit 1 = any rejected or error. Fail closed.
 
 const fs = require("fs");
 const path = require("path");
+const { reviewAgent, readInputs } = require("./code-review-helpers");
 
-const API_URL = "https://api.anthropic.com/v1/messages";
-const MODEL = "claude-sonnet-4-20250514";
-const MAX_TOKENS = 1024;
 const API_KEY = process.env.ANTHROPIC_API_KEY;
+const AGENT_DELAY_MS = 60000;
 
 if (!API_KEY) {
   console.error(JSON.stringify({ approved: false, results: [{ name: "setup", verdict: "REJECTED", reason: "ANTHROPIC_API_KEY not set" }] }));
   process.exit(1);
 }
 
-// Reads the diff and plan files from environment variables
-function readInputs() {
-  const diffFile = process.env.DIFF_FILE || "";
-  const planFile = process.env.PLAN_FILE || "";
-  const diff = diffFile ? fs.readFileSync(diffFile, "utf8") : "";
-  const plan = planFile && fs.existsSync(planFile) ? fs.readFileSync(planFile, "utf8") : "(no plan file found)";
-  return { diff: diff.slice(0, 40000), plan: plan.slice(0, 5000) };
-}
-
-// Loads all 9 agent prompts from .claude/review-agents/
+// Loads all agent prompts from .claude/review-agents/
 function loadAgents() {
   const dir = path.join(process.cwd(), ".claude", "review-agents");
   return fs.readdirSync(dir).filter((f) => f.endsWith(".md")).sort().map((f) => ({
@@ -34,57 +24,12 @@ function loadAgents() {
   }));
 }
 
-const RETRY_STATUSES = [429, 529];
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 30000;
-
-// Wraps fetch with retry on 429/529 — waits 30s between attempts
-async function fetchWithRetry(url, options) {
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    const res = await fetch(url, options);
-    if (!RETRY_STATUSES.includes(res.status) || attempt === MAX_RETRIES) return res;
-    console.error(`API returned ${res.status}, retrying in 30s (attempt ${attempt}/${MAX_RETRIES})...`);
-    await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
-  }
-}
-
-// Calls the Anthropic API for a single agent review
-async function reviewAgent(agent, diff, plan) {
-  const body = JSON.stringify({
-    model: MODEL,
-    max_tokens: MAX_TOKENS,
-    messages: [{ role: "user", content: `${agent.prompt}\n\nPLAN:\n${plan}\n\nCODE DIFF:\n${diff}` }],
-  });
-
-  const res = await fetchWithRetry(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": API_KEY, "anthropic-version": "2023-06-01" },
-    body,
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    return { name: agent.name, verdict: "REJECTED", reason: `API error ${res.status}: ${err.slice(0, 200)}` };
-  }
-
-  const data = await res.json();
-  const text = (data.content && data.content[0] && data.content[0].text) || "";
-  // Parse verdict from first line — EXEMPT is a distinct passing verdict
-  const firstLine = text.split("\n")[0] || "";
-  const verdict = /REJECTED/i.test(firstLine) ? "REJECTED"
-    : /WARN/i.test(firstLine) ? "WARN"
-    : /EXEMPT/i.test(firstLine) ? "EXEMPT"
-    : /APPROVED/i.test(firstLine) ? "APPROVED"
-    : "REJECTED";
-  return { name: agent.name, verdict, reason: text.slice(0, 500) };
-}
-
-// Runs agents sequentially with delay to stay under 5 req/min rate limit
+// Runs agents sequentially with delay to stay under API rate limits
 async function runSequentially(agents, diff, plan) {
   const results = [];
   for (let i = 0; i < agents.length; i++) {
-    results.push(await reviewAgent(agents[i], diff, plan));
-    if (i < agents.length - 1) await new Promise((r) => setTimeout(r, 45000));
+    results.push(await reviewAgent(agents[i], diff, plan, API_KEY));
+    if (i < agents.length - 1) await new Promise((r) => setTimeout(r, AGENT_DELAY_MS));
   }
   return results;
 }
@@ -93,16 +38,13 @@ async function runSequentially(agents, diff, plan) {
 async function main() {
   const { diff, plan } = readInputs();
   const agents = loadAgents();
-
   if (agents.length === 0) {
     console.error("No agent prompt files found in .claude/review-agents/");
     process.exit(1);
   }
-
   const results = await runSequentially(agents, diff, plan);
   const PASS_VERDICTS = ["APPROVED", "WARN", "EXEMPT"];
   const approved = results.every((r) => PASS_VERDICTS.includes(r.verdict));
-
   process.stdout.write(JSON.stringify({ approved, results }));
   process.exit(approved ? 0 : 1);
 }

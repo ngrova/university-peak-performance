@@ -20,7 +20,7 @@ The user describes what they want in plain English. The system handles everythin
 
 5. **Plan creation** — Write `plans/{branch-slug}.md` using the template below.
 
-6. **9-agent plan review** (local) — Spawn all 9 agents. Fix rejections, re-run until all 9 approve. Set `RESULT: PASS` in the plan.
+6. **Council plan review** (local) — Spawn all review agents. Fix rejections, re-run until all approve. Set `RESULT: PASS` in the plan.
 
 7. **Present to human** — Show the plan and results. Wait for the human to say "build it." Set `STATUS: CONFIRMED` only after explicit approval.
 
@@ -30,7 +30,7 @@ The user describes what they want in plain English. The system handles everythin
 
 9. **Mid-task pushback** (if needed) — If a concern surfaces during implementation, create `plans/PUSHBACK-{branch-slug}.md`. The hook locks ALL operations until the human resolves it.
 
-10. **9-agent code review** (local, advisory) — Spawn all 9 agents on the diff. Fix rejections. This is fast feedback — the authoritative review runs in GitHub Actions.
+10. **Council code review** (local, advisory) — Spawn all review agents on the diff. Fix rejections. This is fast feedback — the authoritative review runs in GitHub Actions.
 
 ### Phase C: Ship
 
@@ -40,7 +40,7 @@ The user describes what they want in plain English. The system handles everythin
 
 13. **Monitor CI** — Use `gh run watch` or poll with `gh run view`. Report all-pass or which jobs failed. Do not start new work until CI status is known.
 
-14. **External code review** (GitHub Action, hard gate) — Runs automatically. Independent 9-agent review. Must pass to merge. If rejected, read the PR comment, fix, push — Action re-runs.
+14. **External code review** (GitHub Action, hard gate) — Runs automatically. Independent council review. Must pass to merge. If rejected, read the PR comment, fix, push — Action re-runs.
 
 15. **CI** (hard gate) — Tests, lint, typecheck, E2E. Must pass to merge.
 
@@ -85,7 +85,7 @@ Plan files live in `plans/{branch-slug}.md` (slug = branch name with `/` → `-`
 [Which lessons from CLAUDE.md apply? How are they handled?]
 [Write "None applicable to this task." if none apply.]
 
-## 9-AGENT PLAN REVIEW: Have all 9 review agents reviewed and approved this plan?
+## COUNCIL PLAN REVIEW: Have all review agents reviewed and approved this plan?
 RESULT: [PENDING | PASS | FAIL]
 
 ## PUSHBACK RESOLVED: If pushback was declared above, has the human acknowledged it?
@@ -95,14 +95,14 @@ RESULT: [PENDING | PASS | FAIL]
 ## HUMAN APPROVAL: Has the human reviewed this plan and confirmed "build it"?
 STATUS: [AWAITING | CONFIRMED | COMPLETED — PR #[number]]
 
-## COUNCIL CODE REVIEW (local, advisory): Have all 9 agents reviewed the code diff?
+## COUNCIL CODE REVIEW (local, advisory): Have all review agents reviewed the code diff?
 RESULT: [PENDING | PASS | FAIL]
 ```
 
 ## Variable Reset Rules
 
 1. **After PR created:** HUMAN APPROVAL advances to `COMPLETED — PR #[number]`. The hook only allows code edits when status is `CONFIRMED`, not `COMPLETED`.
-2. **After pushback resolved + plan revised:** 9-AGENT PLAN REVIEW resets to `PENDING`. HUMAN APPROVAL resets to `AWAITING`.
+2. **After pushback resolved + plan revised:** COUNCIL PLAN REVIEW resets to `PENDING`. HUMAN APPROVAL resets to `AWAITING`.
 3. **New task = new branch = new plan file.** Nothing carries over between branches.
 
 ## Branch Naming
@@ -125,7 +125,7 @@ Feature branches must use `nick/short-description` or `erin/short-description`. 
 
 - TYPE: REDESIGN for replacing, consolidating, or removing existing code
 - Unlocks "Files to Delete" section — every deletion needs a reason
-- Agents 3, 6, 8 apply conditional REDESIGN rules
+- Agents 2, 3, 4 apply conditional REDESIGN rules
 - REDESIGN PRs deleting 10+ files should be split
 
 ## E2E Testing
