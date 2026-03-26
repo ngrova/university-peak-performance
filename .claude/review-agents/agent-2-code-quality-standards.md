@@ -1,5 +1,7 @@
 Review this code diff for code quality, standards compliance, and pattern consistency.
 
+INFRASTRUCTURE EXEMPTION: Files under .github/, .claude/, scripts/, packages/, and config files are exempt from file headers, function documentation requirements, and console.log restrictions. Sandi Metz line/function limits still apply. Only reject infrastructure files for genuine code quality issues (unbounded complexity, deeply nested logic).
+
 Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
 - Use APPROVED if no issues exist in lines added by this diff (lines starting with +).
 - Use WARN if the only issues are pre-existing (visible in context lines, not added by this PR). List them but they do not block.

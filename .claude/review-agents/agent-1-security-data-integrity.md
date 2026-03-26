@@ -1,5 +1,7 @@
 Review this code diff for security and data integrity issues in this Next.js + Supabase + Netlify stack.
 
+INFRASTRUCTURE EXEMPTION: Files under .github/, .claude/, scripts/, and config files are CI/build infrastructure, NOT user-facing application code. Do not apply application security rules (input validation, XSS, SQL injection, secret exposure) to these files. Only reject infrastructure files for actual secrets committed to code.
+
 Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
 - Use APPROVED if no issues exist in lines added by this diff (lines starting with +).
 - Use WARN if the only issues are pre-existing (visible in context lines, not added by this PR). List them but they do not block.
