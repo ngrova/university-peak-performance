@@ -11,6 +11,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { selectAccount, clearActingAs } from '@/actions/delegation-actions';
 
 interface Delegation {
@@ -32,6 +33,7 @@ interface Props {
  */
 export default function ChooseAccountContent({ delegations }: Props): React.JSX.Element {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +47,7 @@ export default function ChooseAccountContent({ delegations }: Props): React.JSX.
       setLoading(false);
       return;
     }
+    queryClient.clear();
     router.push('/today');
   }
 
@@ -58,6 +61,7 @@ export default function ChooseAccountContent({ delegations }: Props): React.JSX.
       setLoading(false);
       return;
     }
+    queryClient.clear();
     router.push('/today');
   }
 
