@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nick & Erin's AI Fleet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep: #060a14;
+      --bg-primary: #0a0e1a;
+      --bg-card: #111827;
+      --bg-card-hover: #1a2236;
+      --bg-elevated: #1e2a42;
+      --border: #1e2a42;
+      --border-bright: #2a3a5c;
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --blue: #3b82f6;
+      --blue-dim: #1e3a5f;
+      --blue-glow: rgba(59, 130, 246, 0.15);
+      --purple: #8b5cf6;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --teal: #14b8a6;
+      --green: #22c55e;
+      --gray: #6b7280;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ── Header ─────────────────────────────────────── */
+    header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-primary);
+    }
+
+    .header-left h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .header-left .subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 0.15rem;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-dot.error { background: var(--red); animation: none; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+      50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+    }
+
+    .last-updated {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .last-updated.stale { color: var(--amber); }
+
+    /* ── Layout ─────────────────────────────────────── */
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ── KPI Cards ──────────────────────────────────── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .kpi-card:hover {
+      border-color: var(--border-bright);
+      background: var(--bg-card-hover);
+    }
+
+    .kpi-card .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .kpi-card .value {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--blue);
+    }
+
+    .kpi-card.alert .value { color: var(--amber); }
+    .kpi-card.danger .value { color: var(--red); }
+
+    /* ── Section Headings ──────────────────────────── */
+    .section-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    /* ── Agent Cards ────────────────────────────────── */
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .agent-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+
+    .agent-card:hover {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+    }
+
+    .agent-card.planned {
+      opacity: 0.5;
+      border-style: dashed;
+    }
+
+    .agent-card .agent-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .agent-card .agent-name {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .agent-card .agent-status {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .agent-status.active {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--green);
+    }
+
+    .agent-status.planned {
+      background: rgba(107, 114, 128, 0.15);
+      color: var(--gray);
+    }
+
+    .agent-card .agent-role {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .agent-card .agent-focus {
+      font-size: 0.78rem;
+      color: var(--blue);
+      background: var(--blue-glow);
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+    }
+
+    .agent-card .agent-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Content Grid (feed + sidebar) ─────────────── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Activity Feed ─────────────────────────────── */
+    .feed-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      transition: border-color 0.2s;
+    }
+
+    .feed-item:hover { border-color: var(--border-bright); }
+
+    .feed-item .feed-top {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .feed-item .feed-agent {
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .badge {
+      font-size: 0.6rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .badge-progress { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+    .badge-decision { background: rgba(139, 92, 246, 0.15); color: var(--purple); }
+    .badge-recommendation { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+    .badge-blocker { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+    .badge-blocker_resolved { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+    .badge-insight { background: rgba(20, 184, 166, 0.15); color: var(--teal); }
+    .badge-context { background: rgba(107, 114, 128, 0.15); color: var(--gray); }
+    .badge-question { background: rgba(139, 92, 246, 0.15); color: var(--purple); }
+    .badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+
+    .feed-item .feed-summary {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .feed-item .feed-time {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+    }
+
+    /* ── Sidebar Panels ────────────────────────────── */
+    .sidebar-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .sidebar-panel .panel-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Open Items ─────────────────────────────────── */
+    .open-item {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .open-item:last-child { border-bottom: none; }
+
+    .open-item .item-top {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .urgency-badge {
+      font-size: 0.6rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .urgency-now { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+    .urgency-this-week { background: rgba(245, 158, 11, 0.2); color: var(--amber); }
+    .urgency-when-ready { background: rgba(107, 114, 128, 0.2); color: var(--gray); }
+
+    .open-item .item-summary {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .open-item .item-age {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ── Decision Log ──────────────────────────────── */
+    .decision-item {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .decision-item:last-child { border-bottom: none; }
+
+    .decision-item .decision-top {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .domain-badge {
+      font-size: 0.6rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      background: var(--blue-glow);
+      color: var(--blue);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .decision-item .decided-by {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .decision-item .decision-text {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin: 0.2rem 0;
+    }
+
+    .decision-item .ack-status {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Error & Empty States ──────────────────────── */
+    .error-banner {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      color: var(--red);
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .error-banner.visible { display: block; }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-muted);
+    }
+
+    .loading .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 0.75rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <h1>Nick & Erin's AI Fleet</h1>
+      <div class="subtitle mono">fleet operations &mdash; university of peak performance</div>
+    </div>
+    <div class="header-right">
+      <div class="status-indicator">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText" class="mono">systems online</span>
+      </div>
+      <div class="last-updated mono" id="lastUpdated">loading...</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="error-banner" id="errorBanner"></div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-row" id="kpiRow">
+      <div class="kpi-card"><div class="label">Active Agents</div><div class="value mono" id="kpiActive">-</div></div>
+      <div class="kpi-card"><div class="label">Planned Agents</div><div class="value mono" id="kpiPlanned">-</div></div>
+      <div class="kpi-card"><div class="label">Messages Today</div><div class="value mono" id="kpiMessages">-</div></div>
+      <div class="kpi-card" id="kpiOpenCard"><div class="label">Open Items</div><div class="value mono" id="kpiOpen">-</div></div>
+      <div class="kpi-card"><div class="label">Active Decisions</div><div class="value mono" id="kpiDecisions">-</div></div>
+    </div>
+
+    <!-- Agents -->
+    <section>
+      <div class="section-title">Fleet Agents</div>
+      <div class="agents-grid" id="agentsGrid">
+        <div class="loading"><div class="spinner"></div><div>Loading fleet data...</div></div>
+      </div>
+    </section>
+
+    <!-- Feed + Sidebar -->
+    <div class="content-grid">
+      <section>
+        <div class="section-title">Activity Feed</div>
+        <div id="activityFeed">
+          <div class="loading"><div class="spinner"></div><div>Loading messages...</div></div>
+        </div>
+      </section>
+
+      <aside>
+        <!-- Open Items -->
+        <div class="sidebar-panel">
+          <div class="panel-title">Open Items</div>
+          <div id="openItems">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Decision Log -->
+        <div class="sidebar-panel">
+          <div class="panel-title">Decision Log</div>
+          <div id="decisionLog">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    // ── State ────────────────────────────────────────
+    let lastFetchOk = false;
+    let lastFetchTime = null;
+
+    // ── Helpers ──────────────────────────────────────
+    function timeAgo(dateStr) {
+      const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+      if (seconds < 60) return seconds + 's ago';
+      const mins = Math.floor(seconds / 60);
+      if (mins < 60) return mins + 'm ago';
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return hours + 'h ago';
+      const days = Math.floor(hours / 24);
+      return days + 'd ago';
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function truncate(str, len) {
+      if (!str || str.length <= len) return str || '';
+      return str.slice(0, len) + '...';
+    }
+
+    // ── Renderers ────────────────────────────────────
+    function renderKpis(stats) {
+      document.getElementById('kpiActive').textContent = stats.active_agents;
+      document.getElementById('kpiPlanned').textContent = stats.planned_agents;
+      document.getElementById('kpiMessages').textContent = stats.messages_today;
+      document.getElementById('kpiOpen').textContent = stats.open_items;
+      document.getElementById('kpiDecisions').textContent = stats.active_decisions;
+
+      var openCard = document.getElementById('kpiOpenCard');
+      openCard.className = 'kpi-card' + (stats.open_items > 0 ? ' alert' : '');
+    }
+
+    function renderAgents(agents) {
+      var grid = document.getElementById('agentsGrid');
+      if (!agents.length) {
+        grid.innerHTML = '<div class="empty-state">No agents registered yet</div>';
+        return;
+      }
+
+      var oneDayAgo = new Date(Date.now() - 86400000).toISOString();
+      grid.innerHTML = agents.map(function(a) {
+        var isActive = a.last_synced_at && a.last_synced_at > oneDayAgo;
+        return '<div class="agent-card' + (isActive ? '' : ' planned') + '">'
+          + '<div class="agent-header">'
+          + '<span class="agent-name">' + escapeHtml(a.display_name) + '</span>'
+          + '<span class="agent-status ' + (isActive ? 'active' : 'planned') + ' mono">'
+          + (isActive ? 'active' : 'planned') + '</span>'
+          + '</div>'
+          + '<div class="agent-role">' + escapeHtml(a.role || '') + '</div>'
+          + (a.current_focus
+            ? '<div class="agent-focus mono">' + escapeHtml(truncate(a.current_focus, 80)) + '</div>'
+            : '')
+          + '<div class="agent-meta mono">'
+          + '<span>' + (a.session_count || 0) + ' sessions</span>'
+          + '<span>' + (a.last_synced_at ? timeAgo(a.last_synced_at) : 'never') + '</span>'
+          + '</div></div>';
+      }).join('');
+    }
+
+    function renderFeed(messages) {
+      var feed = document.getElementById('activityFeed');
+      if (!messages.length) {
+        feed.innerHTML = '<div class="empty-state">No messages yet</div>';
+        return;
+      }
+
+      feed.innerHTML = messages.map(function(m) {
+        var badgeClass = 'badge badge-' + (m.kind || 'context');
+        return '<div class="feed-item">'
+          + '<div class="feed-top">'
+          + '<span class="feed-agent">' + escapeHtml(m.agent_id || 'unknown') + '</span>'
+          + '<span class="' + badgeClass + '">' + escapeHtml(m.kind || '') + '</span>'
+          + '</div>'
+          + '<div class="feed-summary">' + escapeHtml(m.summary || '') + '</div>'
+          + '<div class="feed-time mono">' + (m.created_at ? timeAgo(m.created_at) : '') + '</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    function renderOpenItems(items) {
+      var container = document.getElementById('openItems');
+      if (!items.length) {
+        container.innerHTML = '<div class="empty-state">All clear</div>';
+        return;
+      }
+
+      container.innerHTML = items.map(function(item) {
+        var urgClass = 'urgency-' + (item.urgency || 'when-ready').replace('_', '-');
+        return '<div class="open-item">'
+          + '<div class="item-top">'
+          + '<span class="urgency-badge ' + urgClass + '">'
+          + escapeHtml((item.urgency || 'when-ready').replace('_', ' ').replace('-', ' '))
+          + '</span>'
+          + '<span class="badge badge-' + (item.kind || 'context') + '">'
+          + escapeHtml(item.kind || '') + '</span>'
+          + '</div>'
+          + '<div class="item-summary">' + escapeHtml(item.summary || '') + '</div>'
+          + '<div class="item-age mono">'
+          + escapeHtml(item.agent_id || '') + ' &middot; '
+          + (item.created_at ? timeAgo(item.created_at) : '')
+          + '</div></div>';
+      }).join('');
+    }
+
+    function renderDecisions(decisions) {
+      var container = document.getElementById('decisionLog');
+      if (!decisions.length) {
+        container.innerHTML = '<div class="empty-state">No active decisions</div>';
+        return;
+      }
+
+      container.innerHTML = decisions.map(function(d) {
+        var ackCount = (d.acknowledged_by && d.acknowledged_by.length) || 0;
+        return '<div class="decision-item">'
+          + '<div class="decision-top">'
+          + '<span class="domain-badge mono">' + escapeHtml(d.domain || '') + '</span>'
+          + '<span class="decided-by">by ' + escapeHtml(d.decided_by || '') + '</span>'
+          + '</div>'
+          + '<div class="decision-text">' + escapeHtml(truncate(d.decision, 120)) + '</div>'
+          + '<div class="ack-status mono">'
+          + ackCount + ' ack' + (ackCount !== 1 ? 's' : '')
+          + ' &middot; ' + (d.created_at ? timeAgo(d.created_at) : '')
+          + '</div></div>';
+      }).join('');
+    }
+
+    // ── Status Bar ───────────────────────────────────
+    function updateStatus() {
+      var dot = document.getElementById('statusDot');
+      var text = document.getElementById('statusText');
+      var updated = document.getElementById('lastUpdated');
+
+      if (lastFetchOk) {
+        dot.className = 'status-dot';
+        text.textContent = 'systems online';
+      } else {
+        dot.className = 'status-dot error';
+        text.textContent = 'connection issue';
+      }
+
+      if (lastFetchTime) {
+        var ago = Math.floor((Date.now() - lastFetchTime) / 1000);
+        updated.textContent = 'updated ' + ago + 's ago';
+        updated.className = 'last-updated mono' + (ago > 60 ? ' stale' : '');
+      }
+    }
+
+    // ── Fetch & Render ───────────────────────────────
+    function fetchDashboard() {
+      var banner = document.getElementById('errorBanner');
+
+      fetch('/.netlify/functions/fleet-dashboard')
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(data) {
+          lastFetchOk = true;
+          lastFetchTime = Date.now();
+          banner.classList.remove('visible');
+
+          renderKpis(data.stats);
+          renderAgents(data.agents);
+          renderFeed(data.messages);
+          renderOpenItems(data.open_items);
+          renderDecisions(data.decisions);
+          updateStatus();
+        })
+        .catch(function(err) {
+          lastFetchOk = false;
+          banner.textContent = 'Failed to load fleet data \u2014 retrying...';
+          banner.classList.add('visible');
+          updateStatus();
+        });
+    }
+
+    // ── Init ─────────────────────────────────────────
+    fetchDashboard();
+    setInterval(fetchDashboard, 30000);
+    setInterval(updateStatus, 5000);
+  </script>
+</body>
+</html>
