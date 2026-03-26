@@ -16,3 +16,18 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
+
+// Network-only for API calls — never serve stale cached responses
+// for Supabase queries or Next.js server actions. Static assets
+// fall through to normal browser caching.
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  const isSupabase = url.hostname.includes('supabase.co');
+  const isServerAction = event.request.method === 'POST' && url.origin === self.location.origin;
+
+  if (isSupabase || isServerAction) {
+    event.respondWith(
+      fetch(event.request).catch(() => new Response('Offline', { status: 503 }))
+    );
+  }
+});
