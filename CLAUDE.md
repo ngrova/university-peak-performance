@@ -13,7 +13,7 @@
 
 17-step pipeline in 3 phases. See `.claude/rules/workflow.md` for the full detailed flow.
 
-**Phase A (Before Code):** Pre-flight checks → pushback check → create branch → write plan → 9-agent plan review → present to human → human confirms "build it"
+**Phase A (Before Code):** Pre-flight checks → pushback check → create branch → write plan → council plan review → present to human → human confirms "build it"
 **Phase B (Writing Code):** Build (hooks enforce safety) → mid-task pushback if needed → local advisory code review
 **Phase C (Ship):** Create PR → lock plan → monitor CI → GitHub Action code review (hard gate) → CI (hard gate) → auto-merge → deploy monitoring
 
@@ -27,7 +27,7 @@ When a bug is reported, follow this sequence. Do not skip steps.
 2. **Diagnose** — Read the actual error. Check logs, not assumptions. If you can't access logs, ask Nick to check and report back. Never guess at the cause.
 3. **Confirm the root cause** — State what is broken and why, with evidence. "The Claude API returns 400 because type 'audio' is not a valid content block type" is evidence. "It's probably the audio type" is a guess.
 4. **Write the fix** — Targeted to the confirmed cause. One fix for one confirmed problem.
-5. **Run the full pipeline** — Bug fixes go through the 9-agent review like everything else. No exceptions.
+5. **Run the full pipeline** — Bug fixes go through the council review like everything else. No exceptions.
 6. **Verify** — After deploy, confirm the fix resolved the issue with the same evidence method from step 1 (logs, reproduction, user confirmation). A fix is not done until it's verified.
 
 Never guess and ship. The cost of one round trip to check the logs is always less than the cost of a wrong fix that creates a second bug or masks the real cause. If you find yourself saying "the most likely cause is..." — stop. That's a guess. Get the evidence.
@@ -89,12 +89,12 @@ docs/                                Architecture docs, decisions log, specs
 
 REDESIGN PRs are first-class citizens in this pipeline.
 They must shrink or modernize the codebase, not grow it.
-The 9-agent council adapts automatically based on TYPE
+The council adapts automatically based on TYPE
 but never relaxes FEATURE safety.
 
 - Set TYPE: REDESIGN when the primary intent is replacing, consolidating, or removing existing code
 - REDESIGN unlocks the "Files to Delete" section — every deletion must list a reason
-- Agents 3, 6, and 8 apply conditional rules for intentional deletions
+- Agents 2, 3, and 4 apply conditional rules for intentional deletions
 - Use FEATURE (the default) for all new functionality
 
 ## PIPELINE-INFRA PRs
@@ -104,11 +104,11 @@ Use TYPE: PIPELINE-INFRA for changes to hooks, wrappers, settings, rules, and re
 ## Sub-Agent Pipeline Rule
 
 When delegating work to sub-agents (parallel worktrees), the full pipeline is non-negotiable:
-- Every sub-agent must run the 9-agent plan review before building code
-- Every sub-agent must run the 9-agent code review before creating a PR
+- Every sub-agent must run the council plan review before building code
+- Every sub-agent must run the council code review before creating a PR
 - If sub-agents cannot run the council themselves, the main session must run both reviews on each agent's work before the PR is created
 - No exceptions — parallel execution does not justify skipping reviews
-- A sub-agent that ships a PR without 9-agent review has violated the pipeline, same as if the main session skipped it
+- A sub-agent that ships a PR without council review has violated the pipeline, same as if the main session skipped it
 
 ## Pushback Enforcement
 
@@ -127,7 +127,7 @@ The `require-ci-pass` hook mechanically blocks `gh pr merge` unless all CI check
 - `gh pr merge --auto` is always allowed — GitHub gates CI itself
 - `gh pr merge` or `gh pr merge --admin` without `--auto` is blocked until `gh pr checks` shows all SUCCESS
 - If CI status can't be queried, the merge is blocked (fail closed)
-- The "9-Agent Code Review" GitHub Action check must also pass — this is the independent trust boundary
+- The "Code Review Council" GitHub Action check must also pass — this is the independent trust boundary
 - Always monitor CI after pushing — do not attempt to merge until you have confirmed all checks pass
 
 ## Critical Rules (repeated — read these last)
@@ -147,5 +147,5 @@ The `require-ci-pass` hook mechanically blocks `gh pr merge` unless all CI check
 - 2026-03-17: Security audit found missing .limit() pagination on all list queries — add default limit(50) per coding standards
 - 2026-03-19: Never override a review agent rejection — fix the concern and re-review, or escalate to Nick for a decision
 - 2026-03-19: Always reset plan file to STATUS: COMPLETED after shipping a PR — stale approvals bypass the require-plan hook
-- 2026-03-22: Never skip the 9-agent review, even for small fixes. The pipeline is non-negotiable — if a fix is too small for the council, it's still not too small for the council.
-- 2026-03-23: Sub-agents in parallel worktrees bypassed the 9-agent review on PRs #127-129. Promoted to permanent rule: Sub-Agent Pipeline Rule.
+- 2026-03-22: Never skip the council review, even for small fixes. The pipeline is non-negotiable — if a fix is too small for the council, it's still not too small for the council.
+- 2026-03-23: Sub-agents in parallel worktrees bypassed the council review on PRs #127-129. Promoted to permanent rule: Sub-Agent Pipeline Rule.
