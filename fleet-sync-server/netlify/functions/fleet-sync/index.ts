@@ -36,7 +36,7 @@ function respond(statusCode: number, body: string, extra?: Record<string, string
 }
 
 /** Checks auth and parses the JSON-RPC body from the event. */
-function parseRequest(event: { headers: Record<string, string>; body: string | null }): V1Response | Record<string, unknown> {
+function parseRequest(event: { headers: Record<string, string>; body: string | null; isBase64Encoded?: boolean }): V1Response | Record<string, unknown> {
   const authReq = new Request('https://localhost', { headers: event.headers })
   if (!isAuthorized(authReq)) {
     return respond(401, JSON.stringify({ error: 'Unauthorized — provide a valid Bearer token' }))
@@ -44,7 +44,10 @@ function parseRequest(event: { headers: Record<string, string>; body: string | n
 
   let parsed: Record<string, unknown>
   try {
-    parsed = JSON.parse(event.body ?? '')
+    const raw = event.isBase64Encoded && event.body
+      ? Buffer.from(event.body, 'base64').toString('utf-8')
+      : (event.body ?? '')
+    parsed = JSON.parse(raw)
   } catch (_parseErr) {
     return respond(400, JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } }))
   }
@@ -74,6 +77,7 @@ export async function handler(event: {
   httpMethod: string
   headers: Record<string, string>
   body: string | null
+  isBase64Encoded?: boolean
 }): Promise<V1Response> {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, body: '', headers: CORS_HEADERS }
   if (event.httpMethod === 'DELETE') return respond(200, '')
@@ -83,12 +87,18 @@ export async function handler(event: {
   if ('statusCode' in result) return result as V1Response
 
   const parsed = result
-  const response = await route({
-    jsonrpc: parsed.jsonrpc as string,
-    id: parsed.id as string | number | undefined,
-    method: parsed.method as string,
-    params: (parsed.params as Record<string, unknown>) ?? {},
-  })
-
-  return toV1Response(response)
+  try {
+    const response = await route({
+      jsonrpc: parsed.jsonrpc as string,
+      id: parsed.id as string | number | undefined,
+      method: parsed.method as string,
+      params: (parsed.params as Record<string, unknown>) ?? {},
+    })
+    return toV1Response(response)
+  } catch (_routeErr) {
+    const id = (parsed.id as string | number) ?? null
+    return respond(500, JSON.stringify({
+      jsonrpc: '2.0', id, error: { code: -32603, message: 'Internal server error' },
+    }))
+  }
 }

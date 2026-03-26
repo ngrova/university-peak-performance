@@ -54,20 +54,19 @@ async function handleToolCall(req: JsonRpcRequest): Promise<Response> {
     return toolError(req.id!, `Unknown tool: ${name}`)
   }
 
-  // Rate limit write tools
-  const agentId = (args.agent_id as string) ?? ''
-  const isWrite = WRITE_TOOLS.has(name) || (name === 'sync' && args.wrap_up)
-  if (isWrite && agentId) {
-    const limit = checkRateLimit(agentId)
-    if (!limit.allowed) {
-      return toolError(
-        req.id!,
-        `Rate limit exceeded — max 20 writes/hour. Retry in ${Math.ceil(limit.retryAfterMs / 1000)}s`
-      )
-    }
-  }
-
   try {
+    // Rate limit write tools
+    const agentId = (args.agent_id as string) ?? ''
+    const isWrite = WRITE_TOOLS.has(name) || (name === 'sync' && args.wrap_up)
+    if (isWrite && agentId) {
+      const limit = checkRateLimit(agentId)
+      if (!limit.allowed) {
+        return toolError(
+          req.id!,
+          `Rate limit exceeded — max 20 writes/hour. Retry in ${Math.ceil(limit.retryAfterMs / 1000)}s`
+        )
+      }
+    }
     const result = await dispatch(name, args)
     return toolOk(req.id!, result)
   } catch (err) {

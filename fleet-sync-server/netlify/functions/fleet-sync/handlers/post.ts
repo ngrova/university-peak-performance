@@ -65,7 +65,8 @@ export async function handlePost(args: PostArgs) {
     ?? requireString(args.summary, 'summary')
     ?? checkEnum(args.kind, 'kind', VALID_KINDS)
     ?? checkLength(args.summary, 'summary', 200)
-    ?? (args.body ? checkLength(args.body, 'body', 4000) : null)
+    ?? (args.body != null && typeof args.body !== 'string' ? 'body must be a string' : null)
+    ?? (typeof args.body === 'string' ? checkLength(args.body, 'body', 4000) : null)
   if (err) throw new Error(err)
 
   // Directed kinds require to_agent and urgency
@@ -96,12 +97,12 @@ export async function handlePost(args: PostArgs) {
 
   if (error) throw new Error(`Failed to post message — ${error.message}`)
 
-  // Update agent's last_synced_at
+  // Update agent's updated_at (NOT last_synced_at — that is sync-only)
   const { error: syncErr } = await db
     .from('fleet_agents')
-    .update({ last_synced_at: new Date().toISOString() })
+    .update({ updated_at: new Date().toISOString() })
     .eq('agent_id', args.agent_id)
-  if (syncErr) throw new Error(`Failed to update sync time — ${syncErr.message}`)
+  if (syncErr) throw new Error(`Failed to update agent timestamp — ${syncErr.message}`)
 
   return withMeta({
     post_id: data.id,
