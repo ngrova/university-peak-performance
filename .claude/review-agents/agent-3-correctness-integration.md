@@ -57,10 +57,10 @@ PART B — SCOPE & PLAN FIDELITY
     - If the diff modifies files NOT listed in the plan (excluding test files, config like tsconfig/package.json, CI, and plan files in plans/) → REJECT with "unplanned file change: [filename]."
     - If the plan lists a file with NO changes in the diff, flag it (may indicate incomplete work).
 
-11. REDESIGN PLAN FIDELITY (applies only when plan TYPE is REDESIGN)
+11. DELETION FIDELITY (applies when plan TYPE is REDESIGN or PIPELINE-INFRA)
     - File deletions (git rm) are expected ONLY for files listed in "Files to Delete." Unplanned deletions → REJECT.
-    - Files listed in "Files to Delete" that are NOT actually deleted in the diff → REJECT as incomplete work.
-    - A FEATURE plan that contains git rm commands → REJECT with "file deletions require TYPE: REDESIGN."
+    - Files listed in "Files to Delete" that are NOT actually deleted in the diff → REJECT as incomplete work. Note: git may show a delete+create as a "rename" — this still counts as a valid deletion if the old file no longer exists.
+    - A FEATURE plan that contains git rm commands → REJECT with "file deletions require TYPE: REDESIGN or PIPELINE-INFRA."
 
 DO NOT reject solely based on file count. A legitimate feature may touch 10+ files if they are all coherent. Judge by coherence, not by a number.
 

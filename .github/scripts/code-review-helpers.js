@@ -11,7 +11,7 @@ const RETRY_STATUSES = [429, 529];
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 30000;
 const MAX_DIFF_CHARS = 40000;
-const PRIORITY_PATTERNS = [/actions\//, /migrations\//, /supabase\//, /\.github\//, /middleware/, /\.config\./];
+const PRIORITY_PATTERNS = [/actions\//, /migrations\//, /supabase\//, /\.github\//, /\.claude\//, /middleware/, /\.config\./];
 
 // Wraps fetch with retry on 429/529 — waits 30s between attempts
 async function fetchWithRetry(url, options) {
