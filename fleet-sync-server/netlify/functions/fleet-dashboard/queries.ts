@@ -25,7 +25,7 @@ async function fetchAgents(db: SupabaseClient) {
       'agent_id, display_name, role, owner, domain, ' +
       'current_focus, last_synced_at, session_count, updated_at'
     )
-    .order('last_synced_at', { ascending: false })
+    .order('updated_at', { ascending: false })
     .limit(50)
   if (error) throw new Error(`agents query failed — ${error.message}`)
   return data ?? []

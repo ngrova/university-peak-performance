@@ -36,7 +36,7 @@ export async function fetchOpenItems(db: SupabaseClient, agentId: string) {
     .from('fleet_messages')
     .select('id, agent_id, kind, summary, body, to_agent, urgency, thread_id, created_at')
     .eq('resolution_status', 'open')
-    .or(`to_agent.eq.${agentId},to_agent.eq.fleet`)
+    .in('to_agent', [agentId, 'fleet'])
     .order('created_at', { ascending: false })
     .limit(30)
 

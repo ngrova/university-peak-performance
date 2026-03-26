@@ -31,9 +31,9 @@ export function computeStats(
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const todayStart = new Date().toISOString().slice(0, 10)
 
-  // Active = synced in last 24h, planned = everyone else
+  // Active = any activity in last 24h, planned = everyone else
   const active = agents.filter(
-    (a) => typeof a.last_synced_at === 'string' && a.last_synced_at > oneDayAgo
+    (a) => typeof a.updated_at === 'string' && a.updated_at > oneDayAgo
   )
 
   const todayMessages = messages.filter(
