@@ -2,6 +2,24 @@ Review this code diff for code quality, standards compliance, and pattern consis
 
 INFRASTRUCTURE EXEMPTION: Files under .github/, .claude/, scripts/, packages/, and config files are exempt from file headers, function documentation requirements, and console.log restrictions. Sandi Metz line/function limits still apply. Only reject infrastructure files for genuine code quality issues (unbounded complexity, deeply nested logic).
 
+CODEBASE CONTEXT: This monorepo contains multiple codebases with different conventions. Before applying rules, check the file paths in the diff to determine which codebase each file belongs to, and apply the correct rules per-file.
+
+If the diff contains files in `fleet-sync-server/`:
+- File headers (FILE, PURPOSE, CALLED BY, DATA FLOW) are NOT required — that convention is for `apps/` only.
+- Sandi Metz rules (file length, function length, parameters, nesting, exports) still apply.
+- TypeScript strict (no `any`) still applies.
+- Function documentation still applies.
+- File naming conventions still apply.
+- No Sentry — do not reject for missing captureException. Errors are returned as JSON-RPC error responses.
+- console.log restriction still applies.
+- Supabase server client pattern (getServerClient, getAll/setAll cookies) does NOT apply — fleet-sync-server creates its own Supabase client with service-role key.
+- TanStack Query, server actions, 'use client', Zustand, design registry rules do NOT apply — fleet-sync-server is a standalone Node.js server, not a Next.js app.
+
+If the diff contains files in `apps/thriving-mobile/`:
+- All existing rules apply as-is with no modifications.
+
+A PR may touch both codebases — apply the correct rules per-file based on its path.
+
 Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
 - Use APPROVED if no issues exist in lines added by this diff (lines starting with +).
 - Use WARN if the only issues are pre-existing (visible in context lines, not added by this PR). List them but they do not block.
