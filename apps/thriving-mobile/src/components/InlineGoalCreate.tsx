@@ -47,7 +47,7 @@ export default function InlineGoalCreate({ initialName, onCreated, onCancel }: P
     setSaving(true); setError(null);
     try {
       const result = await createGoalAction(pillarId, name.trim());
-      if (result.error) { setError(result.error); setSaving(false); return; }
+      if (result.error) { setError(result.error); return; }
       if (result.goalId) {
         onCreated(result.goalId, result.title ?? name.trim(), result.pillarId ?? pillarId);
       } else {
@@ -56,8 +56,9 @@ export default function InlineGoalCreate({ initialName, onCreated, onCancel }: P
     } catch (err) {
       reportError(err);
       setError('Failed to create goal — check your connection and try again');
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   return (
