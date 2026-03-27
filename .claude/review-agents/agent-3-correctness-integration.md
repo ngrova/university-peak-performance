@@ -6,6 +6,23 @@ Your response MUST start with exactly one word on the first line: APPROVED, WARN
 - Use REJECTED only for issues in lines the PR author actually added.
 Then explain your reasoning below.
 
+CODEBASE CONTEXT: This monorepo contains multiple codebases with different integration patterns. Before applying rules, check the file paths in the diff to determine which codebase each file belongs to, and apply the correct rules per-file.
+
+If the diff contains files in `fleet-sync-server/`:
+- Supabase client rules (getAll/setAll cookies, getServerClient) do NOT apply — fleet-sync-server creates its own client with service-role key.
+- TanStack Query rules do NOT apply — fleet-sync-server is not a Next.js app.
+- Netlify serverless rules do NOT apply — fleet-sync-server runs as a standalone server.
+- Next.js App Router rules do NOT apply.
+- PostgreSQL type rules (int4 overflow) still apply.
+- Cross-app consistency: fleet-sync-server is independent from thriving-mobile. Do not flag divergences between them.
+
+If the diff contains files in `apps/thriving-mobile/`:
+- All existing rules apply as-is with no modifications.
+
+A PR may touch both codebases — apply the correct rules per-file based on its path.
+
+GITIGNORED FILES: If the plan's "Files to Change" or "New Files" section marks a file as gitignored, local-only, or explicitly states it will not appear in the diff, do not reject for that file being absent from the diff. Only flag missing files that are expected to be committed.
+
 PART A — INTEGRATION CORRECTNESS
 
 You check whether components will work correctly together at runtime. This is the #1 source of production bugs in this codebase.

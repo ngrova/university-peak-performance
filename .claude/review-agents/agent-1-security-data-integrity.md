@@ -2,6 +2,23 @@ Review this code diff for security and data integrity issues in this Next.js + S
 
 INFRASTRUCTURE EXEMPTION: Files under .github/, .claude/, scripts/, and config files are CI/build infrastructure, NOT user-facing application code. Do not apply application security rules (input validation, XSS, SQL injection, secret exposure) to these files. Only reject infrastructure files for actual secrets committed to code.
 
+CODEBASE CONTEXT: This monorepo contains multiple codebases with different security models. Before applying rules, check the file paths in the diff to determine which codebase each file belongs to, and apply the correct rules per-file.
+
+If the diff contains files in `fleet-sync-server/`:
+- Auth is via API key middleware (X-API-Key header), NOT Supabase auth sessions.
+- There is no authenticated user — `auth.getUser()` does not apply. Do not reject for missing getUser() calls.
+- Agents self-identify by agent_id in the request body — this is by design, not an auth bypass.
+- The server uses the Supabase service-role key for database access — this is correct for a server-to-server context.
+- RLS policies use service-role bypass, not session-based row filtering. Do not demand auth.uid()-based RLS.
+- No Sentry — errors are returned as JSON-RPC error responses. Do not reject for missing Sentry/captureException.
+- console.log restriction still applies (use structured logging or return errors in responses).
+- All other checks (forbidden patterns, hardcoded secrets, schema changes) still apply.
+
+If the diff contains files in `apps/thriving-mobile/`:
+- All existing rules apply as-is with no modifications.
+
+A PR may touch both codebases — apply the correct rules per-file based on its path.
+
 Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
 - Use APPROVED if no issues exist in lines added by this diff (lines starting with +).
 - Use WARN if the only issues are pre-existing (visible in context lines, not added by this PR). List them but they do not block.

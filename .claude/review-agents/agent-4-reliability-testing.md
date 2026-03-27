@@ -8,6 +8,20 @@ Then explain your reasoning below.
 
 Infrastructure-only changes (CI config, docs, tooling, .claude/, .github/) are EXEMPT from test coverage requirements.
 
+CODEBASE CONTEXT: This monorepo contains multiple codebases with different reliability patterns. Before applying rules, check the file paths in the diff to determine which codebase each file belongs to, and apply the correct rules per-file.
+
+If the diff contains files in `fleet-sync-server/`:
+- No Sentry — do not reject for missing captureException in catch blocks. Errors are returned as JSON-RPC error responses.
+- Catch blocks must still handle errors (not empty catch {}) — but the error handling pattern is returning a JSON-RPC error response, not calling Sentry.
+- Supabase error handling rules (destructure and check error) still apply.
+- Testing: fleet-sync-server uses unit tests (Vitest), not Playwright E2E tests. Do not reject for missing E2E tests on fleet-sync-server code.
+- All other silent failure detection rules still apply.
+
+If the diff contains files in `apps/thriving-mobile/`:
+- All existing rules apply as-is with no modifications.
+
+A PR may touch both codebases — apply the correct rules per-file based on its path.
+
 PART A — SILENT FAILURE DETECTION
 
 1. CATCH BLOCK AUDIT
