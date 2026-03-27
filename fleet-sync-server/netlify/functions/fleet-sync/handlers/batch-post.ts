@@ -127,14 +127,16 @@ export async function handleBatchPost(args: BatchPostArgs) {
     }
   }
 
-  // Update agent's updated_at (once for entire batch)
+  // Update agent's updated_at — non-fatal since posts are already committed
   const { error: syncErr } = await db
     .from('fleet_agents')
     .update({ updated_at: new Date().toISOString() })
     .eq('agent_id', args.agent_id)
-  if (syncErr) throw new Error(`Failed to update agent timestamp — ${syncErr.message}`)
 
   const created = results.filter((r) => r.status === 'created').length
   const duplicates = results.filter((r) => r.status === 'duplicate_ignored').length
-  return withMeta({ results, created, duplicates })
+  return withMeta({
+    results, created, duplicates,
+    ...(syncErr ? { warning: 'Posts saved but agent timestamp update failed' } : {}),
+  })
 }

@@ -31,19 +31,21 @@ export function checkRateLimit(
   agentId: string,
   count = 1
 ): { allowed: true } | { allowed: false; retryAfterMs: number } {
+  // Guard against invalid count values
+  const safeCount = Math.max(1, Math.floor(count))
   const now = Date.now()
   const bucket = buckets.get(agentId)
 
   // First write or window expired — start fresh
   if (!bucket || now >= bucket.resetAt) {
-    buckets.set(agentId, { count, resetAt: now + WINDOW_MS })
+    buckets.set(agentId, { count: safeCount, resetAt: now + WINDOW_MS })
     return { allowed: true }
   }
 
-  if (bucket.count + count > MAX_WRITES_PER_HOUR) {
+  if (bucket.count + safeCount > MAX_WRITES_PER_HOUR) {
     return { allowed: false, retryAfterMs: bucket.resetAt - now }
   }
 
-  bucket.count += count
+  bucket.count += safeCount
   return { allowed: true }
 }
