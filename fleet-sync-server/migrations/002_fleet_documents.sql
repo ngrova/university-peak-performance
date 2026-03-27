@@ -21,8 +21,9 @@ CREATE INDEX idx_fleet_documents_tags ON fleet_documents USING GIN(tags);
 CREATE INDEX idx_fleet_documents_for_agents ON fleet_documents USING GIN(for_agents);
 CREATE INDEX idx_fleet_documents_created_at ON fleet_documents(created_at DESC);
 
--- RLS: fleet-sync handlers use service_role (bypasses RLS),
--- but RLS is enabled as defense-in-depth. No anon/authenticated
--- policies are defined because this table is only accessed via
--- the fleet-sync serverless function, never from client-side code.
+-- RLS: fleet-sync handlers use service_role (bypasses RLS).
+-- Deny-all policy ensures non-service-role connections are blocked.
 ALTER TABLE fleet_documents ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "fleet_documents_deny_all" ON fleet_documents
+  FOR ALL USING (false);

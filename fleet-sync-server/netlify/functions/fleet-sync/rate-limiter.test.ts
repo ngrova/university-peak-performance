@@ -35,4 +35,23 @@ describe('checkRateLimit', () => {
     expect(checkRateLimit(id1).allowed).toBe(false)
     expect(checkRateLimit(id2).allowed).toBe(true)
   })
+
+  it('consumes multiple slots with count parameter', () => {
+    const id = 'agent-test-batch-1'
+    expect(checkRateLimit(id, 10).allowed).toBe(true)
+    expect(checkRateLimit(id, 10).allowed).toBe(true)
+    expect(checkRateLimit(id, 1).allowed).toBe(false)
+  })
+
+  it('blocks batch that would exceed limit', () => {
+    const id = 'agent-test-batch-2'
+    expect(checkRateLimit(id, 15).allowed).toBe(true)
+    expect(checkRateLimit(id, 6).allowed).toBe(false)
+  })
+
+  it('allows batch of exactly remaining capacity', () => {
+    const id = 'agent-test-batch-3'
+    expect(checkRateLimit(id, 20).allowed).toBe(true)
+    expect(checkRateLimit(id, 1).allowed).toBe(false)
+  })
 })
