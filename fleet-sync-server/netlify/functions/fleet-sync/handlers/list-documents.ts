@@ -11,10 +11,9 @@
 import { getFleetClient } from '../db'
 import { withMeta } from '../meta'
 
-/** Strips characters that could break PostgREST filter syntax. */
-function sanitizeAgentId(id: string): string {
-  return id.replace(/[^a-zA-Z0-9_-]/g, '')
-}
+/** Columns returned for document metadata (no content). */
+const DOC_META_COLS =
+  'id, agent_id, title, description, tags, file_type, for_agents, thread_id, created_at'
 
 /** Escapes SQL LIKE wildcards so user input is treated as literal. */
 function escapeLike(str: string): string {
@@ -29,6 +28,35 @@ interface ListDocumentsArgs {
   limit?: number
 }
 
+/** Builds a document metadata query with shared filters applied. */
+function buildDocQuery(args: ListDocumentsArgs, limit: number) {
+  const db = getFleetClient()
+  let q = db.from('fleet_documents').select(DOC_META_COLS)
+    .order('created_at', { ascending: false }).limit(limit)
+  if (args.agent_id) q = q.eq('agent_id', args.agent_id)
+  if (args.tags?.length) q = q.contains('tags', args.tags)
+  if (args.title_search) q = q.ilike('title', `%${escapeLike(args.title_search)}%`)
+  return q
+}
+
+/** Merges two arrays by id, sorts by created_at desc, and trims to limit. */
+function dedupeByDate(
+  a: Record<string, unknown>[],
+  b: Record<string, unknown>[],
+  limit: number
+): Record<string, unknown>[] {
+  const seen = new Set<string>()
+  const merged: Record<string, unknown>[] = []
+  for (const doc of [...a, ...b]) {
+    const id = doc.id as string
+    if (!seen.has(id)) { seen.add(id); merged.push(doc) }
+  }
+  merged.sort((x, y) =>
+    new Date(y.created_at as string).getTime() - new Date(x.created_at as string).getTime()
+  )
+  return merged.slice(0, limit)
+}
+
 /**
  * Lists fleet documents by metadata. Called by agents browsing
  * shared documents. Returns titles, tags, and dates — never
@@ -36,40 +64,25 @@ interface ListDocumentsArgs {
  * and title search. Default limit 20, max 50.
  */
 export async function handleListDocuments(args: ListDocumentsArgs) {
-  const db = getFleetClient()
   const limit = Math.min(args.limit ?? 20, 50)
 
-  let query = db
-    .from('fleet_documents')
-    .select(
-      'id, agent_id, title, description, tags, file_type, ' +
-      'for_agents, thread_id, created_at'
-    )
-    .order('created_at', { ascending: false })
-    .limit(limit)
-
-  // Apply optional filters
-  if (args.agent_id) {
-    query = query.eq('agent_id', args.agent_id)
-  }
-  if (args.tags && args.tags.length > 0) {
-    query = query.contains('tags', args.tags)
-  }
-  if (args.for_agent) {
-    // Sanitize to prevent PostgREST filter injection via .or() string
-    const safe = sanitizeAgentId(args.for_agent)
-    query = query.or(`for_agents.cs.{"${safe}"},for_agents.eq.{}`)
-  }
-  if (args.title_search) {
-    // Escape LIKE wildcards so user input is treated as literal text
-    query = query.ilike('title', `%${escapeLike(args.title_search)}%`)
+  if (!args.for_agent) {
+    const { data, error } = await buildDocQuery(args, limit)
+    if (error) throw new Error(`Failed to list documents — ${error.message}`)
+    return withMeta({ documents: data ?? [], count: (data ?? []).length })
   }
 
-  const { data, error } = await query
-  if (error) throw new Error(`Failed to list documents — ${error.message}`)
+  // Two type-safe queries — no string interpolation into .or()
+  if (!/^[a-zA-Z0-9_-]+$/.test(args.for_agent)) {
+    throw new Error('Invalid for_agent — alphanumeric, hyphens, and underscores only')
+  }
+  const [targeted, pub] = await Promise.all([
+    buildDocQuery(args, limit).contains('for_agents', [args.for_agent]),
+    buildDocQuery(args, limit).filter('for_agents', 'eq', '{}'),
+  ])
+  if (targeted.error) throw new Error(`Failed to list documents — ${targeted.error.message}`)
+  if (pub.error) throw new Error(`Failed to list documents — ${pub.error.message}`)
 
-  return withMeta({
-    documents: data ?? [],
-    count: (data ?? []).length,
-  })
+  const docs = dedupeByDate(targeted.data ?? [], pub.data ?? [], limit)
+  return withMeta({ documents: docs, count: docs.length })
 }
