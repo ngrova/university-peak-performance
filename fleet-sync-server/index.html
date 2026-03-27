@@ -405,6 +405,14 @@
       color: var(--text-muted);
     }
 
+    /* ── Document Items ────────────────────────────── */
+    .doc-item { padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+    .doc-item:last-child { border-bottom: none; }
+    .doc-item .doc-title { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); }
+    .doc-item .doc-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .doc-item .doc-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-top: 0.3rem; }
+    .doc-tag { font-size: 0.6rem; padding: 0.1rem 0.4rem; border-radius: 4px; background: rgba(20, 184, 166, 0.15); color: var(--teal); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; }
+
     /* ── Error & Empty States ──────────────────────── */
     .error-banner {
       background: rgba(239, 68, 68, 0.1);
@@ -470,6 +478,7 @@
       <div class="kpi-card"><div class="label">Messages Today</div><div class="value mono" id="kpiMessages">-</div></div>
       <div class="kpi-card" id="kpiOpenCard"><div class="label">Open Items</div><div class="value mono" id="kpiOpen">-</div></div>
       <div class="kpi-card"><div class="label">Active Decisions</div><div class="value mono" id="kpiDecisions">-</div></div>
+      <div class="kpi-card"><div class="label">Documents</div><div class="value mono" id="kpiDocuments">-</div></div>
     </div>
 
     <!-- Agents -->
@@ -502,6 +511,14 @@
         <div class="sidebar-panel">
           <div class="panel-title">Decision Log</div>
           <div id="decisionLog">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Recent Documents -->
+        <div class="sidebar-panel">
+          <div class="panel-title">Recent Documents</div>
+          <div id="documentList">
             <div class="loading"><div class="spinner"></div></div>
           </div>
         </div>
@@ -544,6 +561,7 @@
       document.getElementById('kpiMessages').textContent = stats.messages_today;
       document.getElementById('kpiOpen').textContent = stats.open_items;
       document.getElementById('kpiDecisions').textContent = stats.active_decisions;
+      document.getElementById('kpiDocuments').textContent = stats.total_documents;
 
       var openCard = document.getElementById('kpiOpenCard');
       openCard.className = 'kpi-card' + (stats.open_items > 0 ? ' alert' : '');
@@ -643,6 +661,28 @@
       }).join('');
     }
 
+    function renderDocuments(documents) {
+      var container = document.getElementById('documentList');
+      if (!documents || !documents.length) {
+        container.innerHTML = '<div class="empty-state">No documents yet</div>';
+        return;
+      }
+      container.innerHTML = documents.map(function(d) {
+        var tags = (d.tags || []).map(function(t) {
+          return '<span class="doc-tag mono">' + escapeHtml(t) + '</span>';
+        }).join('');
+        return '<div class="doc-item">'
+          + '<div class="doc-title">' + escapeHtml(d.title || '') + '</div>'
+          + '<div class="doc-meta mono">'
+          + escapeHtml(d.agent_id || '') + ' &middot; '
+          + escapeHtml(d.file_type || '') + ' &middot; '
+          + (d.created_at ? timeAgo(d.created_at) : '')
+          + '</div>'
+          + (tags ? '<div class="doc-tags">' + tags + '</div>' : '')
+          + '</div>';
+      }).join('');
+    }
+
     // ── Status Bar ───────────────────────────────────
     function updateStatus() {
       var dot = document.getElementById('statusDot');
@@ -683,6 +723,7 @@
           renderFeed(data.messages);
           renderOpenItems(data.open_items);
           renderDecisions(data.decisions);
+          renderDocuments(data.documents);
           updateStatus();
         })
         .catch(function(err) {

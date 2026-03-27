@@ -10,13 +10,8 @@
 
 import { getFleetClient } from '../db'
 import { withMeta } from '../meta'
-import { requireString, checkLength, checkEnum } from '../validation'
-
-const DIRECTED_KINDS = ['recommendation', 'question', 'warning', 'blocker']
-const VALID_KINDS = [
-  'progress', 'decision', 'insight', 'context',
-  'recommendation', 'question', 'warning', 'blocker', 'blocker_resolved',
-] as const
+import { requireString } from '../validation'
+import { DIRECTED_KINDS, validatePost } from './post-validation'
 
 interface PostArgs {
   agent_id: string
@@ -59,20 +54,9 @@ export async function handlePost(args: PostArgs) {
     }
   }
 
-  // Validate inputs — ?? chain short-circuits on first error
-  const err = requireString(args.agent_id, 'agent_id')
-    ?? requireString(args.kind, 'kind')
-    ?? requireString(args.summary, 'summary')
-    ?? checkEnum(args.kind, 'kind', VALID_KINDS)
-    ?? checkLength(args.summary, 'summary', 200)
-    ?? (args.body != null && typeof args.body !== 'string' ? 'body must be a string' : null)
-    ?? (typeof args.body === 'string' ? checkLength(args.body, 'body', 4000) : null)
+  // Validate inputs — shared validation handles kind, summary, body, directed rules
+  const err = requireString(args.agent_id, 'agent_id') ?? validatePost(args)
   if (err) throw new Error(err)
-
-  // Directed kinds require to_agent and urgency
-  if (DIRECTED_KINDS.includes(args.kind) && (!args.to_agent || !args.urgency)) {
-    throw new Error(`${args.kind} messages require to_agent and urgency`)
-  }
 
   const threadId = args.thread_id ?? crypto.randomUUID()
   const isDirected = DIRECTED_KINDS.includes(args.kind)

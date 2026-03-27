@@ -5,7 +5,9 @@
 //   fleet tables that have RLS enabled with no policies.
 // CALLED BY: handlers/sync.ts, handlers/post.ts,
 //   handlers/respond.ts, handlers/record-decision.ts,
-//   handlers/read-decisions.ts, handlers/read-post.ts
+//   handlers/read-decisions.ts, handlers/read-post.ts,
+//   handlers/save-document.ts, handlers/list-documents.ts,
+//   handlers/get-document.ts, handlers/batch-post.ts
 // DATA FLOW: Reads SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
 //   from environment → returns a configured Supabase client.
 // ═══════════════════════════════════════════════════════════

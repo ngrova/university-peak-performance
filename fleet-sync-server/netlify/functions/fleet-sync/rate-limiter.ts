@@ -20,27 +20,30 @@ interface Bucket {
 const buckets = new Map<string, Bucket>()
 
 /**
- * Checks whether an agent is allowed to perform a write operation.
+ * Checks whether an agent is allowed to perform write operations.
  * Called by the router before executing post, respond, record_decision,
- * or sync (when wrap_up is present). Increments the counter if allowed.
- * Returns { allowed: false, retryAfterMs } if the limit is exceeded.
+ * save_document, batch_post, or sync (when wrap_up is present).
+ * The count parameter allows batch operations to consume multiple
+ * slots in one call. Returns { allowed: false, retryAfterMs } if
+ * the limit would be exceeded.
  */
 export function checkRateLimit(
-  agentId: string
+  agentId: string,
+  count = 1
 ): { allowed: true } | { allowed: false; retryAfterMs: number } {
   const now = Date.now()
   const bucket = buckets.get(agentId)
 
   // First write or window expired — start fresh
   if (!bucket || now >= bucket.resetAt) {
-    buckets.set(agentId, { count: 1, resetAt: now + WINDOW_MS })
+    buckets.set(agentId, { count, resetAt: now + WINDOW_MS })
     return { allowed: true }
   }
 
-  if (bucket.count >= MAX_WRITES_PER_HOUR) {
+  if (bucket.count + count > MAX_WRITES_PER_HOUR) {
     return { allowed: false, retryAfterMs: bucket.resetAt - now }
   }
 
-  bucket.count++
+  bucket.count += count
   return { allowed: true }
 }

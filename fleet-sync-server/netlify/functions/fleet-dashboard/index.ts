@@ -46,13 +46,17 @@ export default async function handler(request: Request): Promise<Response> {
   try {
     const db = getFleetClient()
     const data = await fetchAllData(db)
-    const stats = computeStats(data.agents, data.messages, data.decisions, data.openItems)
+    const stats = computeStats(
+      data.agents, data.messages, data.decisions,
+      data.openItems, data.documents
+    )
 
     return jsonResponse({
       agents: data.agents,
       messages: data.messages,
       decisions: data.decisions,
       open_items: data.openItems,
+      documents: data.documents,
       stats,
     }, 200)
   } catch (err: unknown) {

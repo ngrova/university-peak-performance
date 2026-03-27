@@ -13,6 +13,7 @@ interface DashboardStats {
   messages_today: number
   open_items: number
   active_decisions: number
+  total_documents: number
 }
 
 /**
@@ -26,7 +27,8 @@ export function computeStats(
   agents: Record<string, unknown>[],
   messages: Record<string, unknown>[],
   decisions: Record<string, unknown>[],
-  openItems: Record<string, unknown>[]
+  openItems: Record<string, unknown>[],
+  documents: Record<string, unknown>[]
 ): DashboardStats {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const todayStart = new Date().toISOString().slice(0, 10)
@@ -46,5 +48,6 @@ export function computeStats(
     messages_today: todayMessages.length,
     open_items: openItems.length,
     active_decisions: decisions.length,
+    total_documents: documents.length,
   }
 }
