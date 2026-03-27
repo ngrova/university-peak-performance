@@ -121,6 +121,19 @@ Two layers — proactive (plan time) and reactive (mid-task).
 **When to pushback:** Different approach needed, risk found, decision needed, disagree with instructions.
 **When NOT to:** Just sharing context (no concern), ready to proceed, minor observations.
 
+## Parallel Instances
+
+When Nick runs two Claude Code instances on this repo simultaneously, they MUST use separate git worktrees to avoid branch-switching conflicts.
+
+- Primary workspace: university-peak-performance/ (this directory)
+- Parallel workspace: ../upp-worktree-2/
+
+Nick launches the parallel workspace by running `parallel` (or double-clicking parallel.bat) from the primary workspace. This opens a new terminal in the worktree directory where he types `claude` to start a second instance.
+
+IMPORTANT: Two worktrees cannot have the same branch checked out. Each instance must create its own feature branch with its own plan file. Each instance must independently complete the full 17-step pipeline — including council plan review and council code review — before creating a PR.
+
+If the parallel workspace doesn't exist, parallel.bat creates it automatically.
+
 ## CI Merge Gate
 
 The `require-ci-pass` hook mechanically blocks `gh pr merge` unless all CI checks are passing.

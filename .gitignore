@@ -28,6 +28,9 @@ dist
 .claude/settings.local.json
 .claude/worktrees/
 
+# Local workflow scripts
+parallel.bat
+
 # Legacy plan file (replaced by plans/ directory)
 PLAN.md
 
