@@ -52,7 +52,8 @@ function dedupeByDate(
     if (!seen.has(id)) { seen.add(id); merged.push(doc) }
   }
   merged.sort((x, y) =>
-    new Date(y.created_at as string).getTime() - new Date(x.created_at as string).getTime()
+    (new Date(y.created_at as string).getTime() || 0) -
+    (new Date(x.created_at as string).getTime() || 0)
   )
   return merged.slice(0, limit)
 }

@@ -120,7 +120,7 @@ export async function handleBatchPost(args: BatchPostArgs) {
   // Atomic bulk insert — single INSERT statement
   if (rows.length > 0) {
     const { data: inserted, error } = await db
-      .from('fleet_messages').insert(rows).select('id')
+      .from('fleet_messages').insert(rows).select('id').limit(rows.length)
     if (error) throw new Error(`Failed to insert batch — ${error.message}`)
     for (let j = 0; j < (inserted ?? []).length; j++) {
       results[indexMap[j]].post_id = (inserted![j] as { id: string }).id
@@ -137,6 +137,6 @@ export async function handleBatchPost(args: BatchPostArgs) {
   const duplicates = results.filter((r) => r.status === 'duplicate_ignored').length
   return withMeta({
     results, created, duplicates,
-    ...(syncErr ? { warning: 'Posts saved but agent timestamp update failed' } : {}),
+    ...(syncErr ? { warning: `Posts saved but agent timestamp update failed: ${syncErr.message}` } : {}),
   })
 }
