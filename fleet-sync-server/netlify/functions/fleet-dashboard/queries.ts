@@ -15,6 +15,7 @@ interface FleetData {
   messages: Record<string, unknown>[]
   decisions: Record<string, unknown>[]
   openItems: Record<string, unknown>[]
+  documents: Record<string, unknown>[]
 }
 
 /** Fetches all registered fleet agents, most recently synced first. */
@@ -75,19 +76,34 @@ async function fetchOpenItems(db: SupabaseClient) {
   return data ?? []
 }
 
+/** Fetches the 20 most recent fleet documents (metadata only). */
+async function fetchDocuments(db: SupabaseClient) {
+  const { data, error } = await db
+    .from('fleet_documents')
+    .select(
+      'id, agent_id, title, description, tags, file_type, ' +
+      'for_agents, created_at'
+    )
+    .order('created_at', { ascending: false })
+    .limit(20)
+  if (error) throw new Error(`documents query failed — ${error.message}`)
+  return data ?? []
+}
+
 /**
- * Fetches all dashboard data in parallel from the three fleet
- * tables. Called by the handler on every dashboard API request.
- * Runs 4 queries concurrently and returns agents, messages,
- * decisions, and open items. Throws on any query failure so the
+ * Fetches all dashboard data in parallel from the fleet tables.
+ * Called by the handler on every dashboard API request. Runs 5
+ * queries concurrently and returns agents, messages, decisions,
+ * open items, and documents. Throws on any query failure so the
  * handler can return a 500 error instead of partial/empty data.
  */
 export async function fetchAllData(db: SupabaseClient): Promise<FleetData> {
-  const [agents, messages, decisions, openItems] = await Promise.all([
+  const [agents, messages, decisions, openItems, documents] = await Promise.all([
     fetchAgents(db),
     fetchMessages(db),
     fetchDecisions(db),
     fetchOpenItems(db),
+    fetchDocuments(db),
   ])
-  return { agents, messages, decisions, openItems }
+  return { agents, messages, decisions, openItems, documents }
 }

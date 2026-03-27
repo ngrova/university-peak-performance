@@ -16,6 +16,10 @@ import { handleRespond } from './handlers/respond'
 import { handleRecordDecision } from './handlers/record-decision'
 import { handleReadDecisions } from './handlers/read-decisions'
 import { handleReadPost } from './handlers/read-post'
+import { handleSaveDocument } from './handlers/save-document'
+import { handleListDocuments } from './handlers/list-documents'
+import { handleGetDocument } from './handlers/get-document'
+import { handleBatchPost } from './handlers/batch-post'
 
 interface JsonRpcRequest {
   jsonrpc: string
@@ -24,7 +28,7 @@ interface JsonRpcRequest {
   params?: Record<string, unknown>
 }
 
-const WRITE_TOOLS = new Set(['post', 'respond', 'record_decision'])
+const WRITE_TOOLS = new Set(['post', 'respond', 'record_decision', 'save_document', 'batch_post'])
 
 /**
  * Routes a JSON-RPC request to the appropriate handler.
@@ -55,11 +59,13 @@ async function handleToolCall(req: JsonRpcRequest): Promise<Response> {
   }
 
   try {
-    // Rate limit write tools
+    // Rate limit write tools — batch_post counts as N writes
     const agentId = (args.agent_id as string) ?? ''
     const isWrite = WRITE_TOOLS.has(name) || (name === 'sync' && args.wrap_up)
+    const writeCount = name === 'batch_post' && Array.isArray(args.posts)
+      ? args.posts.length : 1
     if (isWrite && agentId) {
-      const limit = checkRateLimit(agentId)
+      const limit = checkRateLimit(agentId, writeCount)
       if (!limit.allowed) {
         return toolError(
           req.id!,
@@ -84,6 +90,10 @@ async function dispatch(name: string, args: Record<string, unknown>) {
     case 'record_decision': return handleRecordDecision(args as Parameters<typeof handleRecordDecision>[0])
     case 'read_decisions': return handleReadDecisions(args as Parameters<typeof handleReadDecisions>[0])
     case 'read_post': return handleReadPost(args as Parameters<typeof handleReadPost>[0])
+    case 'save_document': return handleSaveDocument(args as Parameters<typeof handleSaveDocument>[0])
+    case 'list_documents': return handleListDocuments(args as Parameters<typeof handleListDocuments>[0])
+    case 'get_document': return handleGetDocument(args as Parameters<typeof handleGetDocument>[0])
+    case 'batch_post': return handleBatchPost(args as Parameters<typeof handleBatchPost>[0])
     default: throw new Error(`Unknown tool: ${name}`)
   }
 }
@@ -93,7 +103,7 @@ function initResult() {
   return {
     protocolVersion: '2025-03-26',
     capabilities: { tools: {} },
-    serverInfo: { name: 'fleet-sync', version: '1.0.0' },
+    serverInfo: { name: 'fleet-sync', version: '1.1.0' },
   }
 }
 
