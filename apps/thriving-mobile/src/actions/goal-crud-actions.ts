@@ -25,7 +25,7 @@ import { revalidatePath } from 'next/cache';
 export async function createGoalAction(
   pillarId: string,
   title: string,
-): Promise<{ goalId?: string; error?: string }> {
+): Promise<{ goalId?: string; title?: string; pillarId?: string; error?: string }> {
   try {
     const supabase = await getServerClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -39,7 +39,7 @@ export async function createGoalAction(
       sort_order: existing.length,
     });
     revalidatePath('/goals');
-    return { goalId: goal.id };
+    return { goalId: goal.id, title: goal.title, pillarId: goal.pillar_id };
   } catch (err) {
     reportError(err);
     return { error: 'Failed to create goal — try again' };

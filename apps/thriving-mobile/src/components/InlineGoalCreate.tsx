@@ -14,10 +14,11 @@ import React, { useEffect, useState } from 'react';
 import type { LifePillar } from '@upp/db';
 import { fetchGoalsForPicker } from '@/actions/goal-actions';
 import { createGoalAction } from '@/actions/goal-crud-actions';
+import { reportError } from '@/lib/report-error';
 
 interface Props {
   initialName?: string;
-  onCreated: (goalId: string) => void;
+  onCreated: (goalId: string, title: string, pillarId: string) => void;
   onCancel: () => void;
 }
 
@@ -39,15 +40,25 @@ export default function InlineGoalCreate({ initialName, onCreated, onCancel }: P
     fetchGoalsForPicker().then(({ pillars: p }) => setPillars(p));
   }, []);
 
-  /** Creates the goal and notifies the parent */
+  /** Creates the goal and notifies the parent with full goal info */
   async function handleCreate() {
     if (!name.trim()) { setError('Enter a goal name'); return; }
     if (!pillarId) { setError('Pick a pillar'); return; }
     setSaving(true); setError(null);
-    const result = await createGoalAction(pillarId, name.trim());
-    if (result.error) { setError(result.error); setSaving(false); return; }
-    if (result.goalId) onCreated(result.goalId);
-    setSaving(false);
+    try {
+      const result = await createGoalAction(pillarId, name.trim());
+      if (result.error) { setError(result.error); return; }
+      if (result.goalId) {
+        onCreated(result.goalId, result.title ?? name.trim(), result.pillarId ?? pillarId);
+      } else {
+        setError('Goal created but missing ID — try again');
+      }
+    } catch (err) {
+      reportError(err);
+      setError('Failed to create goal — check your connection and try again');
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
