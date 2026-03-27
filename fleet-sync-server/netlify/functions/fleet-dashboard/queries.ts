@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: queries.ts
-// PURPOSE: Fetches all fleet data for the dashboard in one
-//   call — agents, messages, decisions, and open items from
-//   the three fleet Supabase tables.
+// PURPOSE: Fetches all fleet data for the dashboard, filtered
+//   by date in Eastern Time. Returns agents, messages, decisions,
+//   and open items from the fleet Supabase tables.
 // CALLED BY: index.ts (the dashboard API entry point)
-// DATA FLOW: Supabase client → 4 parallel queries → combined
-//   result object returned to the handler for JSON response.
+// DATA FLOW: date param → Eastern day bounds → Supabase queries
+//   → combined result object for JSON response.
 // ═══════════════════════════════════════════════════════════
 
 import { SupabaseClient } from '@supabase/supabase-js'
@@ -15,7 +15,30 @@ interface FleetData {
   messages: Record<string, unknown>[]
   decisions: Record<string, unknown>[]
   openItems: Record<string, unknown>[]
-  documents: Record<string, unknown>[]
+}
+
+/** Computes UTC start/end bounds for an Eastern Time day. */
+export function getEasternDayBounds(dateParam?: string) {
+  // Default to today in America/New_York
+  const todayET = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+  }).format(new Date())
+  const dateStr = dateParam || todayET
+  // Probe noon UTC to determine EDT vs EST offset
+  const probe = new Date(`${dateStr}T12:00:00Z`)
+  const etHour = parseInt(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      hour: 'numeric',
+      hour12: false,
+    }).format(probe),
+    10
+  )
+  const offsetH = 12 - etHour // 4 = EDT, 5 = EST
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const start = new Date(Date.UTC(y, m - 1, d, offsetH)).toISOString()
+  const end = new Date(Date.UTC(y, m - 1, d + 1, offsetH) - 1).toISOString()
+  return { start, end, dateStr }
 }
 
 /** Fetches all registered fleet agents, most recently synced first. */
@@ -32,29 +55,32 @@ async function fetchAgents(db: SupabaseClient) {
   return data ?? []
 }
 
-/** Fetches the 50 most recent fleet messages. */
-async function fetchMessages(db: SupabaseClient) {
+/** Fetches fleet messages within a date range. */
+async function fetchMessages(db: SupabaseClient, start: string, end: string) {
   const { data, error } = await db
     .from('fleet_messages')
     .select(
       'id, agent_id, kind, summary, body, tags, ' +
       'to_agent, urgency, thread_id, resolution_status, created_at'
     )
+    .gte('created_at', start)
+    .lte('created_at', end)
     .order('created_at', { ascending: false })
-    .limit(50)
+    .limit(200)
   if (error) throw new Error(`messages query failed — ${error.message}`)
   return data ?? []
 }
 
-/** Fetches active fleet decisions, most recent first. */
-async function fetchDecisions(db: SupabaseClient) {
+/** Fetches fleet decisions within a date range. */
+async function fetchDecisions(db: SupabaseClient, start: string, end: string) {
   const { data, error } = await db
     .from('fleet_decisions')
     .select(
       'id, decision, reasoning, decided_by, domain, ' +
       'affects_agents, acknowledged_by, status, created_at'
     )
-    .eq('status', 'active')
+    .gte('created_at', start)
+    .lte('created_at', end)
     .order('created_at', { ascending: false })
     .limit(50)
   if (error) throw new Error(`decisions query failed — ${error.message}`)
@@ -76,34 +102,19 @@ async function fetchOpenItems(db: SupabaseClient) {
   return data ?? []
 }
 
-/** Fetches the 20 most recent fleet documents (metadata only). */
-async function fetchDocuments(db: SupabaseClient) {
-  const { data, error } = await db
-    .from('fleet_documents')
-    .select(
-      'id, agent_id, title, description, tags, file_type, ' +
-      'for_agents, created_at'
-    )
-    .order('created_at', { ascending: false })
-    .limit(20)
-  if (error) throw new Error(`documents query failed — ${error.message}`)
-  return data ?? []
-}
-
 /**
- * Fetches all dashboard data in parallel from the fleet tables.
- * Called by the handler on every dashboard API request. Runs 5
- * queries concurrently and returns agents, messages, decisions,
- * open items, and documents. Throws on any query failure so the
- * handler can return a 500 error instead of partial/empty data.
+ * Fetches all dashboard data in parallel, filtered by date.
+ * Messages and decisions use the date range. Agents and open
+ * items always return current state (no date filter).
  */
-export async function fetchAllData(db: SupabaseClient): Promise<FleetData> {
-  const [agents, messages, decisions, openItems, documents] = await Promise.all([
+export async function fetchAllData(
+  db: SupabaseClient, start: string, end: string
+): Promise<FleetData> {
+  const [agents, messages, decisions, openItems] = await Promise.all([
     fetchAgents(db),
-    fetchMessages(db),
-    fetchDecisions(db),
+    fetchMessages(db, start, end),
+    fetchDecisions(db, start, end),
     fetchOpenItems(db),
-    fetchDocuments(db),
   ])
-  return { agents, messages, decisions, openItems, documents }
+  return { agents, messages, decisions, openItems }
 }
