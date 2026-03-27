@@ -51,8 +51,9 @@ export default function CapturePageContent(): React.JSX.Element {
     if (success) setShowToast(true);
   }
 
-  /** After inline goal creation, select it and refresh the picker */
-  function handleGoalCreated(goalId: string) {
+  /** After inline goal creation, add goal to picker synchronously then select it */
+  function handleGoalCreated(goalId: string, title: string, pillarId: string) {
+    goalPickerRef.current?.addGoal(goalId, title, pillarId);
     f.setGoalId(goalId);
     ai.setShowInlineCreate(false);
     goalPickerRef.current?.reload();

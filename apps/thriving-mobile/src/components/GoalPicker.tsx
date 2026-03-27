@@ -14,6 +14,9 @@ import React, { useEffect, useImperativeHandle, useState } from 'react';
 import type { Goal, LifePillar } from '@upp/db';
 import { fetchGoalsForPicker } from '@/actions/goal-actions';
 
+/** Minimal goal shape — only the fields the picker dropdown needs */
+type PickerGoal = Pick<Goal, 'id' | 'title' | 'pillar_id'>;
+
 interface GoalPickerProps {
   value: string;
   onChange: (goalId: string) => void;
@@ -21,8 +24,11 @@ interface GoalPickerProps {
   onNewGoal?: () => void;
 }
 
-/** Handle type for imperative reload calls from parent */
-export interface GoalPickerHandle { reload: () => void }
+/** Handle type for imperative reload and addGoal calls from parent */
+export interface GoalPickerHandle {
+  reload: () => void;
+  addGoal: (id: string, title: string, pillarId: string) => void;
+}
 
 /**
  * Triggered by: CapturePageContent or TaskDetailSheet renders this.
@@ -33,7 +39,7 @@ export interface GoalPickerHandle { reload: () => void }
  */
 const GoalPicker = React.forwardRef<GoalPickerHandle, GoalPickerProps>(function GoalPicker({ value, onChange, onGoalsLoaded, onNewGoal }, ref) {
   const [pillars, setPillars] = useState<LifePillar[]>([]);
-  const [goals, setGoals] = useState<Goal[]>([]);
+  const [goals, setGoals] = useState<PickerGoal[]>([]);
 
   /** Reloads goals — called on mount and after inline creation */
   function reload() {
@@ -44,7 +50,12 @@ const GoalPicker = React.forwardRef<GoalPickerHandle, GoalPickerProps>(function 
     });
   }
 
-  useImperativeHandle(ref, () => ({ reload }));
+  /** Synchronously inserts a newly created goal so the select has a matching option immediately */
+  function addGoal(id: string, title: string, pillarId: string) {
+    setGoals((prev) => [...prev, { id, title, pillar_id: pillarId }]);
+  }
+
+  useImperativeHandle(ref, () => ({ reload, addGoal }));
 
   useEffect(() => { reload(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
