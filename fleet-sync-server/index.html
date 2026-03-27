@@ -496,9 +496,10 @@ function fetchDashboard(date) {
       }
       renderAll();
     })
-    .catch(function() {
+    .catch(function(err) {
       lastFetchOk = false;
-      banner.textContent = 'Failed to load fleet data \u2014 retrying...';
+      var reason = err && err.message ? err.message : 'Network error';
+      banner.textContent = 'Failed to load fleet data (' + reason + ') \u2014 retrying in 30s';
       banner.classList.add('visible');
       updateStatus();
     });
