@@ -19,6 +19,8 @@ Add document storage system (100K char limit) and batch post tool to fleet-sync-
 - `fleet-sync-server/netlify/functions/fleet-sync/tools.ts` — add 4 new tool definitions
 - `fleet-sync-server/netlify/functions/fleet-sync/router.ts` — add imports, dispatch cases, batch rate limit logic, version bump
 - `fleet-sync-server/netlify/functions/fleet-sync/rate-limiter.ts` — add count parameter to checkRateLimit
+- `fleet-sync-server/netlify/functions/fleet-sync/rate-limiter.test.ts` — add batch count tests
+- `fleet-sync-server/netlify/functions/fleet-sync/db.ts` — update comments for document support
 - `fleet-sync-server/netlify/functions/fleet-dashboard/queries.ts` — add fetchDocuments, update fetchAllData
 - `fleet-sync-server/netlify/functions/fleet-dashboard/stats.ts` — add total_documents stat
 - `fleet-sync-server/netlify/functions/fleet-dashboard/index.ts` — pass documents to computeStats, include in response
@@ -26,6 +28,7 @@ Add document storage system (100K char limit) and batch post tool to fleet-sync-
 
 ## New Files
 - `fleet-sync-server/netlify/functions/fleet-sync/handlers/post-validation.ts` — shared VALID_KINDS, DIRECTED_KINDS, validatePost()
+- `fleet-sync-server/netlify/functions/fleet-sync/handlers/post-validation.test.ts` — unit tests for post validation
 - `fleet-sync-server/netlify/functions/fleet-sync/handlers/save-document.ts` — save_document handler
 - `fleet-sync-server/netlify/functions/fleet-sync/handlers/list-documents.ts` — list_documents handler
 - `fleet-sync-server/netlify/functions/fleet-sync/handlers/get-document.ts` — get_document handler
