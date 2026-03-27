@@ -17,7 +17,7 @@ Set up git worktrees so two Claude Code instances can run simultaneously without
 - CLAUDE.md — add Parallel Instances section with worktree rules
 
 ## New Files
-- parallel.bat — Windows batch script to launch parallel workspace (gitignored, local-only)
+- parallel.bat — Windows batch script to launch parallel workspace (gitignored, local-only — created on disk but intentionally excluded from version control, so it will not appear in the diff)
 
 ## Scope
 small
