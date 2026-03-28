@@ -12,6 +12,7 @@ import { getFleetClient } from '../db'
 import { withMeta } from '../meta'
 import { requireString } from '../validation'
 import { DIRECTED_KINDS, validatePost } from './post-validation'
+import { fanoutInbox } from './inbox-fanout'
 
 interface PostArgs {
   agent_id: string
@@ -88,9 +89,13 @@ export async function handlePost(args: PostArgs) {
     .eq('agent_id', args.agent_id)
   if (syncErr) throw new Error(`Failed to update agent timestamp — ${syncErr.message}`)
 
+  // Fan out inbox notifications — non-fatal (post already committed)
+  const inbox = await fanoutInbox(db, data.id, args.agent_id, args.to_agent)
+
   return withMeta({
     post_id: data.id,
     thread_id: threadId,
     status: 'created',
+    ...(inbox.warning ? { inbox_warning: inbox.warning } : {}),
   })
 }
