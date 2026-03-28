@@ -15,6 +15,7 @@ import { getFleetClient } from '../db'
 import { withMeta } from '../meta'
 import { requireString } from '../validation'
 import { DIRECTED_KINDS, validatePost } from './post-validation'
+import { fanoutInbox } from './inbox-fanout'
 
 interface PostItem {
   kind: string
@@ -133,10 +134,23 @@ export async function handleBatchPost(args: BatchPostArgs) {
     .update({ updated_at: new Date().toISOString() })
     .eq('agent_id', args.agent_id)
 
+  // Fan out inbox notifications for each created post — non-fatal
+  const inboxWarnings: string[] = []
+  for (let i = 0; i < results.length; i++) {
+    if (results[i].status !== 'created' || !results[i].post_id) continue
+    const toAgent = args.posts[i]?.to_agent
+    const inbox = await fanoutInbox(db, results[i].post_id, args.agent_id, toAgent)
+    if (inbox.warning) inboxWarnings.push(inbox.warning)
+  }
+
   const created = results.filter((r) => r.status === 'created').length
   const duplicates = results.filter((r) => r.status === 'duplicate_ignored').length
+  const warnings = [
+    ...(syncErr ? [`Posts saved but agent timestamp update failed: ${syncErr.message}`] : []),
+    ...inboxWarnings,
+  ]
   return withMeta({
     results, created, duplicates,
-    ...(syncErr ? { warning: `Posts saved but agent timestamp update failed: ${syncErr.message}` } : {}),
+    ...(warnings.length > 0 ? { warning: warnings.join('; ') } : {}),
   })
 }

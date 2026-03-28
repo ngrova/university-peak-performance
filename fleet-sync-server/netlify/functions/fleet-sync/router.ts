@@ -20,6 +20,8 @@ import { handleSaveDocument } from './handlers/save-document'
 import { handleListDocuments } from './handlers/list-documents'
 import { handleGetDocument } from './handlers/get-document'
 import { handleBatchPost } from './handlers/batch-post'
+import { handleCheckInbox } from './handlers/check-inbox'
+import { handleUpdateInbox } from './handlers/update-inbox'
 
 interface JsonRpcRequest {
   jsonrpc: string
@@ -28,7 +30,7 @@ interface JsonRpcRequest {
   params?: Record<string, unknown>
 }
 
-const WRITE_TOOLS = new Set(['post', 'respond', 'record_decision', 'save_document', 'batch_post'])
+const WRITE_TOOLS = new Set(['post', 'respond', 'record_decision', 'save_document', 'batch_post', 'update_inbox'])
 
 /**
  * Routes a JSON-RPC request to the appropriate handler.
@@ -94,6 +96,8 @@ async function dispatch(name: string, args: Record<string, unknown>) {
     case 'list_documents': return handleListDocuments(args as Parameters<typeof handleListDocuments>[0])
     case 'get_document': return handleGetDocument(args as Parameters<typeof handleGetDocument>[0])
     case 'batch_post': return handleBatchPost(args as Parameters<typeof handleBatchPost>[0])
+    case 'check_inbox': return handleCheckInbox(args as Parameters<typeof handleCheckInbox>[0])
+    case 'update_inbox': return handleUpdateInbox(args as Parameters<typeof handleUpdateInbox>[0])
     default: throw new Error(`Unknown tool: ${name}`)
   }
 }

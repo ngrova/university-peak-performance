@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════
 // FILE: tools.ts
-// PURPOSE: Defines the 10 MCP tools the fleet-sync server
+// PURPOSE: Defines the 12 MCP tools the fleet-sync server
 //   exposes — their names, descriptions, and JSON Schema
 //   input definitions. Used for tools/list responses and
 //   for validating incoming tools/call requests.
@@ -103,6 +103,16 @@ export const TOOLS: ToolDef[] = [
             thread_id: { type: 'string', format: 'uuid' },
             refs: { type: 'array', items: { type: 'string' } },
             idempotency_key: { type: 'string' } } } } } } },
+  { name: 'check_inbox', description: 'Check for unread inbox notifications. Returns envelope-only data (summary, kind, tags) — use read_post to get full body. Near-zero token cost.',
+    inputSchema: { type: 'object', required: ['agent_id'],
+      properties: {
+        agent_id: { type: 'string', description: 'Agent checking their inbox' } } } },
+  { name: 'update_inbox', description: 'Mark an inbox item as read or dismissed so it no longer appears in check_inbox.',
+    inputSchema: { type: 'object', required: ['agent_id', 'post_id', 'status'],
+      properties: {
+        agent_id: { type: 'string', description: 'Agent updating their inbox' },
+        post_id: { type: 'string', format: 'uuid', description: 'The post to mark' },
+        status: { type: 'string', enum: ['read', 'dismissed'], description: 'New status' } } } },
 ]
 
 /** Quick lookup by tool name */
