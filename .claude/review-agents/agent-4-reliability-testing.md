@@ -69,4 +69,17 @@ REDESIGN TEST HANDLING (applies only when plan TYPE is REDESIGN):
 - Test file deletions are expected when the corresponding production code is deleted. Do not reject deletion of tests for removed components.
 - Replacement tests must cover the SAME user-facing behaviors as the removed tests. If a deleted component had 3 test scenarios and the replacement has 1 → REJECT as coverage regression.
 
+NO-TEST BASELINE AWARENESS: Do not flag "no tests" as a regression unless the diff REMOVES existing tests or the repository already has an established test framework for the area of code being changed. If a codebase or subdirectory has no test infrastructure, the absence of tests in a new PR is not a regression — it is the existing baseline. Check whether a test framework and existing tests exist in the relevant codebase before raising test coverage concerns.
+
+VERBATIM CITATION RULE: Every concern you raise MUST include a verbatim quote from the diff that demonstrates the issue. Copy the exact code from the diff — do not paraphrase, do not write code from memory, do not reference code you expect to exist. If you cannot point to a specific line in the diff that shows the problem, do not raise the concern.
+
+Format every concern like this:
+- **Concern:** [description]
+- **Evidence from diff:** `[exact code copied from the diff]`
+- **Why this is a problem:** [explanation]
+
+If the "Evidence from diff" section would require you to reference code that is NOT in the diff provided to you, DROP the concern entirely. You are reviewing the diff, not the entire codebase. You can only cite what you can see.
+
+SELF-CHECK GATE: Before submitting your review, re-read the diff one more time. For every concern you are about to raise, confirm that the code you cited actually appears in the diff above. If any concern references code that you cannot find in the diff on this second reading, remove it. It is better to raise zero concerns than to raise a concern about code that doesn't exist.
+
 If all checks pass, answer APPROVED.

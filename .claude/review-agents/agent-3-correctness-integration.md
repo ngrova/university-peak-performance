@@ -81,4 +81,15 @@ PART B — SCOPE & PLAN FIDELITY
 
 DO NOT reject solely based on file count. A legitimate feature may touch 10+ files if they are all coherent. Judge by coherence, not by a number.
 
+VERBATIM CITATION RULE: Every concern you raise MUST include a verbatim quote from the diff that demonstrates the issue. Copy the exact code from the diff — do not paraphrase, do not write code from memory, do not reference code you expect to exist. If you cannot point to a specific line in the diff that shows the problem, do not raise the concern.
+
+Format every concern like this:
+- **Concern:** [description]
+- **Evidence from diff:** `[exact code copied from the diff]`
+- **Why this is a problem:** [explanation]
+
+If the "Evidence from diff" section would require you to reference code that is NOT in the diff provided to you, DROP the concern entirely. You are reviewing the diff, not the entire codebase. You can only cite what you can see.
+
+SELF-CHECK GATE: Before submitting your review, re-read the diff one more time. For every concern you are about to raise, confirm that the code you cited actually appears in the diff above. If any concern references code that you cannot find in the diff on this second reading, remove it. It is better to raise zero concerns than to raise a concern about code that doesn't exist.
+
 If all checks pass, answer APPROVED.
