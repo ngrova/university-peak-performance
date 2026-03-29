@@ -16,6 +16,8 @@ export interface ToolDef {
   inputSchema: Record<string, unknown>
 }
 
+import { POST_TOOL, BATCH_POST_TOOL } from './tools-post'
+
 // prettier-ignore
 export const TOOLS: ToolDef[] = [
   { name: 'sync', description: 'Register/update this agent and receive a briefing of recent fleet activity, open items, and unacknowledged decisions. Optionally close out a session with wrap_up.',
@@ -30,17 +32,7 @@ export const TOOLS: ToolDef[] = [
         wrap_up: { type: 'object', description: 'Close-out data for ending a session',
           properties: { current_focus: { type: 'string' }, session_summary: { type: 'string' } },
           required: ['current_focus', 'session_summary'] } } } },
-  { name: 'post', description: 'Post a message to the fleet communication stream.',
-    inputSchema: { type: 'object', required: ['agent_id', 'kind', 'summary'],
-      properties: {
-        agent_id: { type: 'string' }, kind: { type: 'string', enum: ['progress','decision','insight','context','recommendation','question','warning','blocker','blocker_resolved'] },
-        summary: { type: 'string', description: 'Max 200 chars' },
-        body: { type: 'string', description: 'Max 4000 chars' },
-        tags: { type: 'array', items: { type: 'string' } },
-        to_agent: { type: 'string' }, urgency: { type: 'string', enum: ['now','this-week','when-ready','fyi'] },
-        thread_id: { type: 'string', format: 'uuid' },
-        refs: { type: 'array', items: { type: 'string' } },
-        idempotency_key: { type: 'string' } } } },
+  POST_TOOL,
   { name: 'respond', description: 'Resolve an open item directed to you.',
     inputSchema: { type: 'object', required: ['post_id', 'resolution_status', 'resolution_note', 'resolved_by'],
       properties: {
@@ -89,20 +81,7 @@ export const TOOLS: ToolDef[] = [
         document_id: { type: 'string', format: 'uuid' },
         offset: { type: 'number', description: 'Character offset to start reading from (default 0)' },
         length: { type: 'number', description: 'Number of characters to return (default: all)' } } } },
-  { name: 'batch_post', description: 'Post multiple messages to the fleet stream in a single atomic operation. Max 20 posts.',
-    inputSchema: { type: 'object', required: ['agent_id', 'posts'],
-      properties: {
-        agent_id: { type: 'string', description: 'Agent posting the batch' },
-        posts: { type: 'array', maxItems: 20, items: { type: 'object', required: ['kind', 'summary'],
-          properties: {
-            kind: { type: 'string', enum: ['progress','decision','insight','context','recommendation','question','warning','blocker','blocker_resolved'] },
-            summary: { type: 'string', description: 'Max 200 chars' },
-            body: { type: 'string', description: 'Max 4000 chars' },
-            tags: { type: 'array', items: { type: 'string' } },
-            to_agent: { type: 'string' }, urgency: { type: 'string', enum: ['now','this-week','when-ready','fyi'] },
-            thread_id: { type: 'string', format: 'uuid' },
-            refs: { type: 'array', items: { type: 'string' } },
-            idempotency_key: { type: 'string' } } } } } } },
+  BATCH_POST_TOOL,
   { name: 'check_inbox', description: 'Check for unread inbox notifications. Returns envelope-only data (summary, kind, tags) — use read_post to get full body. Near-zero token cost.',
     inputSchema: { type: 'object', required: ['agent_id'],
       properties: {

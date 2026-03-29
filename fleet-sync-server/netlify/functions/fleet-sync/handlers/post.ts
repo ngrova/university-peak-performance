@@ -25,6 +25,11 @@ interface PostArgs {
   thread_id?: string
   refs?: string[]
   idempotency_key?: string
+  relay_type?: string
+  chain_id?: string
+  depth?: number
+  reply_to?: string
+  notify_self?: boolean
 }
 
 /**
@@ -76,6 +81,11 @@ export async function handlePost(args: PostArgs) {
       refs: args.refs ?? [],
       idempotency_key: args.idempotency_key ?? null,
       resolution_status: isDirected ? 'open' : null,
+      relay_type: args.relay_type ?? null,
+      chain_id: args.chain_id ?? null,
+      depth: args.depth ?? 0,
+      reply_to: args.reply_to ?? null,
+      notify_self: args.notify_self ?? false,
     })
     .select('id')
     .single()
@@ -90,7 +100,7 @@ export async function handlePost(args: PostArgs) {
   if (syncErr) throw new Error(`Failed to update agent timestamp — ${syncErr.message}`)
 
   // Fan out inbox notifications — non-fatal (post already committed)
-  const inbox = await fanoutInbox(db, data.id, args.agent_id, args.to_agent)
+  const inbox = await fanoutInbox(db, data.id, args.agent_id, args.to_agent, args.notify_self ?? false)
 
   return withMeta({
     post_id: data.id,

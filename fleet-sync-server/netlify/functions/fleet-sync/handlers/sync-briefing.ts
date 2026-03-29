@@ -14,7 +14,7 @@ import { SupabaseClient } from '@supabase/supabase-js'
 export async function fetchRecentMessages(db: SupabaseClient, since: string | null) {
   let query = db
     .from('fleet_messages')
-    .select('id, agent_id, kind, thread_id, summary, body, tags, to_agent, urgency, created_at')
+    .select('id, agent_id, kind, thread_id, summary, body, tags, to_agent, urgency, relay_type, chain_id, depth, reply_to, notify_self, created_at')
     .order('created_at', { ascending: false })
     .limit(30)
 
@@ -34,7 +34,7 @@ export async function fetchRecentMessages(db: SupabaseClient, since: string | nu
 export async function fetchOpenItems(db: SupabaseClient, agentId: string) {
   const { data, error } = await db
     .from('fleet_messages')
-    .select('id, agent_id, kind, summary, body, to_agent, urgency, thread_id, created_at')
+    .select('id, agent_id, kind, summary, body, to_agent, urgency, thread_id, relay_type, chain_id, depth, reply_to, created_at')
     .eq('resolution_status', 'open')
     .in('to_agent', [agentId, 'fleet'])
     .order('created_at', { ascending: false })

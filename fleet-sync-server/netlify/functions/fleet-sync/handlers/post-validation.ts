@@ -18,12 +18,16 @@ export const VALID_KINDS = [
 
 export const DIRECTED_KINDS = ['recommendation', 'question', 'warning', 'blocker']
 
+const VALID_RELAY_TYPES = ['board_post', 'desk_drop', 'office_visit', 'reply'] as const
+
 interface PostFields {
   kind: string
   summary: string
   body?: string
   to_agent?: string
   urgency?: string
+  relay_type?: string
+  depth?: number
 }
 
 /**
@@ -47,6 +51,15 @@ export function validatePost(post: PostFields, index?: number): string | null {
   // Directed kinds require to_agent and urgency
   if (DIRECTED_KINDS.includes(post.kind) && (!post.to_agent || !post.urgency)) {
     return `${prefix}${post.kind} messages require to_agent and urgency`
+  }
+
+  // Relay field validation — DB CHECK is authoritative; this is for better errors
+  if (post.relay_type != null) {
+    const relayErr = checkEnum(post.relay_type, 'relay_type', VALID_RELAY_TYPES)
+    if (relayErr) return `${prefix}${relayErr}`
+  }
+  if (post.depth != null && (post.depth < 0 || post.depth > 6)) {
+    return `${prefix}depth must be between 0 and 6 (got ${post.depth})`
   }
 
   return null
