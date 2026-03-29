@@ -56,3 +56,54 @@ describe('validatePost', () => {
     expect(DIRECTED_KINDS.length).toBe(4)
   })
 })
+
+describe('validatePost — relay fields', () => {
+  const valid = { kind: 'progress', summary: 'Test summary' }
+
+  it('accepts all valid relay_type values', () => {
+    for (const rt of ['board_post', 'desk_drop', 'office_visit', 'reply']) {
+      expect(validatePost({ ...valid, relay_type: rt })).toBeNull()
+    }
+  })
+
+  it('rejects invalid relay_type', () => {
+    const result = validatePost({ ...valid, relay_type: 'carrier_pigeon' })
+    expect(result).toContain('relay_type')
+  })
+
+  it('accepts null/omitted relay_type', () => {
+    expect(validatePost(valid)).toBeNull()
+    expect(validatePost({ ...valid, relay_type: undefined })).toBeNull()
+  })
+
+  it('accepts depth within valid range (0-6)', () => {
+    expect(validatePost({ ...valid, depth: 0 })).toBeNull()
+    expect(validatePost({ ...valid, depth: 3 })).toBeNull()
+    expect(validatePost({ ...valid, depth: 6 })).toBeNull()
+  })
+
+  it('rejects depth below 0', () => {
+    const result = validatePost({ ...valid, depth: -1 })
+    expect(result).toContain('depth')
+    expect(result).toContain('-1')
+  })
+
+  it('rejects depth above 6', () => {
+    const result = validatePost({ ...valid, depth: 7 })
+    expect(result).toContain('depth')
+    expect(result).toContain('7')
+  })
+
+  it('accepts null/omitted depth', () => {
+    expect(validatePost(valid)).toBeNull()
+    expect(validatePost({ ...valid, depth: undefined })).toBeNull()
+  })
+
+  it('validates all four relay types', () => {
+    const validTypes = ['board_post', 'desk_drop', 'office_visit', 'reply']
+    for (const rt of validTypes) {
+      expect(validatePost({ ...valid, relay_type: rt })).toBeNull()
+    }
+    expect(validTypes.length).toBe(4)
+  })
+})

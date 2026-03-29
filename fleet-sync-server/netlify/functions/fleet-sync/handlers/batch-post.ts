@@ -6,36 +6,21 @@
 //   validation error.
 // CALLED BY: router.ts (when tools/call name = "batch_post")
 // DATA FLOW: Array of post args → validate all → idempotency
-//   batch check → bulk insert → update agent timestamp →
-//   return results array.
+//   batch check → bulk insert → fanout → return results array.
 // ═══════════════════════════════════════════════════════════
 
 import { SupabaseClient } from '@supabase/supabase-js'
 import { getFleetClient } from '../db'
 import { withMeta } from '../meta'
 import { requireString } from '../validation'
-import { DIRECTED_KINDS, validatePost } from './post-validation'
-import { fanoutInbox } from './inbox-fanout'
-
-interface PostItem {
-  kind: string
-  summary: string
-  body?: string
-  tags?: string[]
-  to_agent?: string
-  urgency?: string
-  thread_id?: string
-  refs?: string[]
-  idempotency_key?: string
-}
+import { validatePost } from './post-validation'
+import { fanoutBatchResults } from './inbox-fanout'
+import { PostItem, DuplicateMap, buildBatchRows } from './batch-rows'
 
 interface BatchPostArgs {
   agent_id: string
   posts: PostItem[]
 }
-
-type ResultItem = { post_id: string; thread_id: string; status: string }
-type DuplicateMap = Map<string, { id: string; thread_id: string }>
 
 /** Validates top-level args and every post in the batch. */
 function validateBatch(args: BatchPostArgs): void {
@@ -72,39 +57,6 @@ async function checkBatchIdempotency(db: SupabaseClient, posts: PostItem[]): Pro
   return map
 }
 
-/** Builds insert rows and results array, skipping duplicates. */
-function buildBatchRows(
-  posts: PostItem[],
-  agentId: string,
-  dupes: DuplicateMap
-): { rows: Record<string, unknown>[]; results: ResultItem[]; indexMap: number[] } {
-  const results: ResultItem[] = []
-  const rows: Record<string, unknown>[] = []
-  const indexMap: number[] = []
-
-  for (let i = 0; i < posts.length; i++) {
-    const post = posts[i]
-    if (post.idempotency_key && dupes.has(post.idempotency_key)) {
-      const dup = dupes.get(post.idempotency_key)!
-      results.push({ post_id: dup.id, thread_id: dup.thread_id, status: 'duplicate_ignored' })
-      continue
-    }
-    const threadId = post.thread_id ?? crypto.randomUUID()
-    const isDirected = DIRECTED_KINDS.includes(post.kind)
-    rows.push({
-      agent_id: agentId, kind: post.kind, summary: post.summary,
-      body: post.body ?? null, tags: post.tags ?? [],
-      to_agent: post.to_agent ?? null, urgency: post.urgency ?? null,
-      thread_id: threadId, refs: post.refs ?? [],
-      idempotency_key: post.idempotency_key ?? null,
-      resolution_status: isDirected ? 'open' : null,
-    })
-    results.push({ post_id: '', thread_id: threadId, status: 'created' })
-    indexMap.push(results.length - 1)
-  }
-  return { rows, results, indexMap }
-}
-
 /**
  * Posts multiple messages in a single atomic operation. Called
  * by agents that need to share several related updates at once.
@@ -118,7 +70,6 @@ export async function handleBatchPost(args: BatchPostArgs) {
   const dupes = await checkBatchIdempotency(db, args.posts)
   const { rows, results, indexMap } = buildBatchRows(args.posts, args.agent_id, dupes)
 
-  // Atomic bulk insert — single INSERT statement
   if (rows.length > 0) {
     const { data: inserted, error } = await db
       .from('fleet_messages').insert(rows).select('id').limit(rows.length)
@@ -128,25 +79,18 @@ export async function handleBatchPost(args: BatchPostArgs) {
     }
   }
 
-  // Update agent's updated_at — non-fatal since posts are already committed
-  const { error: syncErr } = await db
-    .from('fleet_agents')
+  // Update agent timestamp — non-fatal since posts are already committed
+  const { error: syncErr } = await db.from('fleet_agents')
     .update({ updated_at: new Date().toISOString() })
     .eq('agent_id', args.agent_id)
 
-  // Fan out inbox notifications for each created post — non-fatal
-  const inboxWarnings: string[] = []
-  for (let i = 0; i < results.length; i++) {
-    if (results[i].status !== 'created' || !results[i].post_id) continue
-    const toAgent = args.posts[i]?.to_agent
-    const inbox = await fanoutInbox(db, results[i].post_id, args.agent_id, toAgent)
-    if (inbox.warning) inboxWarnings.push(inbox.warning)
-  }
+  // Fan out inbox notifications — non-fatal
+  const inboxWarnings = await fanoutBatchResults(db, results, args.posts, args.agent_id)
 
   const created = results.filter((r) => r.status === 'created').length
   const duplicates = results.filter((r) => r.status === 'duplicate_ignored').length
   const warnings = [
-    ...(syncErr ? [`Posts saved but agent timestamp update failed: ${syncErr.message}`] : []),
+    ...(syncErr ? [`Agent timestamp update failed: ${syncErr.message}`] : []),
     ...inboxWarnings,
   ]
   return withMeta({

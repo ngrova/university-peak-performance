@@ -18,7 +18,7 @@ interface CheckInboxArgs {
 
 // Envelope columns — never include body
 const ENVELOPE_COLUMNS =
-  'fleet_messages!inner(id, agent_id, kind, summary, tags, urgency, created_at)'
+  'fleet_messages!inner(id, agent_id, kind, summary, tags, urgency, relay_type, created_at)'
 
 /**
  * Returns unread inbox items for an agent. Called by agents at
@@ -55,6 +55,7 @@ export async function handleCheckInbox(args: CheckInboxArgs) {
       summary: msg.summary,
       tags: msg.tags,
       urgency: msg.urgency,
+      relay_type: msg.relay_type,
       created_at: msg.created_at,
     }
   })

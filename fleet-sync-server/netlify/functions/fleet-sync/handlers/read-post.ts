@@ -15,7 +15,8 @@ import { requireString } from '../validation'
 const POST_COLUMNS =
   'id, agent_id, kind, thread_id, summary, body, tags, to_agent, ' +
   'urgency, resolution_status, resolution_note, resolved_by, ' +
-  'resolved_at, refs, created_at'
+  'resolved_at, refs, relay_type, chain_id, depth, reply_to, ' +
+  'notify_self, created_at'
 
 interface ReadPostArgs {
   post_id: string
