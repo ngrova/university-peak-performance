@@ -13,6 +13,7 @@
 
 import React, { useState } from 'react';
 import { completeTask } from '@/actions/task-actions';
+import { useTaskDetail } from '@/hooks/use-task-detail';
 import type { ScoredTask } from '@/lib/one-thing-score';
 
 interface TodayHeroProps {
@@ -33,6 +34,7 @@ const P_COLORS: Record<number, string> = { 1: '#E24B4A', 2: '#EF9F27', 3: '#5DCA
  */
 export default function TodayHero({ scored, whyText, onCompleted }: TodayHeroProps): React.JSX.Element {
   const [completing, setCompleting] = useState(false);
+  const open = useTaskDetail((s) => s.open);
   const task = scored.task;
   const pillar = task.goals?.life_pillars;
   const goalTitle = task.goals?.title;
@@ -46,17 +48,24 @@ export default function TodayHero({ scored, whyText, onCompleted }: TodayHeroPro
     onCompleted();
   }
 
+  // Keyboard activation for the tappable card
+  function handleCardKey(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(task); }
+  }
+
   return (
     <div className="text-center mb-7">
       <div className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#5DCAA5' }}>Your One Thing</div>
-      <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--bg-surface)', border: '2px solid #5DCAA5' }}>
+      <div className="rounded-2xl p-5" role="button" tabIndex={0} aria-label="Open task detail"
+        onClick={() => open(task)} onKeyDown={handleCardKey}
+        style={{ backgroundColor: 'var(--bg-surface)', border: '2px solid #5DCAA5', cursor: 'pointer' }}>
         <h2 className="text-xl font-bold mb-2 leading-snug" style={{ color: 'var(--text-primary)' }}>{task.title}</h2>
         {context && <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>{context}</p>}
         <ChipRow task={task} />
         <div className="rounded-lg p-3 text-left text-sm mb-4" style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-muted)', lineHeight: 1.6 }}>
           <strong style={{ color: '#5DCAA5' }}>Why this?</strong> {whyText}
         </div>
-        <button type="button" onClick={handleComplete} disabled={completing}
+        <button type="button" onClick={(e) => { e.stopPropagation(); handleComplete(); }} disabled={completing}
           className="w-full font-bold rounded-xl text-lg disabled:opacity-50" style={{ backgroundColor: '#5DCAA5', color: '#0A0A0F', height: '52px' }}>
           {completing ? 'Completing…' : '✓ Mark Complete'}
         </button>
