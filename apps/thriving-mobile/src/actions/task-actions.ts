@@ -15,6 +15,7 @@ import { createTask, updateTask, getTasksByGoal } from '@upp/db';
 import type { TaskAssignee, FailureCost } from '@upp/db';
 import { getServerClient } from '@/lib/supabase-server';
 import { getActingAsUserId } from '@/lib/get-acting-as';
+import { reportError } from '@/lib/report-error';
 import { revalidatePath } from 'next/cache';
 
 interface CaptureInput {
@@ -101,7 +102,9 @@ export async function updateTaskField(
     await updateTask(supabase, taskId, { [field]: value });
     revalidatePath('/today');
     return {};
-  } catch {
-    return { error: 'Failed to save — try again' };
+  } catch (err) {
+    reportError(err);
+    const message = err instanceof Error ? err.message : 'Failed to save — try again';
+    return { error: message };
   }
 }
