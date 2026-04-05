@@ -13,24 +13,33 @@ import { getPillars, getGoals } from '@upp/db';
 import type { Goal, LifePillar } from '@upp/db';
 import { getServerClient } from '@/lib/supabase-server';
 import { getActingAsUserId } from '@/lib/get-acting-as';
+import { reportError } from '@/lib/report-error';
+
+interface PickerResult { pillars: LifePillar[]; goals: Goal[]; error?: string }
 
 /**
- * Triggered by: GoalPicker dropdown mounts on the capture sheet.
+ * Triggered by: GoalPicker, InlineGoalCreate, or GoalEditSheet mounts.
  * Steps: gets the logged-in user, fetches all their life pillars,
- *   then fetches goals under each pillar and combines them.
- * Returns: { pillars, goals } so the dropdown can group goals
- *   under pillar headings, or empty arrays if not logged in.
+ *   then fetches goals under each pillar and combines them. Any
+ *   failure is caught, reported to Sentry, and returned as an error.
+ * Returns: { pillars, goals } on success; { pillars: [], goals: [] }
+ *   when unauthenticated; { pillars: [], goals: [], error } on failure.
  */
-export async function fetchGoalsForPicker(): Promise<{ pillars: LifePillar[]; goals: Goal[] }> {
-  const supabase = await getServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { pillars: [], goals: [] };
-  const targetUserId = await getActingAsUserId(supabase, user.id);
-  const pillars = await getPillars(supabase, targetUserId);
-  const allGoals: Goal[] = [];
-  for (const pillar of pillars) {
-    const goals = await getGoals(supabase, pillar.id);
-    allGoals.push(...goals);
+export async function fetchGoalsForPicker(): Promise<PickerResult> {
+  try {
+    const supabase = await getServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { pillars: [], goals: [] };
+    const targetUserId = await getActingAsUserId(supabase, user.id);
+    const pillars = await getPillars(supabase, targetUserId);
+    const allGoals: Goal[] = [];
+    for (const pillar of pillars) {
+      const goals = await getGoals(supabase, pillar.id);
+      allGoals.push(...goals);
+    }
+    return { pillars, goals: allGoals };
+  } catch (err) {
+    reportError(err);
+    return { pillars: [], goals: [], error: 'Failed to load goals — check your connection and try again' };
   }
-  return { pillars, goals: allGoals };
 }
