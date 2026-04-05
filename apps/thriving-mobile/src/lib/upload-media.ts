@@ -27,33 +27,38 @@ export async function uploadMedia(
   photos: CapturedPhoto[],
   transcripts: string[],
 ): Promise<void> {
-  const supabase = createBrowserClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  try {
+    const supabase = createBrowserClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-  // Upload voice notes with transcripts
-  for (const [i, note] of voiceNotes.entries()) {
-    try {
-      const ext = note.mimeType.includes('webm') ? 'webm' : 'mp4';
-      const name = `voice-${Date.now()}-${i}.${ext}`;
-      const path = `${user.id}/${taskId}/${name}`;
-      const { error } = await supabase.storage
-        .from('task-media')
-        .upload(path, note.blob, { contentType: note.mimeType, upsert: false });
-      if (error) { reportError(error); continue; }
-      await createAttachmentRow(taskId, path, name, 'audio', note.mimeType, note.blob.size, transcripts[i]);
-    } catch (err) { reportError(err); }
-  }
-  // Upload photos
-  for (const [i, photo] of photos.entries()) {
-    try {
-      const name = `photo-${Date.now()}-${i}.${photo.file.type.includes('png') ? 'png' : 'jpg'}`;
-      const path = `${user.id}/${taskId}/${name}`;
-      const { error } = await supabase.storage
-        .from('task-media')
-        .upload(path, photo.file, { contentType: photo.file.type, upsert: false });
-      if (error) { reportError(error); continue; }
-      await createAttachmentRow(taskId, path, name, 'image', photo.file.type, photo.file.size);
-    } catch (err) { reportError(err); }
+    // Upload voice notes with transcripts
+    for (const [i, note] of voiceNotes.entries()) {
+      try {
+        const ext = note.mimeType.includes('webm') ? 'webm' : 'mp4';
+        const name = `voice-${Date.now()}-${i}.${ext}`;
+        const path = `${user.id}/${taskId}/${name}`;
+        const { error } = await supabase.storage
+          .from('task-media')
+          .upload(path, note.blob, { contentType: note.mimeType, upsert: false });
+        if (error) { reportError(error); continue; }
+        await createAttachmentRow(taskId, path, name, 'audio', note.mimeType, note.blob.size, transcripts[i]);
+      } catch (err) { reportError(err); }
+    }
+    // Upload photos
+    for (const [i, photo] of photos.entries()) {
+      try {
+        const name = `photo-${Date.now()}-${i}.${photo.file.type.includes('png') ? 'png' : 'jpg'}`;
+        const path = `${user.id}/${taskId}/${name}`;
+        const { error } = await supabase.storage
+          .from('task-media')
+          .upload(path, photo.file, { contentType: photo.file.type, upsert: false });
+        if (error) { reportError(error); continue; }
+        await createAttachmentRow(taskId, path, name, 'image', photo.file.type, photo.file.size);
+      } catch (err) { reportError(err); }
+    }
+  } catch (err) {
+    // Catches auth.getUser() throws and client init throws — never propagates out
+    reportError(err);
   }
 }
