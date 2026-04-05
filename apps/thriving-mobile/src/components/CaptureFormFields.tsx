@@ -38,31 +38,37 @@ export function useCaptureForm() {
   const transcripts = useCaptureMedia((s) => s.transcripts);
   const clearMedia = useCaptureMedia((s) => s.clearAll);
   const qc = useQueryClient();
-  async function handleAdd(): Promise<boolean> {
-    if (!title.trim() || saving) return false;
-    setSaving(true); setError(null);
+  /** Assembles captureTask input from current form state */
+  function buildCaptureInput(): Parameters<typeof captureTask>[0] {
     // Goal is optional — empty string means "unsorted" (no goal)
     const input: Parameters<typeof captureTask>[0] = { title: title.trim(), goal_id: goalId || null };
     if (priority) input.priority = priority;
     if (deadline) input.due_date = deadline;
     if (assignee) input.assignee = assignee;
     if (notes.trim()) input.notes = notes.trim();
-    const result = await captureTask(input);
-    if (result.error) { setSaving(false); setError(result.error); return false; }
-    // Upload media before clearing — must complete before navigation kills it
-    if (result.taskId) await uploadMedia(result.taskId, voiceNotes, photos, transcripts);
-    setSaving(false);
+    return input;
+  }
+  /** Clears all form fields, media, and invalidates TanStack caches */
+  function resetFormAndRefresh(): void {
     setTitle(''); setGoalId(''); setPriority(null); setDeadline(''); setAssignee(null); setNotes('');
     clearMedia();
-    qc.invalidateQueries({ queryKey: ['one-thing'] });
-    qc.invalidateQueries({ queryKey: ['queue'] });
-    qc.invalidateQueries({ queryKey: ['deadlines'] });
-    qc.invalidateQueries({ queryKey: ['all-tasks'] });
-    qc.invalidateQueries({ queryKey: ['pillars'] });
-    qc.invalidateQueries({ queryKey: ['goals'] });
-    qc.invalidateQueries({ queryKey: ['goal-tasks'] });
+    const keys = ['one-thing', 'queue', 'deadlines', 'all-tasks', 'pillars', 'goals', 'goal-tasks'];
+    keys.forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
     inputRef.current?.focus();
-    return true;
+  }
+  async function handleAdd(): Promise<boolean> {
+    if (!title.trim() || saving) return false;
+    setSaving(true); setError(null);
+    try {
+      const result = await captureTask(buildCaptureInput());
+      if (result.error) { setError(result.error); return false; }
+      // Upload media before clearing — must complete before navigation kills it
+      if (result.taskId) await uploadMedia(result.taskId, voiceNotes, photos, transcripts);
+      resetFormAndRefresh();
+      return true;
+    } finally {
+      setSaving(false);
+    }
   }
   return { title, setTitle, goalId, setGoalId, priority, setPriority, deadline, setDeadline, assignee, setAssignee, notes, setNotes, saving, error, inputRef, handleAdd };
 }
