@@ -12,6 +12,7 @@
 
 import React from 'react';
 import { X } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTaskDetail } from '@/hooks/use-task-detail';
 import { updateTaskField } from '@/actions/task-actions';
 import type { TaskWithContext } from '@upp/db';
@@ -43,12 +44,15 @@ export default function TaskDetailSheet(): React.JSX.Element | null {
 /** Form content — all editable task fields */
 function SheetBody({ task, onClose }: { task: TaskWithContext; onClose: () => void }) {
   const updateField = useTaskDetail((s) => s.updateField);
-  /** Optimistically updates the store, then persists — rolls back on failure */
+  const qc = useQueryClient();
+  /** Optimistically updates the store, then persists — rolls back on failure, refreshes caches on success */
   const save = async (field: string, value: string | number | null) => {
     const original = task[field as keyof TaskWithContext] as string | number | null;
     updateField(field, value);
     const result = await updateTaskField(task.id, field, value);
-    if (result.error) updateField(field, original);
+    if (result.error) { updateField(field, original); return; }
+    const keys = ['today-tasks', 'all-tasks', 'goal-tasks', 'tree-data', 'pillars', 'goals'];
+    keys.forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
   };
   return (
     <div className="relative rounded-t-2xl p-5 sheet-enter max-h-[80vh] overflow-y-auto" style={{ backgroundColor: 'var(--bg-surface)' }}>
