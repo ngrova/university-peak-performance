@@ -16,9 +16,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchTodayTasks } from '@/actions/today-actions';
 import { rankTasks } from '@/lib/one-thing-score';
 import { buildWhyThis } from '@/lib/why-this';
+import { useTodayFilter } from '@/hooks/use-today-filter';
 import GreetingBar from './GreetingBar';
 import TodayHero from './TodayHero';
 import UpNextSection from './UpNextSection';
+import TodayFilterToggle from './TodayFilterToggle';
 
 /**
  * Triggered by: navigating to the Today tab (page.tsx renders this).
@@ -30,15 +32,16 @@ import UpNextSection from './UpNextSection';
 export default function TodayContent(): React.JSX.Element {
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ['today-tasks'], queryFn: () => fetchTodayTasks() });
+  const mode = useTodayFilter((s) => s.mode);
 
-  // Filter to current user's assigned tasks, then score and rank
+  // Filter by assignee only when mode === 'mine' (default); 'all' bypasses the filter
   const ranked = useMemo(() => {
     const allTasks = data?.tasks ?? [];
     const name = data?.assigneeName ?? null;
-    // If name resolved, filter to assigned tasks; otherwise show all (graceful degradation)
-    const myTasks = name ? allTasks.filter((t) => t.assignee === name) : allTasks;
-    return rankTasks(myTasks);
-  }, [data]);
+    const applyFilter = mode === 'mine' && name !== null;
+    const scoped = applyFilter ? allTasks.filter((t) => t.assignee === name) : allTasks;
+    return rankTasks(scoped);
+  }, [data, mode]);
 
   const hero = ranked[0] ?? null;
   const upNext = ranked.slice(1, 4);
@@ -63,11 +66,12 @@ export default function TodayContent(): React.JSX.Element {
 
   // Distinguish "no assigned tasks" from "no tasks at all"
   const hasAnyTasks = (data?.tasks?.length ?? 0) > 0;
-  const isFiltered = data?.assigneeName !== null && data?.assigneeName !== undefined;
+  const isFiltered = mode === 'mine' && data?.assigneeName !== null && data?.assigneeName !== undefined;
 
   return (
     <div className="pt-2 tab-enter">
       <GreetingBar />
+      {data?.isDelegate && <TodayFilterToggle />}
       {hero ? (
         <TodayHero scored={hero} whyText={whyText} onCompleted={handleCompleted} />
       ) : (

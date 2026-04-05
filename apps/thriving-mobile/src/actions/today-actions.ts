@@ -19,21 +19,24 @@ import { resolveAssigneeName } from '@/lib/resolve-assignee-name';
 export interface TodayData {
   tasks: TaskWithContext[];
   assigneeName: TaskAssignee | null;
+  isDelegate: boolean;
 }
 
 /**
  * Triggered by: TodayContent mounts and TanStack Query runs this.
  * Steps: gets the logged-in user, resolves delegation context,
  *   fetches all tasks with goal/pillar context for the target user,
- *   and resolves the logged-in user's assignee name for filtering.
- * Returns: { tasks, assigneeName } — or empty if not signed in.
+ *   resolves the logged-in user's assignee name for filtering, and
+ *   flags whether this request is acting on another account's data.
+ * Returns: { tasks, assigneeName, isDelegate } — empty if not signed in.
  */
 export async function fetchTodayTasks(): Promise<TodayData> {
   const supabase = await getServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { tasks: [], assigneeName: null };
+  if (!user) return { tasks: [], assigneeName: null, isDelegate: false };
   const targetUserId = await getActingAsUserId(supabase, user.id);
   const tasks = await getAllTasksWithContext(supabase, targetUserId);
   const assigneeName = resolveAssigneeName(user);
-  return { tasks, assigneeName };
+  const isDelegate = targetUserId !== user.id;
+  return { tasks, assigneeName, isDelegate };
 }
