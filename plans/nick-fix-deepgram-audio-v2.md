@@ -18,14 +18,14 @@ This plan re-ships the fix originally in PR #136 (`nick/fix-deepgram-audio`, clo
 4. In `transcribe-audio.ts`: include the content-type in the Deepgram-error report so failures are still diagnosable without always-on logging
 
 ## Files to Change
-- `apps/thriving-mobile/src/hooks/use-voice-recorder.ts` — replace `getAudioMimeType()`, split `start()` error handling
+- `apps/thriving-mobile/src/hooks/use-voice-recorder.ts` — replace `getAudioMimeType()`, split `start()` error handling, forward caught errors to `reportError`, export `getAudioMimeType` for testing
 - `apps/thriving-mobile/src/lib/transcribe-audio.ts` — enrich the error `reportError` with `content-type`
 
 ## New Files
-None.
+- `apps/thriving-mobile/src/hooks/use-voice-recorder.test.ts` — unit tests for `getAudioMimeType()` codec-selection logic (added in response to Agent 6 test-coverage feedback)
 
 ## Scope
-small (2 files)
+small (3 files: 2 edited + 1 test)
 
 ## PRE-PLAN PUSHBACK
 <!--

@@ -1,29 +1,19 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { getAudioMimeType } from './use-voice-recorder';
 
 describe('getAudioMimeType', () => {
-  const originalMR = globalThis.MediaRecorder;
-
-  beforeEach(() => {
-    vi.restoreAllMocks();
-  });
-
   afterEach(() => {
-    if (originalMR === undefined) {
-      delete (globalThis as { MediaRecorder?: unknown }).MediaRecorder;
-    } else {
-      globalThis.MediaRecorder = originalMR;
-    }
+    vi.unstubAllGlobals();
   });
 
   function stubMediaRecorder(supported: string[]): void {
-    globalThis.MediaRecorder = {
-      isTypeSupported: (t: string) => supported.includes(t),
-    } as unknown as typeof MediaRecorder;
+    vi.stubGlobal('MediaRecorder', {
+      isTypeSupported: (type: string): boolean => supported.includes(type),
+    });
   }
 
   it('returns undefined when MediaRecorder is unavailable (SSR)', () => {
-    delete (globalThis as { MediaRecorder?: unknown }).MediaRecorder;
+    vi.stubGlobal('MediaRecorder', undefined);
     expect(getAudioMimeType()).toBeUndefined();
   });
 
