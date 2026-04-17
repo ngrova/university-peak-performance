@@ -49,7 +49,7 @@ export async function transcribeAudio(
 
     if (!resp.ok) {
       const errBody = await resp.text().catch(() => 'no body');
-      reportError(new Error(`Deepgram API ${resp.status}: ${errBody}`));
+      reportError(new Error(`Deepgram API ${resp.status} (content-type: ${contentType}): ${errBody}`));
       return { error: 'Transcription failed — add fields manually' };
     }
 

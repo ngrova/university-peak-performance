@@ -20,12 +20,17 @@ interface RecorderResult {
   stop: () => Promise<{ blob: Blob; duration: number; mimeType: string } | null>;
 }
 
-/** Detects the best supported audio MIME type */
-function getAudioMimeType(): string {
-  if (typeof MediaRecorder === 'undefined') return 'audio/webm';
-  if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) return 'audio/webm;codecs=opus';
-  if (MediaRecorder.isTypeSupported('audio/mp4')) return 'audio/mp4';
-  return 'audio/webm';
+/** Detects the best supported audio MIME type, or undefined to let the browser pick its default codec */
+function getAudioMimeType(): string | undefined {
+  if (typeof MediaRecorder === 'undefined') return undefined;
+  const candidates = [
+    'audio/webm;codecs=opus',
+    'audio/mp4;codecs=mp4a.40.2',
+    'audio/mp4',
+    'audio/ogg;codecs=opus',
+    'audio/webm',
+  ];
+  return candidates.find((t) => MediaRecorder.isTypeSupported(t));
 }
 
 /**
@@ -44,19 +49,27 @@ export function useVoiceRecorder(): RecorderResult {
   const streamRef = useRef<MediaStream | null>(null);
 
   const start = useCallback(async () => {
+    let stream: MediaStream;
     try {
       setState({ recording: true, error: null });
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
+    } catch {
+      setState({ recording: false, error: 'Microphone access denied — check browser settings' });
+      return;
+    }
+    try {
       const mimeType = getAudioMimeType();
-      const recorder = new MediaRecorder(stream, { mimeType });
+      const opts = mimeType ? { mimeType } : undefined;
+      const recorder = new MediaRecorder(stream, opts);
       chunksRef.current = [];
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       recorder.start();
       recorderRef.current = recorder;
       startTimeRef.current = Date.now();
     } catch {
-      setState({ recording: false, error: 'Microphone access denied — check browser settings' });
+      stream.getTracks().forEach((t) => t.stop());
+      setState({ recording: false, error: 'Audio format not supported on this device' });
     }
   }, []);
 
