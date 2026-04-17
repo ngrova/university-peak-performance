@@ -3,29 +3,24 @@
 
 const { execSync } = require("child_process");
 
-// Outputs a decision and exits
 function decide(decision, reason) {
   const result = reason ? { decision, reason } : { decision };
   process.stdout.write(JSON.stringify(result));
 }
 
-// Extracts PR number from a gh pr merge command
 function extractPrNumber(cmd) {
   const match = cmd.match(/gh\s+pr\s+merge\s+(\d+)/);
   return match ? match[1] : null;
 }
 
-// Checks if the command is a gh pr merge command
 function isMergeCommand(cmd) {
   return /gh\s+pr\s+merge/.test(cmd);
 }
 
-// Checks if the command uses --auto (GitHub gates CI itself)
 function hasAutoFlag(cmd) {
   return /--auto/.test(cmd);
 }
 
-// Queries GitHub for PR check statuses
 function getCheckStatuses(prNumber) {
   const raw = execSync(
     `gh pr checks ${prNumber} --json name,state`,
@@ -52,26 +47,22 @@ process.stdin.on("end", () => {
 
   const cmd = (data.tool_input && data.tool_input.command) || "";
 
-  // Only gate gh pr merge commands
   if (!isMergeCommand(cmd)) {
     decide("approve");
     return;
   }
 
-  // Allow --auto merges — GitHub gates CI itself
   if (hasAutoFlag(cmd)) {
     decide("approve");
     return;
   }
 
-  // Extract PR number — fail closed if missing
   const prNumber = extractPrNumber(cmd);
   if (!prNumber) {
     decide("block", "CI gate: could not extract PR number from merge command.");
     return;
   }
 
-  // Query real-time CI status
   let checks;
   try {
     checks = getCheckStatuses(prNumber);
@@ -85,7 +76,6 @@ process.stdin.on("end", () => {
     return;
   }
 
-  // Check if all are passing (NEUTRAL = informational/skipped, not a failure)
   const passing = new Set(["SUCCESS", "NEUTRAL", "SKIPPED"]);
   const failing = checks.filter((c) => !passing.has(c.state));
   if (failing.length === 0) {
@@ -96,3 +86,4 @@ process.stdin.on("end", () => {
   const summary = failing.map((c) => c.name + ": " + c.state).join(", ");
   decide("block", "CI gate: PR #" + prNumber + " has failing checks — " + summary);
 });
+// PIPELINE-OWNED: Do not modify. If this logic has a gap, note it in the retrospective.

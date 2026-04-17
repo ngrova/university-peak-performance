@@ -39,7 +39,6 @@ process.stdin.on("end", () => {
 
   // Block git push to main/master (explicit target, bare push, or HEAD while on main)
   if (/git\s+push(\s|$)/.test(cmd)) {
-    // Explicit push to main/master branch name
     if (/git\s+push\s+\S+\s+(main|master)(\s|$)/.test(cmd)) {
       process.stdout.write(
         JSON.stringify({ decision: "block", reason: "Pushing directly to main/master is blocked." })
@@ -50,7 +49,6 @@ process.stdin.on("end", () => {
     const branch = getCurrentBranch();
     const onMain = branch === "main" || branch === "master";
 
-    // Bare `git push` — block always (ambiguous target)
     if (/git\s+push\s*$/.test(cmd.trim())) {
       process.stdout.write(
         JSON.stringify({
@@ -61,7 +59,6 @@ process.stdin.on("end", () => {
       return;
     }
 
-    // `git push origin HEAD` or `git push origin` (no branch) while on main/master
     if (onMain) {
       if (/git\s+push\s+\S+\s+HEAD(\s|$)/.test(cmd)) {
         process.stdout.write(
@@ -69,7 +66,6 @@ process.stdin.on("end", () => {
         );
         return;
       }
-      // `git push origin` with no branch specified
       if (/git\s+push\s+\S+\s*$/.test(cmd.trim())) {
         process.stdout.write(
           JSON.stringify({ decision: "block", reason: "Pushing while on main/master without an explicit branch is blocked." })
@@ -88,13 +84,11 @@ process.stdin.on("end", () => {
   }
 
   // Block rm with dangerous flags (-r, -f, -rf, --recursive, --force)
-  // Allow plain rm for single files (no flags)
   const rmMatch = cmd.match(/\brm\s+(.*)/s);
   if (rmMatch) {
     const tokens = rmMatch[1].trim().split(/\s+/);
     const hasDangerousFlag = tokens.some((token) => {
       if (token === "--recursive" || token === "--force") return true;
-      // Short flags like -r, -f, -rf, -rfv, etc.
       if (/^-[a-zA-Z]+$/.test(token) && /[rf]/.test(token)) return true;
       return false;
     });
@@ -119,3 +113,4 @@ process.stdin.on("end", () => {
 
   process.stdout.write(JSON.stringify({ decision: "approve" }));
 });
+// PIPELINE-OWNED: Do not modify. If this logic has a gap, note it in the retrospective.

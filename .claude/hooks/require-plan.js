@@ -13,7 +13,6 @@ function getRepoRoot() {
   }
 }
 
-// Returns branch name and plan file path
 function getBranchAndPlan() {
   const root = getRepoRoot();
   try {
@@ -25,15 +24,10 @@ function getBranchAndPlan() {
   }
 }
 
-// Checks if pushback content is a "None" variant
-function isNonePushback(text) {
-  return /^\s*(none|n\/a)/i.test(text.trim());
-}
-
-// Extracts text between ## Pushback and the next ## heading
-function extractPushbackContent(content) {
-  const match = content.match(/## Pushback[\s\S]*?\n([\s\S]*?)(?=\n## |$)/);
-  return match ? match[1].trim() : "";
+function extractField(content, fieldName) {
+  const regex = new RegExp("^" + fieldName + ":\\s*(.+)$", "m");
+  const match = content.match(regex);
+  return match ? match[1].trim() : null;
 }
 
 let input = "";
@@ -56,10 +50,11 @@ process.stdin.on("end", () => {
   const filePath = (data.tool_input && (data.tool_input.file_path || data.tool_input.path)) || "";
   const normalized = filePath.replace(/\\/g, "/");
 
-  // Allow edits to exempt paths
+  // Exempt paths — these can be edited without a plan
   const baseName = path.basename(normalized);
   if (
     baseName === "CLAUDE.md" ||
+    baseName === "DELEGATION.md" ||
     normalized.includes("/plans/") ||
     normalized.includes("/.claude/") ||
     normalized.includes("/docs/") ||
@@ -73,7 +68,7 @@ process.stdin.on("end", () => {
 
   const { branch, planPath } = getBranchAndPlan();
 
-  // Branch naming check — nick/ or erin/ prefix required (skip on main)
+  // Branch naming enforcement — must be nick/ or erin/ prefix
   if (branch && branch !== "main" && branch !== "master" && !/^(nick|erin)\//.test(branch)) {
     process.stdout.write(
       JSON.stringify({ decision: "block", reason: "Feature branches must use nick/ or erin/ prefix." })
@@ -81,45 +76,59 @@ process.stdin.on("end", () => {
     return;
   }
 
-  // Multi-gate plan validation
   try {
     const content = fs.readFileSync(planPath, "utf8");
 
-    // Gate 1: ## Pushback section must exist
-    if (!content.includes("## Pushback")) {
+    // Pre-plan pushback must be declared (not UNDECLARED)
+    const preplan = extractField(content, "PUSHBACK-PREPLAN");
+    if (!preplan || preplan === "UNDECLARED") {
       process.stdout.write(
-        JSON.stringify({ decision: "block", reason: "Plan file missing required ## Pushback section." })
+        JSON.stringify({ decision: "block", reason: "Pre-plan pushback not declared. Set PUSHBACK-PREPLAN in the plan file before proceeding." })
       );
       return;
     }
 
-    // Gate 2: If pushback is non-None, require acknowledgment
-    const pushbackText = extractPushbackContent(content);
-    const pushbackAcked = content.includes("ACKNOWLEDGED") || content.includes("PUSHBACK_ACKNOWLEDGED: YES");
-    if (pushbackText && !isNonePushback(pushbackText) && !pushbackAcked) {
+    // If pushback concerns were declared, they must be resolved
+    if (preplan.startsWith("CONCERNS")) {
+      const resolved = extractField(content, "PUSHBACK-RESOLVED");
+      if (!resolved || resolved === "N/A") {
+        process.stdout.write(
+          JSON.stringify({ decision: "block", reason: "Pushback concerns declared but not resolved — wait for Nick's direction." })
+        );
+        return;
+      }
+      if (!resolved.includes(branch)) {
+        process.stdout.write(
+          JSON.stringify({ decision: "block", reason: "PUSHBACK-RESOLVED does not match current branch (" + branch + ")." })
+        );
+        return;
+      }
+    }
+
+    // If pushback cleared, verify branch match
+    if (preplan.startsWith("CLEAR-") && !preplan.includes(branch)) {
       process.stdout.write(
-        JSON.stringify({ decision: "block", reason: "Pushback declared but not acknowledged — wait for human response." })
+        JSON.stringify({ decision: "block", reason: "PUSHBACK-PREPLAN clearance is for a different branch. Stale — re-declare for " + branch + "." })
       );
       return;
     }
 
-    // Gate 3: Plan review must be completed (new or old marker)
-    const reviewPassed = content.includes("RESULT: PASS") || content.includes("COUNCIL_PLAN_REVIEW: PASS");
-    if (!reviewPassed) {
+    // Council plan review must have passed — tied to THIS branch
+    const branchMatchedPass = content.includes("RESULT: PASS \u2014 " + branch);
+    if (!branchMatchedPass) {
       process.stdout.write(
-        JSON.stringify({ decision: "block", reason: "Plan review not completed — run the 9-agent review before building." })
+        JSON.stringify({ decision: "block", reason: "Plan review not completed for this branch — run the council review before building." })
       );
       return;
     }
 
-    // Gate 4: Human must have confirmed (new or old marker) — NOT completed/locked
-    const confirmed = content.includes("STATUS: CONFIRMED") || content.includes("STATUS: APPROVED");
-    const locked = /^STATUS: COMPLETED/im.test(content);
-    if (confirmed && !locked) {
+    // Human must have confirmed
+    const status = extractField(content, "STATUS");
+    if (status && status.startsWith("CONFIRMED")) {
       process.stdout.write(JSON.stringify({ decision: "approve" }));
       return;
     }
-    if (locked) {
+    if (status && status.startsWith("COMPLETED")) {
       process.stdout.write(
         JSON.stringify({ decision: "block", reason: "Plan is locked (COMPLETED). Create a new plan for the next task." })
       );
@@ -136,3 +145,4 @@ process.stdin.on("end", () => {
     })
   );
 });
+// PIPELINE-OWNED: Do not modify. If this logic has a gap, note it in the retrospective.

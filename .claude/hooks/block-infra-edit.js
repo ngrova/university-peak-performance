@@ -5,24 +5,26 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
-// Outputs a decision and exits
 function decide(decision, reason) {
   const result = reason ? { decision, reason } : { decision };
   process.stdout.write(JSON.stringify(result));
 }
 
-// Protected infrastructure paths
 const PROTECTED = [
-  "/.claude/hooks/", "/.claude/settings.json", "/.claude/rules/",
-  "/.claude/pipeline/", "/.claude/skills/",
+  "/.claude/hooks/",
+  "/.claude/settings.json",
+  "/.claude/rules/",
+  "/.claude/skills/",
+  "/.claude/scripts/",
+  "/.claude/review-agents/",
+  "/.github/",
+  "/DELEGATION.md",
 ];
 
-// Checks if a normalized path is in a protected directory
 function isProtected(normalized) {
   return PROTECTED.some((p) => normalized.includes(p));
 }
 
-// Reads the plan file and checks for PIPELINE-INFRA type + APPROVED
 function isPipelineInfraPlan() {
   try {
     const root = execSync("git rev-parse --show-toplevel", { encoding: "utf8" }).trim();
@@ -30,7 +32,7 @@ function isPipelineInfraPlan() {
     const slug = branch.replace(/\//g, "-");
     const planPath = path.join(root, "plans", slug + ".md");
     const content = fs.readFileSync(planPath, "utf8");
-    return content.includes("TYPE") && /PIPELINE-INFRA/i.test(content) && content.includes("STATUS: APPROVED");
+    return content.includes("TYPE") && /PIPELINE-INFRA/i.test(content) && (content.includes("STATUS: CONFIRMED") || content.includes("STATUS: APPROVED"));
   } catch {
     return false;
   }
@@ -61,7 +63,6 @@ process.stdin.on("end", () => {
     return;
   }
 
-  // Protected path — require PIPELINE-INFRA plan
   if (isPipelineInfraPlan()) {
     decide("approve");
     return;
@@ -69,3 +70,4 @@ process.stdin.on("end", () => {
 
   decide("block", "Infrastructure edits require a PIPELINE-INFRA plan approved by the human. Create a plan with TYPE: PIPELINE-INFRA first.");
 });
+// PIPELINE-OWNED: Do not modify. If this logic has a gap, note it in the retrospective.

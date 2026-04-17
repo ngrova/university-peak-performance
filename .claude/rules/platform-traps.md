@@ -4,7 +4,7 @@ These are hard-won lessons from production incidents. The "wrong" code looks cor
 and passes type checks but fails silently in our deployment environment (Netlify
 serverless + PostgreSQL + Next.js App Router).
 
-Read this file before writing ANY code in thriving-mobile.
+Read this file before writing ANY code.
 
 ## Supabase Server Client (Incident: silent auth failure)
 
@@ -14,55 +14,57 @@ WRONG:
 RIGHT:
   createServerClient(url, key, { cookies: { getAll: () => cookieStore.getAll(), setAll: (toSet) => { try { toSet.forEach(...) } catch {} } } })
 
-WHY: Netlify serverless requires getAll/setAll. The get/set/remove API silently fails — auth works locally but breaks in production. Users see empty screens with no error.
-BREAKS IF: You import createServerClient from @upp/db (uses wrong cookie API) or create a new client instead of using the shared helper.
-CANONICAL: apps/thriving-mobile/src/lib/supabase-server.ts
-PLATFORM: Netlify serverless
+WHY: Netlify serverless requires getAll/setAll. The get/set/remove API silently fails — auth works locally but breaks in production.
+CANONICAL: apps/web/src/lib/supabase-server.ts
 
 ## TanStack Query + Server Actions (Incident: silent empty data)
 
 WRONG: queryFn: fetchMyData
 RIGHT: queryFn: () => fetchMyData()
 
-WRONG: mutationFn: updateMyData
-RIGHT: mutationFn: (args) => updateMyData(args)
-
-WHY: TanStack Query passes { queryKey, signal, meta } to queryFn. The signal is an AbortSignal — not serializable across the server/client RSC boundary. The server action call silently fails and returns undefined. The UI shows empty state with no error.
-BREAKS IF: You pass any server action directly as queryFn or mutationFn without an arrow wrapper.
-CANONICAL: apps/thriving-mobile/src/components/TodayContent.tsx
+WHY: TanStack Query passes { queryKey, signal, meta } to queryFn. The signal is an AbortSignal — not serializable across the RSC boundary. The server action silently fails and returns undefined.
 
 ## sort_order Column — int4 Overflow (Incident: silent INSERT failure)
 
-WRONG: sort_order: Date.now()          // ~1.7 trillion — overflows int4
-WRONG: sort_order: Math.random() * 1e9 // unpredictable, can overflow
-RIGHT: sort_order: existingItems.length // monotonic counter: 0, 1, 2, 3...
+WRONG: sort_order: Date.now()
+RIGHT: sort_order: existingItems.length
 
-WHY: PostgreSQL int4 max is 2,147,483,647. Date.now() returns ~1,742,000,000,000. The INSERT silently fails with a numeric overflow. The catch block returns "Failed to save" but the real cause is invisible.
-BREAKS IF: You use any timestamp-based value or large number for sort_order, priority, or any integer column.
-CANONICAL: apps/thriving-mobile/src/actions/task-actions.ts
+WHY: PostgreSQL int4 max is 2,147,483,647. Date.now() returns ~1.7 trillion. The INSERT silently fails.
 
 ## Server Action Return Shape (Pattern: no throwing)
 
 WRONG: throw new Error('Failed to save')
 RIGHT: return { error: 'Failed to save — try again' }
 
-WHY: Server actions that throw break the RSC client transport. The UI gets an opaque error instead of an actionable message. Always return { error?: string } so the UI can display a user-friendly message.
-BREAKS IF: You use throw inside a server action or forget to wrap the body in try/catch.
+WHY: Server actions that throw break the RSC client transport. Always return { error?: string }.
 
-## Supabase Query Safety (Enforced by 3 review agents)
+## Supabase Query Safety (Enforced by review agents)
 
 WRONG: .select('*')
 RIGHT: .select('id, title, status, goal_id, ...')
 
-WRONG: .from('tasks').order('created_at')  // no limit — fetches everything
+WRONG: .from('tasks').order('created_at')  // no limit
 RIGHT: .from('tasks').order('created_at').limit(50)
 
-WHY: Wildcard selects leak new columns and break if schema changes. Unbounded queries kill mobile performance on large tables. Both are enforced by Agents 1, 2, and 7.
-BREAKS IF: You use .select('*') anywhere in production code, or omit .limit() on any list query.
-
-## Console Logging (Enforced by 3 review agents)
+## Console Logging (Enforced by review agents)
 
 WRONG: console.log(data)    console.error(err)
-RIGHT: captureException(err) via Sentry    // or structured logger in scripts/
+RIGHT: captureException(err) via Sentry
 
-WHY: console.log is invisible in Netlify production. Errors must go to Sentry to be discoverable. Enforced by Agents 1, 4, and 7. Exception: scripts/ directories and test files.
+WHY: console.log is invisible in Netlify production. Errors must go to Sentry.
+
+## Server Action Exposure (Incident: IDOR vulnerability)
+
+WRONG: Assuming a server action is "internal" because no component imports it
+RIGHT: Every export from a 'use server' file is a live, publicly callable API endpoint
+
+WHY: Next.js silently exposes every export from 'use server' files as callable endpoints. An attacker can call any exported function directly, bypassing your UI's auth checks. A "dead" server action that uses the admin Supabase client is a live privilege escalation vector.
+BREAKS IF: You export a function from a 'use server' file without its own auth + ownership checks, or you leave dead exports that use service-role access.
+
+## Client-Side-Only Validation (Incident: password bypass)
+
+WRONG: Enforcing password minimum length only in the form component
+RIGHT: Enforce the same constraint in both the form AND the server action
+
+WHY: Client-side validation is UX — it gives the user instant feedback. Server-side validation is security — it prevents bypass. An attacker can call the server action directly with any payload. If the server doesn't validate, the constraint doesn't exist.
+BREAKS IF: You add minLength, maxLength, regex, or required checks in a form without matching validation in the corresponding server action.

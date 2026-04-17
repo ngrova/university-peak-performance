@@ -1,17 +1,31 @@
 #!/usr/bin/env node
-
 /**
  * Dead Code Sweeper — finds orphaned .ts/.tsx files with zero inbound imports.
  * Runs in CI on every PR. Exits 1 if orphans found.
+ *
+ * Assumes Next.js App Router conventions. For non-Next projects, override
+ * ci.deadcode_command in project.yml or set it to null.
+ *
+ * Environment variables:
+ *   DEADCODE_SRC_DIR — source root to scan (default: ../src relative to this script)
+ *   DEADCODE_ALIAS   — TypeScript path alias (default: "@/")
+ *
+ * Suppression:
+ *   A file may opt out of orphan detection by including an inline directive:
+ *     // @deadcode-allow: <reason>
+ *   The reason text is required — it documents why the file is intentionally
+ *   unimported (e.g. "runtime-only import via dynamic()", "CLI entry point").
+ *   Use sparingly; prefer deleting truly dead code over suppressing.
  */
-
 const fs = require("fs");
 const path = require("path");
 
-const SRC_DIR = path.resolve(__dirname, "../apps/thriving-mobile/src");
-const ALIAS = "@/";
+const SRC_DIR = process.env.DEADCODE_SRC_DIR
+  ? path.resolve(process.env.DEADCODE_SRC_DIR)
+  : path.resolve(__dirname, "../src");
 
-// Next.js entry points and framework convention files — never flagged
+const ALIAS = process.env.DEADCODE_ALIAS || "@/";
+
 const ENTRY_PATTERNS = [
   /page\.tsx$/,
   /layout\.tsx$/,
@@ -19,22 +33,24 @@ const ENTRY_PATTERNS = [
   /loading\.tsx$/,
   /error\.tsx$/,
   /not-found\.tsx$/,
-  /globals\.css$/,
+  /route\.ts$/,
 ];
 
-// Files exempt from orphan detection
-function isExempt(filePath) {
+function hasAllowDirective(content) {
+  return /\/\/\s*@deadcode-allow:\s*\S+/.test(content);
+}
+
+function isExempt(filePath, content) {
   const rel = path.relative(SRC_DIR, filePath);
   if (/\.(test|spec)\.(ts|tsx)$/.test(rel)) return true;
   if (/\.types\.ts$/.test(rel)) return true;
   if (rel.startsWith("types" + path.sep) || rel.includes(path.sep + "types" + path.sep)) return true;
-  // Server actions are framework entry points (called via 'use server')
   if (rel.startsWith("actions" + path.sep)) return true;
   if (ENTRY_PATTERNS.some((p) => p.test(rel))) return true;
+  if (content !== undefined && hasAllowDirective(content)) return true;
   return false;
 }
 
-// Collect all .ts/.tsx files in src/
 function collectFiles(dir) {
   const results = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -48,10 +64,9 @@ function collectFiles(dir) {
   return results;
 }
 
-// Extract import paths from file contents
 function extractImports(content) {
   const imports = [];
-  const re = /(?:import|export)\s+.*?from\s+['"]([^'"]+)['"]/g;
+  const re = /(?:import|export)[\s\S]*?from\s+['"]([^'"]+)['"]/g;
   let match;
   while ((match = re.exec(content)) !== null) {
     imports.push(match[1]);
@@ -59,7 +74,6 @@ function extractImports(content) {
   return imports;
 }
 
-// Resolve an import path to an absolute file path
 function resolveImport(importPath, fromFile) {
   let resolved;
   if (importPath.startsWith(ALIAS)) {
@@ -67,9 +81,8 @@ function resolveImport(importPath, fromFile) {
   } else if (importPath.startsWith(".")) {
     resolved = path.resolve(path.dirname(fromFile), importPath);
   } else {
-    return null; // node_modules — skip
+    return null;
   }
-  // Try exact, then with extensions
   for (const ext of ["", ".ts", ".tsx", "/index.ts", "/index.tsx"]) {
     const candidate = resolved + ext;
     if (fs.existsSync(candidate)) return candidate;
@@ -77,19 +90,21 @@ function resolveImport(importPath, fromFile) {
   return null;
 }
 
-// Main
 const allFiles = collectFiles(SRC_DIR);
+const fileContents = new Map();
 const imported = new Set();
-
 for (const file of allFiles) {
   const content = fs.readFileSync(file, "utf8");
+  fileContents.set(file, content);
   for (const imp of extractImports(content)) {
     const target = resolveImport(imp, file);
     if (target) imported.add(target);
   }
 }
 
-const orphans = allFiles.filter((f) => !imported.has(f) && !isExempt(f));
+const orphans = allFiles.filter(
+  (f) => !imported.has(f) && !isExempt(f, fileContents.get(f))
+);
 
 if (orphans.length > 0) {
   console.error("Dead code detected — orphaned files with zero inbound imports:\n");
@@ -101,3 +116,4 @@ if (orphans.length > 0) {
 }
 
 console.log("No orphaned files detected.");
+// PIPELINE-OWNED: Do not modify. If this logic has a gap, note it in the retrospective.

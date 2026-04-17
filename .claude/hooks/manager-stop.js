@@ -1,27 +1,23 @@
 #!/usr/bin/env node
 
-/**
- * Manager Stop Hook — runs typecheck and tests when Claude finishes building.
- * If either fails, sends Claude back to fix the issues.
- */
-
 const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-// Find the repo root
 let repoRoot;
 try {
   repoRoot = execSync('git rev-parse --show-toplevel', {
     encoding: 'utf8',
   }).trim();
 } catch {
-  // Not in a git repo, skip
   process.stdout.write(JSON.stringify({ decision: 'approve' }));
   process.exit(0);
 }
 
-// Check if there are code changes (staged or unstaged) in apps/
+// Directories that are infrastructure, not application code.
+// Code changes OUTSIDE these directories trigger typecheck and tests.
+const INFRA_DIRS = ['.claude/', '.github/', 'docs/', 'plans/', 'node_modules/'];
+
 let hasCodeChanges = false;
 try {
   const diff = execSync(
@@ -32,7 +28,7 @@ try {
     .split('\n')
     .some(
       (f) =>
-        f.startsWith('apps/') &&
+        !INFRA_DIRS.some(dir => f.startsWith(dir)) &&
         (f.endsWith('.ts') ||
           f.endsWith('.tsx') ||
           f.endsWith('.js') ||
@@ -42,7 +38,6 @@ try {
   hasCodeChanges = false;
 }
 
-// Only run checks if there are actual code changes
 if (!hasCodeChanges) {
   process.stdout.write(JSON.stringify({ decision: 'approve' }));
   process.exit(0);
@@ -50,9 +45,7 @@ if (!hasCodeChanges) {
 
 const warnings = [];
 
-// Warn if file deletions appear in a FEATURE PR
 try {
-  // Derive plan path from current branch name
   const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8', cwd: repoRoot }).trim();
   const slug = branch.replace(/\//g, '-');
   const planPath = path.join(repoRoot, 'plans', slug + '.md');
@@ -75,15 +68,14 @@ try {
     }
   }
 } catch {
-  // Non-critical — skip warning if check fails
+  // Non-critical
 }
 
 const errors = [];
 
-// Run typecheck
 try {
   execSync('npx tsc --noEmit', {
-    cwd: path.join(repoRoot, 'apps', 'thriving-mobile'),
+    cwd: repoRoot,
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
     timeout: 120000,
@@ -93,10 +85,9 @@ try {
   errors.push(`Typecheck failed:\n${output.slice(0, 500)}`);
 }
 
-// Run tests
 try {
   execSync('npx vitest run --reporter=verbose', {
-    cwd: path.join(repoRoot, 'apps', 'thriving-mobile'),
+    cwd: repoRoot,
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
     timeout: 120000,
@@ -104,6 +95,32 @@ try {
 } catch (err) {
   const output = (err.stdout || '') + (err.stderr || '');
   errors.push(`Tests failed:\n${output.slice(0, 500)}`);
+}
+
+// Post-PR retrospective check — if a PR was merged, the retrospective
+// must be presented before the session can end.
+try {
+  const branch = execSync(
+    'git rev-parse --abbrev-ref HEAD',
+    { encoding: 'utf8', cwd: repoRoot }
+  ).trim();
+  const slug = branch.replace(/\//g, '-');
+  const planPath = path.join(repoRoot, 'plans', slug + '.md');
+  if (fs.existsSync(planPath)) {
+    const content = fs.readFileSync(planPath, 'utf8');
+    if (/STATUS:\s*COMPLETED\s*—\s*PR\s*#/i.test(content)) {
+      if (!/RETROSPECTIVE:\s*PRESENTED/i.test(content)) {
+        errors.push(
+          'Post-PR retrospective not completed.\n' +
+          'Review your full PR cycle and present your pipeline\n' +
+          'feedback to the human. Then set RETROSPECTIVE: PRESENTED\n' +
+          'in the plan file.'
+        );
+      }
+    }
+  }
+} catch {
+  // Non-critical — don't block session end if plan is unreadable
 }
 
 if (errors.length > 0) {
@@ -130,3 +147,4 @@ if (errors.length > 0) {
     })
   );
 }
+// PIPELINE-OWNED: Do not modify. If this logic has a gap, note it in the retrospective.
