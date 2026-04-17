@@ -1,0 +1,115 @@
+name: Code Review Council
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+concurrency:
+  group: council-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  review:
+    name: Code Review Council
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Get diff
+        run: git diff origin/main...HEAD > /tmp/diff.txt
+
+      - name: Find plan file
+        id: plan
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          SLUG="${BRANCH//\//-}"
+          PLAN="plans/${SLUG}.md"
+          if [ -f "$PLAN" ]; then
+            echo "file=$PLAN" >> $GITHUB_OUTPUT
+          else
+            echo "file=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run council review
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          COUNCIL_MODEL: ${{ secrets.COUNCIL_MODEL }}
+          DIFF_FILE: /tmp/diff.txt
+          PLAN_FILE: ${{ steps.plan.outputs.file }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BRANCH: ${{ github.head_ref }}
+          PR_COMMIT: ${{ github.sha }}
+        run: node .github/scripts/code-review.js > /tmp/review-results.json || true
+
+      - name: Upload council ledger
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: council-ledger
+          path: /tmp/council-ledger.json
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Post review comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body;
+            try {
+              const raw = fs.readFileSync('/tmp/review-results.json', 'utf8');
+              const results = JSON.parse(raw);
+              const icon = (v) => v === 'PASS' ? '✅' : v === 'EXEMPT' ? '🔘' : '❌';
+              const rows = results.results.map((r, i) =>
+                `| ${i+1} | ${r.name} | ${icon(r.verdict)} ${r.verdict} |`
+              ).join('\n');
+              const status = results.approved ? '✅ All agents passed' : '❌ Review failed';
+              let details = '';
+              const failed = results.results.filter(r => r.verdict === 'FAIL');
+              if (failed.length > 0) {
+                const blocks = failed.map(r =>
+                  `<details>\n<summary>❌ ${r.name}</summary>\n\n${r.reason || 'No reason provided'}\n\n</details>`
+                ).join('\n\n');
+                details = `\n\n### Failure Details\n\n${blocks}`;
+              }
+              let feedback = '';
+              const feedbackEntries = results.results
+                .filter(r => r.processFeedback && r.processFeedback.trim())
+                .map(r => `- **${r.name}:** ${r.processFeedback.trim()}`);
+              if (feedbackEntries.length > 0) {
+                feedback = `\n\n### Process Feedback\n\n${feedbackEntries.join('\n')}`;
+              }
+              body = `## Code Review Council\n\n${status}\n\n| # | Agent | Verdict |\n|---|-------|---------|\n${rows}${details}${feedback}\n\n_Reviewed commit: \`${context.sha.substring(0,7)}\` | [Council Ledger](../actions/runs/${context.runId})_`;
+            } catch (e) {
+              body = `## Code Review Council\n\n❌ Review failed — could not parse results.\n\nError: ${e.message}\n\nCheck the [workflow logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}).`;
+            }
+            const comments = await github.rest.issues.listComments({
+              ...context.repo, issue_number: context.issue.number
+            });
+            const existing = comments.data.find(c => c.body && c.body.startsWith('## Code Review Council'));
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });
+            }
+
+      - name: Check review result
+        run: |
+          if [ ! -f /tmp/review-results.json ]; then
+            echo "No review results — review script failed"
+            exit 1
+          fi
+          node -e "const r=JSON.parse(require('fs').readFileSync('/tmp/review-results.json','utf8'));process.exit(r.approved?0:1)"

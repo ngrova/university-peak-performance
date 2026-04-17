@@ -1,0 +1,92 @@
+# Project manifest — project-specific values consumed by sync templates.
+# Never overwritten by sync. Edit by hand to record project facts.
+
+name: university-peak-performance
+slug: university-peak-performance
+description: "Thriving Mobile — the University Peak Performance flagship mobile-first PWA for member-facing experiences, backed by a Next.js App Router + Supabase stack and deployed from a Turborepo monorepo."
+
+# Source control
+repo:
+  owner: ngrova
+  name: university-peak-performance
+  full: ngrova/university-peak-performance
+  visibility: private
+  default_branch: main
+
+# Cloud resources
+netlify:
+  site_name: thriving-mobile
+  site_id: 9dca72b9-6e6d-4d82-a428-d206245ba358
+  team: nicholas-grover
+
+supabase:
+  project_ref: kemmvxnmlmvspfxgfvhl
+  project_name: thriving-app
+  org: B2BBHS
+  region: us-east-2
+  compute: Micro
+
+sentry:
+  org: upp-wz
+  project: thriving-mobile
+  platform: javascript-nextjs
+  dsn: TBD  # run `npx @sentry/wizard@latest -i nextjs` in apps/thriving-mobile after sync
+
+stripe:
+  mode: test  # live flip is a separate feature branch
+  webhook_registered: false  # deferred to first payment-flow feature branch
+
+# Runtime
+uses_claude_api: true  # app calls Claude at runtime
+
+# Framework
+framework: next.js-14-app-router
+language: typescript-strict
+monorepo: turborepo
+app_dir: apps/thriving-mobile
+
+# PWA
+pwa:
+  enabled: true
+  manifest_source: apps/thriving-mobile/public/manifest.webmanifest
+  service_worker: apps/thriving-mobile/public/sw.js
+
+# Extra environment variables beyond the standard pipeline set.
+# Standard set: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
+# SUPABASE_SERVICE_ROLE_KEY, SUPABASE_DB_PASSWORD, SENTRY_DSN,
+# STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY, ANTHROPIC_API_KEY.
+extra_env_vars:
+  - DEEPGRAM_API_KEY  # speech-to-text transcription
+
+# Worktrees (for parallel Claude Code instances)
+worktree:
+  primary: C:\Users\Nick - Admin\code\university-peak-performance
+  parallel: C:\Users\Nick - Admin\code\university-peak-performance-parallel
+
+# CLAUDE.md placeholder values
+handbook_title: "University Peak Performance — Thriving Mobile Handbook"
+stack: |
+  - Next.js 14+ (App Router, TypeScript strict)
+  - Turborepo monorepo (deployable app at `apps/thriving-mobile/`)
+  - Tailwind CSS + shadcn/ui
+  - Supabase (Postgres, Auth, RLS)
+  - Netlify (auto-deploy from `main`)
+  - Sentry (error tracking)
+  - Stripe (test mode at bootstrap)
+  - Anthropic Claude API
+  - Deepgram (speech-to-text)
+  - Progressive Web App (mobile-first — installable, offline-capable)
+active_app_rule: |
+  The active deployable application is `apps/thriving-mobile/`. All application code lives there. Shared config, db, ui, and utility code lives in `packages/`.
+structure: |
+  - `apps/thriving-mobile/` — Next.js App Router application (deployable)
+  - `apps/_archived-thriving-desktop/` — archived, excluded from workspace
+  - `packages/` — shared config, db, ui, utils
+  - `fleet-sync-server/` — auxiliary server (outside pipeline scope)
+  - `.claude/` — Claude Code hooks, rules, review agents, scripts
+  - `.github/` — CI workflows, Council review action, Dependabot config
+  - `docs/` — design tokens, registry, code patterns (catalog)
+  - `plans/` — per-branch plan files (committed to the branch)
+  - `apps/thriving-mobile/supabase/` — migrations and local config
+SOURCE_ROOT: "apps/thriving-mobile/src/"
+project_name: "University Peak Performance"

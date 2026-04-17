@@ -1,55 +1,131 @@
 #!/usr/bin/env node
-// Runs the Code Review Council via the Anthropic Messages API.
-// Loads agent prompts from .claude/review-agents/, runs them sequentially, outputs JSON results.
-// Exit 0 = all approved, exit 1 = any rejected or error. Fail closed.
-
 const fs = require("fs");
 const path = require("path");
 const { reviewAgent, readInputs } = require("./code-review-helpers");
 
 const API_KEY = process.env.ANTHROPIC_API_KEY;
-const AGENT_DELAY_MS = 60000;
+const PAYLOAD_SIZE_LIMIT = 450000; // ~112k tokens, 75% of Sonnet's 200k context window
+
+// Glass Office: ledger version — bump when the ledger schema changes
+const LEDGER_VERSION = "2.0";
 
 if (!API_KEY) {
-  console.error(JSON.stringify({ approved: false, results: [{ name: "setup", verdict: "REJECTED", reason: "ANTHROPIC_API_KEY not set" }] }));
+  console.error(JSON.stringify({ approved: false, results: [{ name: "setup", verdict: "FAIL", reason: "ANTHROPIC_API_KEY not set" }] }));
   process.exit(1);
 }
 
-// Loads all agent prompts from .claude/review-agents/
 function loadAgents() {
   const dir = path.join(process.cwd(), ".claude", "review-agents");
-  return fs.readdirSync(dir).filter((f) => f.endsWith(".md")).sort().map((f) => ({
-    name: f.replace(/^agent-\d+-/, "").replace(".md", ""),
-    prompt: fs.readFileSync(path.join(dir, f), "utf8"),
-  }));
+  const sharedRules = fs.readFileSync(path.join(dir, "shared-rules.md"), "utf8");
+  return fs.readdirSync(dir)
+    .filter((f) => f.endsWith(".md") && f !== "shared-rules.md")
+    .sort()
+    .map((f) => ({
+      name: f.replace(/^agent-\d+-/, "").replace(".md", ""),
+      prompt: sharedRules + "\n\n---\n\n" + fs.readFileSync(path.join(dir, f), "utf8"),
+    }));
 }
 
-// Runs agents sequentially with delay to stay under API rate limits
-async function runSequentially(agents, diff, plan) {
-  const results = [];
-  for (let i = 0; i < agents.length; i++) {
-    results.push(await reviewAgent(agents[i], diff, plan, API_KEY));
-    if (i < agents.length - 1) await new Promise((r) => setTimeout(r, AGENT_DELAY_MS));
-  }
-  return results;
+// Extract process feedback from agent response text.
+// Agents may include a PROCESS FEEDBACK section after the verdict.
+function extractProcessFeedback(responseText) {
+  const match = responseText.match(/PROCESS FEEDBACK[:\s]*\n([\s\S]*?)$/i);
+  if (!match) return "";
+  const feedback = match[1].trim();
+  if (/^none\.?$/i.test(feedback) || feedback.length < 5) return "";
+  return feedback;
 }
 
-// Main: run agents sequentially, output results
+async function runParallel(agents, diff, plan, catalog, codebaseScan, fullFiles, contextManifest) {
+  return Promise.all(
+    agents.map((agent) =>
+      reviewAgent(agent, diff, plan, catalog, codebaseScan, fullFiles, API_KEY, contextManifest)
+    )
+  );
+}
+
 async function main() {
-  const { diff, plan } = readInputs();
+  const { diff, plan, catalog, codebaseScan, fullFiles, contextManifest, ledgerContext } = readInputs();
   const agents = loadAgents();
   if (agents.length === 0) {
     console.error("No agent prompt files found in .claude/review-agents/");
     process.exit(1);
   }
-  const results = await runSequentially(agents, diff, plan);
-  const PASS_VERDICTS = ["APPROVED", "WARN", "EXEMPT"];
+
+  // Payload size check — fail fast if PR is too large for reliable review
+  const samplePayload = `${agents[0].prompt}\n\n${contextManifest}\n\nPLAN:\n${plan}\n\nCODE DIFF:\n${diff}\n\n${catalog}\n\n${codebaseScan}\n\n${fullFiles}`;
+  if (samplePayload.length > PAYLOAD_SIZE_LIMIT) {
+    const result = {
+      approved: false,
+      results: [{
+        name: "payload-check",
+        verdict: "FAIL",
+        reason: `PR too large for reliable review. Assembled payload is ${samplePayload.length} chars (${Math.round(samplePayload.length / 4)} est. tokens), exceeding the ${PAYLOAD_SIZE_LIMIT} char limit (75% of model context window). Split into smaller PRs.`,
+      }],
+    };
+    process.stdout.write(JSON.stringify(result));
+    process.exit(1);
+  }
+
+  const councilStartedAt = new Date().toISOString();
+  const results = await runParallel(agents, diff, plan, catalog, codebaseScan, fullFiles, contextManifest);
+  const councilCompletedAt = new Date().toISOString();
+
+  // Extract process feedback from each agent
+  for (const r of results) {
+    r.processFeedback = extractProcessFeedback(r.responseText || r.reason || "");
+  }
+
+  const PASS_VERDICTS = ["PASS", "EXEMPT"];
   const approved = results.every((r) => PASS_VERDICTS.includes(r.verdict));
+
+  // Glass Office: assemble the council ledger
+  const verdictCounts = {};
+  for (const r of results) {
+    verdictCounts[r.verdict] = (verdictCounts[r.verdict] || 0) + 1;
+  }
+
+  const ledger = {
+    version: LEDGER_VERSION,
+    generatedAt: new Date().toISOString(),
+    model: process.env.COUNCIL_MODEL || "claude-sonnet-4-20250514",
+    pr: {
+      number: parseInt(process.env.PR_NUMBER || "0", 10),
+      branch: process.env.PR_BRANCH || "",
+      commit: process.env.PR_COMMIT || "",
+      repo: process.env.GITHUB_REPOSITORY || "",
+    },
+    timing: {
+      startedAt: councilStartedAt,
+      completedAt: councilCompletedAt,
+      totalDurationMs: new Date(councilCompletedAt) - new Date(councilStartedAt),
+    },
+    context: ledgerContext,
+    agents: results.map((r) => ({
+      name: r.name,
+      verdict: r.verdict,
+      responseText: r.responseText || r.reason || "",
+      processFeedback: r.processFeedback || "",
+      startedAt: r.startedAt || null,
+      completedAt: r.completedAt || null,
+      durationMs: r.durationMs || null,
+      promptChars: r.promptChars || null,
+      apiUsage: r.apiUsage || null,
+    })),
+    outcome: {
+      approved,
+      verdicts: verdictCounts,
+    },
+  };
+
+  fs.writeFileSync("/tmp/council-ledger.json", JSON.stringify(ledger, null, 2));
+  console.error(`[Glass Office] Council ledger written: ${JSON.stringify(ledger, null, 2).length} chars`);
+
   process.stdout.write(JSON.stringify({ approved, results }));
   process.exit(approved ? 0 : 1);
 }
 
 main().catch((err) => {
-  console.error(JSON.stringify({ approved: false, results: [{ name: "runner", verdict: "REJECTED", reason: err.message }] }));
+  console.error(JSON.stringify({ approved: false, results: [{ name: "runner", verdict: "FAIL", reason: err.message }] }));
   process.exit(1);
 });

@@ -1,42 +1,32 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f DELEGATION.md && cat DELEGATION.md || (echo 'DELEGATION.md missing — bootstrap incomplete or file deleted' >&2; exit 2)"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
         "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/block-dangerous.js"
-          },
-          {
-            "type": "command",
-            "command": "node .claude/hooks/block-on-pushback.js"
-          },
-          {
-            "type": "command",
-            "command": "node .claude/hooks/require-ci-pass.js"
-          }
+          { "type": "command", "command": "node .claude/hooks/block-dangerous.js" },
+          { "type": "command", "command": "node .claude/hooks/block-on-pushback.js" },
+          { "type": "command", "command": "node .claude/hooks/require-ci-pass.js" },
+          { "type": "command", "command": "node .claude/hooks/block-redlisted-ops.js" }
         ]
       },
       {
         "matcher": "Write|Edit|MultiEdit",
         "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/require-plan.js"
-          },
-          {
-            "type": "command",
-            "command": "node .claude/hooks/block-on-pushback.js"
-          },
-          {
-            "type": "command",
-            "command": "node .claude/hooks/block-archived.js"
-          },
-          {
-            "type": "command",
-            "command": "node .claude/hooks/block-infra-edit.js"
-          }
+          { "type": "command", "command": "node .claude/hooks/require-plan.js" },
+          { "type": "command", "command": "node .claude/hooks/block-on-pushback.js" },
+          { "type": "command", "command": "node .claude/hooks/block-infra-edit.js" }
         ]
       }
     ],
@@ -44,10 +34,7 @@
       {
         "matcher": "",
         "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/manager-stop.js"
-          }
+          { "type": "command", "command": "node .claude/hooks/manager-stop.js" }
         ]
       }
     ]

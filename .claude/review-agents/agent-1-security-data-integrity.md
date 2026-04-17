@@ -1,84 +1,79 @@
-Review this code diff for security and data integrity issues in this Next.js + Supabase + Netlify stack.
+# Agent 1 — Security & Data Integrity
 
-INFRASTRUCTURE EXEMPTION: Files under .github/, .claude/, scripts/, and config files are CI/build infrastructure, NOT user-facing application code. Do not apply application security rules (input validation, XSS, SQL injection, secret exposure) to these files. Only reject infrastructure files for actual secrets committed to code.
+Reviews every diff for security vulnerabilities and data integrity risks in the Next.js + Supabase + Netlify stack.
 
-CODEBASE CONTEXT: This monorepo contains multiple codebases with different security models. Before applying rules, check the file paths in the diff to determine which codebase each file belongs to, and apply the correct rules per-file.
+## Checklist
 
-If the diff contains files in `fleet-sync-server/`:
-- Auth is via API key middleware (X-API-Key header), NOT Supabase auth sessions.
-- There is no authenticated user — `auth.getUser()` does not apply. Do not reject for missing getUser() calls.
-- Agents self-identify by agent_id in the request body — this is by design, not an auth bypass.
-- The server uses the Supabase service-role key for database access — this is correct for a server-to-server context.
-- RLS policies use service-role bypass, not session-based row filtering. Do not demand auth.uid()-based RLS.
-- No Sentry — errors are returned as JSON-RPC error responses. Do not reject for missing Sentry/captureException.
-- console.log restriction still applies (use structured logging or return errors in responses).
-- All other checks (forbidden patterns, hardcoded secrets, schema changes) still apply.
+### 1. SUPABASE QUERY SAFETY
+- Is any query using `.select('*')` instead of listing explicit columns? (Note: `.select('*, relation(col1, col2)')` counts — the top-level `*` is the problem.)
+- Is any list query missing `.limit()` — returning an unbounded array without `.limit(N)` or a unique key scope (`.eq('id', ...)` + `.single()`)?
+- Any other concerns related to Supabase query safety?
 
-If the diff contains files in `apps/thriving-mobile/`:
-- All existing rules apply as-is with no modifications.
+### 2. RLS AND AUTH
+- Are any tables touched by this diff missing RLS or missing policies that filter by `auth.uid()`?
+- Is any server action missing a `supabase.auth.getUser()` call, or failing to handle the `!user` case before database operations?
+- Can a user pass another user's ID to modify or read their data? Do any server actions trust client-sent user IDs for authorization instead of using the authenticated user's ID from `getUser()`?
+- Does the `service_role` key appear in any client-side code or files under `src/components/`, `src/app/(app)/`, or any file with `'use client'`?
+- Any other concerns related to RLS and auth?
 
-A PR may touch both codebases — apply the correct rules per-file based on its path.
+### 3. FORBIDDEN PATTERNS
+- Does the diff contain `dangerouslySetInnerHTML`?
+- Does the diff contain `eval()` or `new Function()`?
+- Does the diff contain raw SQL string concatenation?
+- Does the diff contain `console.log/warn/error/debug` in app code? (Exception: `scripts/` directories, test files, `.github/` scripts.)
+- Does the diff contain hardcoded secrets, API keys, or Supabase URLs as string literals instead of `process.env` references?
+- Any other concerns related to forbidden patterns?
 
-Your response MUST start with exactly one word on the first line: APPROVED, WARN, or REJECTED.
-- Use APPROVED if no issues exist in lines added by this diff (lines starting with +).
-- Use WARN if the only issues are pre-existing (visible in context lines, not added by this PR). List them but they do not block.
-- Use REJECTED only for issues in lines the PR author actually added.
-Then explain your reasoning below.
+### 4. ENVIRONMENT VARIABLE SAFETY
+- Does `SUPABASE_SERVICE_ROLE_KEY` appear in any client-side file (components, `'use client'` files)?
+- Are any non-`NEXT_PUBLIC_` env vars referenced in client-side code?
+- Any other concerns related to environment variable safety?
 
-Checklist — applies only to lines ADDED by this diff:
+### 5. VALUE-TO-COLUMN COMPATIBILITY
+- Could any number being INSERTed or UPDATEd into an integer column exceed 2,147,483,647? (PostgreSQL integer columns max at 2,147,483,647. `Date.now()` returns ~1.7 trillion — check `sort_order`, `priority`, and any integer column.)
+- Are any string values going into columns with CHECK constraints that could violate those constraints?
+- Any other concerns related to value-to-column compatibility?
 
-1. SUPABASE QUERY SAFETY
-   - Any .select('*') → REJECT. Must list explicit columns.
-     Note: .select('*, relation(col1, col2)') also counts — the top-level * is the problem.
-   - Any list query missing .limit() → REJECT. All queries returning arrays must have .limit(N) or be scoped by a unique key (.eq('id', ...) + .single()).
-   - Explicit column selects and .limit() on all list queries — no exceptions.
+### 6. SILENT FAILURE DETECTION
+- Could any auth or permission check fail silently — returning empty data (`[]`, `null`) instead of an error, making it impossible for the UI to distinguish "no data" from "access denied"?
+- Are any catch blocks silently returning `{}` or `[]` without logging, hiding the real error from both the user and Sentry?
+- Is `error` from any Supabase `{ data, error }` response being ignored — not destructured, or destructured but never checked?
+- Do any mutations return the same shape (`{}`) on both success and error, making them indistinguishable to the UI?
+- Any other concerns related to silent failure detection?
 
-2. RLS AND AUTH
-   - Tables must have RLS enabled with policies filtering by auth.uid().
-   - Server actions must call supabase.auth.getUser() and handle the !user case BEFORE any database operation.
-   - Can a user pass another user's ID to modify/read their data? Server actions must never trust client-sent user IDs for authorization — always use the authenticated user's ID from getUser().
-   - service_role key must never appear in client-side code or files under src/components/, src/app/(app)/, or any file with 'use client'.
+### 7. DUPLICATE PREVENTION & DATA PRESERVATION
+- Are any mutation-triggering buttons missing `disabled={isPending}` or equivalent, allowing double-submission?
+- Is any record-creating mutation missing a UNIQUE constraint or idempotency check that would prevent duplicates on retry?
+- Does any form clear the user's typed data on mutation failure instead of preserving it?
+- Any other concerns related to duplicate prevention and data preservation?
 
-3. FORBIDDEN PATTERNS
-   - dangerouslySetInnerHTML → REJECT.
-   - eval() or new Function() → REJECT.
-   - Raw SQL string concatenation → REJECT.
-   - console.log/warn/error/debug in app code → REJECT. Use Sentry. Exception: scripts/ directories, test files, .github/ scripts.
-   - Hardcoded secrets, API keys, or Supabase URLs as string literals (not process.env) → REJECT.
+### 8. SCHEMA CHANGES
+- Are there any new tables, columns, constraints, or indexes without a corresponding migration file in `supabase/migrations/`? Any dashboard-only changes without migrations?
+- Any other concerns related to schema changes?
 
-4. ENVIRONMENT VARIABLE SAFETY
-   - SUPABASE_SERVICE_ROLE_KEY must only appear in server-side files (API routes, 'use server' files, middleware).
-   - NEXT_PUBLIC_ variables are OK in any file.
+### 9. SERVER ACTION EXPOSURE
+- Is any function exported from a `'use server'` file that is NOT being treated as a publicly callable API endpoint? (Every export is callable regardless of whether any component imports it.)
+- Is any exported server action missing its own auth check (`getUser()`) or its own ownership verification — relying on the calling component for security?
+- Does any server action accept an ID parameter (`userId`, `sessionId`, `buildId`) without verifying the authenticated user owns that resource? Could an attacker call it directly with someone else's ID?
+- Are there any dead server actions (exported but not imported by any component) that use admin/service-role clients? These are live attack surface even if unused.
+- Any other concerns related to server action exposure?
 
-5. VALUE-TO-COLUMN COMPATIBILITY
-   - For every value being INSERTed or UPDATEd, verify it fits the column type. PostgreSQL integer columns max at 2,147,483,647. Date.now() returns ~1.7 trillion. If a number assigned to sort_order, priority, or any integer column could exceed 2,147,483,647 → REJECT. Use array.length or MAX(col)+1 instead.
-   - String values going into columns with CHECK constraints: verify the value satisfies the constraint.
+### 10. SERVER-SIDE VALIDATION
+- Is any client-side validation (minLength, maxLength, regex, required fields, format checks) missing matching server-side enforcement in the corresponding server action? (Client validation is UX; server validation is security.)
+- Are password minimum length, email format, file size limits, or numeric ranges missing server-side validation?
+- Any other concerns related to server-side validation?
 
-6. SILENT FAILURE DETECTION
-   - Could any auth or permission check fail silently (returning empty data instead of an error)? If a server action returns [] or null when auth fails, the UI cannot distinguish "no data" from "access denied" — flag it.
-   - Server actions that catch errors must return an error message to the caller. A catch block that silently returns {} or [] without logging → REJECT.
-   - Supabase queries: if { data, error } is returned but error is not checked → REJECT.
-   - Every mutation's success path and error path must return distinguishable shapes — if both return {} the UI cannot tell them apart → flag it.
+### 11. SECURITY PATTERN CONSISTENCY
+- Does the diff add a security pattern (rate limiting, UUID validation, auth check, input sanitization, CSRF protection) to one route or action while similar routes or actions in the CODEBASE SCAN are missing the same pattern?
+- Does the scan show similar locations missing the same security pattern? (This catches the "3 of 4 download routes validate UUIDs" class of bugs.)
+- Any other concerns related to security pattern consistency?
 
-7. DUPLICATE PREVENTION
-   - Mutation-triggering buttons must disable during processing (disabled={isPending} or equivalent).
-   - If a mutation creates a record, is there a UNIQUE constraint or idempotency check preventing duplicates on retry?
+### 12. OUTPUT INJECTION & DATA LEAKAGE
+- Is any user-controlled data flowing into outputs (log lines, emails, API responses, error messages, webhook payloads, notification content) without proper handling?
+- Is user-controlled data rendered in HTML (emails, templates) without escaping?
+- Is user-controlled data written to logs without sanitization?
+- Do any error messages expose system internals (stack traces, database errors, file paths, internal IDs)?
+- Do any webhook or notification payloads include raw user data without redaction?
+- Any other concerns related to output injection and data leakage?
 
-8. SCHEMA CHANGES
-   - Any new table, column, constraint, or index must have a migration file in supabase/migrations/. Dashboard-only changes → REJECT.
-
-9. DATA PRESERVATION
-   - User input (form fields, text areas) must not be cleared on error. If a mutation fails, the form should retain the user's typed data.
-
-VERBATIM CITATION RULE: Every concern you raise MUST include a verbatim quote from the diff that demonstrates the issue. Copy the exact code from the diff — do not paraphrase, do not write code from memory, do not reference code you expect to exist. If you cannot point to a specific line in the diff that shows the problem, do not raise the concern.
-
-Format every concern like this:
-- **Concern:** [description]
-- **Evidence from diff:** `[exact code copied from the diff]`
-- **Why this is a problem:** [explanation]
-
-If the "Evidence from diff" section would require you to reference code that is NOT in the diff provided to you, DROP the concern entirely. You are reviewing the diff, not the entire codebase. You can only cite what you can see.
-
-SELF-CHECK GATE: Before submitting your review, re-read the diff one more time. For every concern you are about to raise, confirm that the code you cited actually appears in the diff above. If any concern references code that you cannot find in the diff on this second reading, remove it. It is better to raise zero concerns than to raise a concern about code that doesn't exist.
-
-If all checks pass, answer APPROVED.
+### FINAL: Any other security or data integrity concerns not covered by the checks above?
