@@ -8,6 +8,7 @@
 //   user taps stop → blob assembled → returned to caller
 // ═══════════════════════════════════════════════════════════
 import { useState, useRef, useCallback } from 'react';
+import { reportError } from '@/lib/report-error';
 
 interface RecorderState {
   recording: boolean;
@@ -21,7 +22,7 @@ interface RecorderResult {
 }
 
 /** Detects the best supported audio MIME type, or undefined to let the browser pick its default codec */
-function getAudioMimeType(): string | undefined {
+export function getAudioMimeType(): string | undefined {
   if (typeof MediaRecorder === 'undefined') return undefined;
   const candidates = [
     'audio/webm;codecs=opus',
@@ -54,7 +55,8 @@ export function useVoiceRecorder(): RecorderResult {
       setState({ recording: true, error: null });
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-    } catch {
+    } catch (err) {
+      reportError(err);
       setState({ recording: false, error: 'Microphone access denied — check browser settings' });
       return;
     }
@@ -67,7 +69,8 @@ export function useVoiceRecorder(): RecorderResult {
       recorder.start();
       recorderRef.current = recorder;
       startTimeRef.current = Date.now();
-    } catch {
+    } catch (err) {
+      reportError(err);
       stream.getTracks().forEach((t) => t.stop());
       setState({ recording: false, error: 'Audio format not supported on this device' });
     }
