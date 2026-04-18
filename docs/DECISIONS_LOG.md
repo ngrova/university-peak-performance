@@ -57,6 +57,12 @@ Push to repo: github.com/ngrova/university-peak-performance
 - MEMORY.md created in Albus workspace for persistent lightweight memory
 - Monorepo scaffold in progress (subagent working)
 
+## April 17, 2026
+
+- **Decision: split `fleet-sync-server/` out of this repo.** The original vision — AIs using the MCP server to read Thriving data for greater context — is not yet realized. Today the MCP server is agent-to-agent messaging only (fleet inbox, fanout, batch post), with no consumption of Thriving's Supabase data. Co-location pays costs (shared lockfile, mixed CI, `fleet_*` migrations polluting `apps/thriving-mobile/supabase/migrations/`, Council review noise, a separate `fleet-sync-upp` Netlify site hanging off every Thriving PR) without the benefit of shared types/data. When the grand vision IS realized, the correct contract is the MCP API surface, not code-level imports.
+- Plan: new repo `ngrova/fleet-sync`. Move `fleet-sync-server/` and the `fleet_messages` / `fleet_inbox` / `fleet_agents` Supabase migrations over. Keep the fleet tables in the same Supabase project (`thriving-app` / `kemmvxnmlmvspfxgfvhl`) — cheaper than a second project, and gives Thriving an easy data-level read path later if needed. Re-point the `fleet-sync-upp` Netlify site at the new repo. Delete from this repo once migration is verified.
+- Scope estimate: ~1-2 days (new repo, its own pipeline adoption, Netlify re-point, Supabase migration ownership shuffle, docs update). Not urgent — Thriving's pipeline is already clean without this.
+
 ## Deferred / TODO
 
 - [ ] Buy HDMI dummy plug (~$10) and UPS battery backup (~$50)
@@ -69,3 +75,4 @@ Push to repo: github.com/ngrova/university-peak-performance
 - [ ] Set up Qodo integration on repo
 - [ ] Delete old fine-grained PAT "claude-read-only" from GitHub (leaked, replaced)
 - [ ] Delete old fine-grained PAT "albus-agent" from GitHub (replaced by classic)
+- [ ] Execute fleet-sync split (see April 17, 2026 decision): new `ngrova/fleet-sync` repo, move `fleet-sync-server/` + `fleet_*` Supabase migrations, re-point `fleet-sync-upp` Netlify site, delete from this repo
