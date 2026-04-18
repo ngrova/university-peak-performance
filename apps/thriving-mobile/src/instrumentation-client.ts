@@ -1,30 +1,28 @@
-// This file configures the initialization of Sentry on the client.
-// The added config here will be used whenever a users loads a page in their browser.
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/
-
+// ═══════════════════════════════════════════════════════════
+// FILE: instrumentation-client.ts
+// PURPOSE: Next.js client-side instrumentation hook — initializes
+//   Sentry in the browser for error capture, performance tracing,
+//   and session replay. Loaded automatically by Next.js via the
+//   `instrumentation-client.ts` convention (no explicit import).
+// CALLED BY: Next.js runtime on the client (framework convention — do not import manually).
+// DATA FLOW: Browser loads a page → Next.js runs this file once →
+//   Sentry.init() wires captureException / tracing / replay →
+//   onRouterTransitionStart hooks into App Router navigations.
+// ═══════════════════════════════════════════════════════════
+// @deadcode-allow: Next.js framework entry point — loaded by filename convention, no inbound imports.
 import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: "https://f2f4fc50b00fe4994fdb663173d6d376@o4511061209382912.ingest.us.sentry.io/4511238050152448",
+  dsn: process.env['NEXT_PUBLIC_SENTRY_DSN'],
 
-  // Add optional integrations for additional features
   integrations: [Sentry.replayIntegration()],
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
   tracesSampleRate: 1,
-  // Enable logs to be sent to Sentry
   enableLogs: true,
 
-  // Define how likely Replay events are sampled.
-  // This sets the sample rate to be 10%. You may want this to be 100% while
-  // in development and sample at a lower rate in production
   replaysSessionSampleRate: 0.1,
-
-  // Define how likely Replay events are sampled when an error occurs.
   replaysOnErrorSampleRate: 1.0,
 
-  // Enable sending user PII (Personally Identifiable Information)
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
   sendDefaultPii: true,
 });
 

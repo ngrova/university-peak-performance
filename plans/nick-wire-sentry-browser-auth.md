@@ -18,16 +18,22 @@ Wire Sentry end-to-end so `reportError()` delegates to `Sentry.captureException(
 
 ## Files to Change
 - `apps/thriving-mobile/src/lib/report-error.ts` — delegate to `Sentry.captureException`, drop `console.error` primary path
+- `apps/thriving-mobile/src/app/layout.tsx` — `metadata` → `generateMetadata()` with `Sentry.getTraceData()` merged into `other`
 - `apps/thriving-mobile/next.config.mjs` — wrapped by `withSentryConfig` (wizard does this)
 - `apps/thriving-mobile/package.json` — `@sentry/nextjs` added (wizard does this)
+- `pnpm-lock.yaml` — lockfile updated for the new dep
+- `.gitignore` — add `.env.sentry-build-plugin`
+- `.github/workflows/ci.yml` — expose `NEXT_PUBLIC_SENTRY_DSN` + `SENTRY_AUTH_TOKEN` to the `build` job so Next.js can read the DSN and upload source maps
 - `DELEGATION.md` — Sentry status row
 - `project.yml` — Sentry DSN field
 
 ## New Files
-- `apps/thriving-mobile/sentry.client.config.ts` — wizard output
-- `apps/thriving-mobile/sentry.server.config.ts` — wizard output
-- `apps/thriving-mobile/sentry.edge.config.ts` — wizard output
-- `apps/thriving-mobile/instrumentation.ts` — wizard may add this
+- `apps/thriving-mobile/sentry.server.config.ts` — wizard output (server runtime init)
+- `apps/thriving-mobile/sentry.edge.config.ts` — wizard output (edge runtime init)
+- `apps/thriving-mobile/src/instrumentation.ts` — wizard output (server/edge bootstrap)
+- `apps/thriving-mobile/src/instrumentation-client.ts` — wizard output (client runtime init)
+- `apps/thriving-mobile/src/app/global-error.tsx` — wizard output (app-router error boundary → Sentry)
+- `.mcp.json` — Sentry MCP server config for future Claude Code sessions
 - `plans/nick-wire-sentry-browser-auth.md` — this plan
 
 ## Scope
