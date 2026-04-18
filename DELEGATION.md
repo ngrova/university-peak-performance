@@ -27,7 +27,7 @@ This file defines what Claude Code can and cannot do in this project. The Sessio
 | Supabase | Provisioned (project `thriving-app`, ref `kemmvxnmlmvspfxgfvhl`, us-east-2, Micro, B2BBHS org). Linked. |
 | Netlify | Provisioned (site `thriving-mobile`, id `9dca72b9-6e6d-4d82-a428-d206245ba358`, team `nicholas-grover`). Linked. |
 | GitHub | Provisioned (`ngrova/university-peak-performance`, private). Branch protection configured; required checks to be reconciled with canonical: `CI`, `Code Review Council`. |
-| Sentry | Project `thriving-mobile` reserved in org `upp-wz`. Wizard not yet run — DSN TBD. Run `npx @sentry/wizard@latest -i nextjs` in `apps/thriving-mobile/`. |
+| Sentry | Provisioned (project `thriving-mobile` in org `upp-wz`). DSN wired in `sentry.{client,server,edge}.config.ts`. `SENTRY_AUTH_TOKEN` set as GitHub Actions secret. Netlify env needs manual paste (CLI forbidden). |
 | Stripe | Test-mode keys not yet seeded. Webhook scaffolded but NOT registered — deferred to first payment-flow feature branch. |
 | Anthropic Claude API | Provisioned as GitHub secret `ANTHROPIC_API_KEY` (Council reviews) and Netlify env `ANTHROPIC_API_KEY` (runtime). |
 | Deepgram | Key provisioned as Netlify env `DEEPGRAM_API_KEY` for speech-to-text transcription. |
