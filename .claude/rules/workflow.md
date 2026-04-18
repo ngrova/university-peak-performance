@@ -15,7 +15,7 @@ The user describes what they want in plain English. The system handles everythin
 
 3. **Pre-plan pushback declaration** — Before planning begins, you MUST declare whether you have concerns about the requested approach. This is mandatory — not optional. Set the `PUSHBACK-PREPLAN` field in the plan file. It starts as `UNDECLARED` which blocks all progress. Change it to `CLEAR-{branch-name}` (no concerns) or `CONCERNS` (describe each concern and STOP — Nick must resolve before work continues). See the plan template's inline instructions for full details.
 
-4. **Create feature branch** — `nick/short-description`. No other prefixes.
+4. **Create feature branch** — `git fetch origin && git checkout -b nick/short-description origin/main`. No other prefixes. Verify with `git merge-base --is-ancestor origin/main HEAD && echo OK` — if not OK, recreate from origin/main.
 
 5. **Plan creation** — Write `plans/{branch-slug}.md` using the template below.
 
@@ -88,18 +88,23 @@ Every gate variable has an inline instruction block. These instructions are part
 # Plan: [Feature Name]
 
 ## TYPE
-<!--
+<!-- 
 INSTRUCTIONS — To set this field, you must understand what each type means:
-- FEATURE: New functionality or enhancement. Default for most work.
-- REDESIGN: Structural rework of existing functionality. Allows file deletion.
+- FEATURE: New runtime code or enhancement. Default for most work.
+- REDESIGN: Structural rework of existing runtime code. Allows file deletion.
 - PIPELINE-INFRA: Changes to pipeline-owned files (.claude/, .github/, DELEGATION.md).
   This is the ONLY type that permits edits to protected infrastructure files.
   The block-infra-edit hook enforces this — misclassifying a change as PIPELINE-INFRA
   to bypass protections is exactly what that hook exists to catch.
-Set this field based on what the work actually is. Do not change it later without
-re-running the Council plan review from scratch.
+- DOCS: Documentation-only changes. Diff touches only *.md files.
+  Short-circuits runtime-specific Council checks. Still reviewed for secrets,
+  plan fidelity, and TYPE-vs-scope consistency.
+Set this field based on what the work actually is. Misclassification (e.g.,
+setting DOCS when the diff includes runtime code) is caught by Agent 4's
+TYPE-vs-scope check. Do not change it later without re-running the Council
+plan review from scratch.
 -->
-TYPE: [FEATURE | REDESIGN | PIPELINE-INFRA]
+TYPE: [FEATURE | REDESIGN | PIPELINE-INFRA | DOCS]
 
 ## Task
 [What and why — plain English from the human]
@@ -120,11 +125,11 @@ TYPE: [FEATURE | REDESIGN | PIPELINE-INFRA]
 [small (1-3 files) | medium (4-7 files) | large (8+ files)]
 
 ## PRE-PLAN PUSHBACK
-<!--
+<!-- 
 INSTRUCTIONS — This field starts as UNDECLARED and blocks all progress until changed.
 Before changing this field, you MUST have:
 1. Read the full task description from the human
-2. Genuinely considered whether the requested approach has risks, unknowns,
+2. Genuinely considered whether the requested approach has risks, unknowns, 
    scope concerns, or improvements worth raising BEFORE planning begins
 3. Made a deliberate declaration — not a rubber stamp
 
@@ -146,22 +151,28 @@ PUSHBACK-PREPLAN: UNDECLARED
 [Write "None open." if preflight found no open PRs.]
 
 ## COUNCIL PLAN REVIEW
-<!--
+<!-- 
 INSTRUCTIONS — This field starts as PENDING. Do not change it until ALL of the following are true:
 1. You fired all 7 Council agents in parallel on this plan
 2. You received a structured receipt from every agent
 3. Every agent returned an overall PASS verdict
 4. You surfaced the full receipt to Nick as a notification
-5. If any agent returned FAIL: you fixed the plan and re-ran the Council
+5. If any agent returned FAIL: you fixed the plan and re-ran the Council 
    until all agents PASS — do not set PASS after a partial run
 
 The branch name suffix must match the current branch exactly.
 A previous branch's PASS cannot greenlight this branch.
+
+AMENDMENT: If you edit the plan's scope-defining fields (TYPE, Task, Approach,
+Files to Change, New Files, Files to Delete) after setting RESULT: PASS, the
+prior PASS is invalidated. Reset RESULT to PENDING and re-run the Council
+before continuing. This applies equally when you amend the plan to
+incorporate a Council INSIGHT.
 -->
 RESULT: PENDING
 
 ## PUSHBACK RESOLVED
-<!--
+<!-- 
 INSTRUCTIONS — This field is ONLY relevant when PRE-PLAN PUSHBACK is set to CONCERNS.
 If no concerns were declared, leave as N/A.
 
@@ -179,7 +190,7 @@ After pushback is resolved:
 PUSHBACK-RESOLVED: N/A
 
 ## HUMAN APPROVAL
-<!--
+<!-- 
 INSTRUCTIONS — This field starts as AWAITING. It is the most critical gate in the pipeline.
 No code is written until this field is CONFIRMED. The require-plan hook enforces this.
 
@@ -196,11 +207,11 @@ After the PR merges successfully, advance to COMPLETED — PR #[number].
 STATUS: AWAITING
 
 ## POST-BUILD PUSHBACK
-<!--
+<!-- 
 INSTRUCTIONS — This field starts as UNDECLARED and blocks code review until changed.
 Before changing this field, you MUST have:
 1. Finished building all code for this branch
-2. Reviewed your own implementation for risks, surprises, scope creep,
+2. Reviewed your own implementation for risks, surprises, scope creep, 
    or concerns that surfaced during the build that weren't visible at planning time
 3. Made a deliberate declaration — not a rubber stamp
 
@@ -219,16 +230,16 @@ A previous PR's CLEAR does not carry forward.
 PUSHBACK-POSTBUILD: UNDECLARED
 
 ## COUNCIL CODE REVIEW
-<!--
+<!-- 
 INSTRUCTIONS — This field starts as PENDING. Do not change it until ALL of the following are true:
 1. POST-BUILD PUSHBACK has been declared (not UNDECLARED)
-2. You ran the payload size check — if the assembled payload exceeds 75% of
+2. You ran the payload size check — if the assembled payload exceeds 75% of 
    the model's context window, STOP and recommend splitting the PR
 3. You fired all 7 Council agents in parallel on the code diff
 4. You received a structured receipt from every agent
 5. Every agent returned an overall PASS verdict
 6. You surfaced the full receipt to Nick as a notification
-7. If any agent returned FAIL: you fixed the code and re-ran the Council
+7. If any agent returned FAIL: you fixed the code and re-ran the Council 
    until all agents PASS — do not set PASS after a partial run
 
 The branch name suffix must match the current branch exactly.
@@ -237,10 +248,10 @@ A previous branch's PASS cannot greenlight this branch.
 RESULT: PENDING
 
 ## RETROSPECTIVE
-<!--
+<!-- 
 INSTRUCTIONS — This field starts as PENDING. Do not change it until ALL of the following are true:
 1. The PR has been merged and deployed successfully
-2. You wrote the retrospective covering: review cycle summary, what the pipeline
+2. You wrote the retrospective covering: review cycle summary, what the pipeline 
    caught, friction encountered, restart thoughts, and improvement recommendations
 3. You presented the retrospective to Nick
 4. You offered to send any feedback to Paul for pipeline improvement
@@ -253,7 +264,7 @@ RETROSPECTIVE: PENDING
 
 Eight gate variables, each with inline instructions at the point of change:
 
-1. **TYPE** — Behavior modifier. Controls which hooks apply (PIPELINE-INFRA unlocks infra edits).
+1. **TYPE** — Behavior modifier. Controls which hooks apply (PIPELINE-INFRA unlocks infra edits) AND which Council sections fire (DOCS and PIPELINE-INFRA short-circuit runtime-only checks).
 2. **PUSHBACK-PREPLAN** — Mandatory declaration at step 3. `UNDECLARED` blocks all progress. `CLEAR-{branch}` or `CONCERNS`.
 3. **COUNCIL PLAN REVIEW RESULT** — Set after all 7 agents PASS. Branch-matched suffix prevents carry-over.
 4. **PUSHBACK-RESOLVED** — Human-only field. Only Nick's words unlock it. Resets council and approval.

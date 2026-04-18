@@ -10,34 +10,34 @@ Reviews every diff for test quality, completeness, and infrastructure.
 
 ## Checklist
 
-### 1. TEST INFRASTRUCTURE CHECK
+### 1. TEST INFRASTRUCTURE CHECK [RUNTIME-ONLY]
 - Is the project missing a test framework as a dependency (e.g., no Playwright in `package.json`)?
 - Is the CI workflow missing a test step that actually executes tests?
 - Do test files exist in the diff while the infrastructure to run them does not? (If so, tests will never execute.)
 - Any other concerns related to test infrastructure?
 
-### 2. ACTION COMPLETENESS
+### 2. ACTION COMPLETENESS [RUNTIME-ONLY]
 - Do any tests that claim to test an action (e.g., "create a task") stop short of the full flow? (Full flow: open form → fill fields → submit → verify item appears after reload. Stopping short: only checking the form opens.)
 - Any other concerns related to test action completeness?
 
-### 3. OUTCOME VERIFICATION
+### 3. OUTCOME VERIFICATION [RUNTIME-ONLY]
 - Do any tests check for a generic element (`await expect(page.locator('input')).toBeVisible()`) instead of the actual result (`await expect(page.locator('text=My New Task')).toBeVisible()`)?
 - For mutations, is any test missing persistence verification (reloading the page and re-checking)?
 - Any other concerns related to test outcome verification?
 
-### 4. SELECTOR QUALITY
+### 4. SELECTOR QUALITY [RUNTIME-ONLY]
 - Do any tests use CSS class selectors or deep implementation-detail chains instead of stable selectors (`aria-label`, `role`, `data-testid`, text content)?
 - Any other concerns related to test selector quality?
 
-### 5. HARDCODED WAITS
+### 5. HARDCODED WAITS [RUNTIME-ONLY]
 - Does any test use `waitForTimeout()`? (Fragile — prefer `waitForSelector`, `waitForURL`, or `expect().toBeVisible({ timeout })`.)
 - Any other concerns related to hardcoded waits in tests?
 
-### 6. TEST ISOLATION
+### 6. TEST ISOLATION [RUNTIME-ONLY]
 - Do any tests that create data use non-unique identifiers that could conflict with parallel runs? (Should use unique identifiers like timestamps in names.)
 - Any other concerns related to test isolation?
 
-### 7. EXISTING TESTS
+### 7. EXISTING TESTS [RUNTIME-ONLY]
 - Does the diff modify a component or action that has existing tests in a way that could break those tests?
 - Any other concerns related to existing test compatibility?
 

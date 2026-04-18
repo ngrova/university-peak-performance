@@ -27,7 +27,8 @@ function getPlanPath(root, branch) {
 }
 
 function normalize(p) {
-  return p.replace(/\\/g, "/");
+  const slashed = p.replace(/\\/g, "/");
+  return process.platform === "win32" ? slashed.toLowerCase() : slashed;
 }
 
 function isEditToPlanFile(toolInput, planPath) {

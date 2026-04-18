@@ -8,7 +8,7 @@
 - Nesting: 3 levels max — extract into helper functions
 - Exported functions: 3 max per file
 
-## File Header Comments (required on all .ts and .tsx files in apps/web/src/)
+## File Header Comments (required on all .ts and .tsx files in apps/thriving-mobile/src/)
 
 Every source file must begin with a header block:
 

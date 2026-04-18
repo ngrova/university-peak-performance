@@ -56,9 +56,22 @@ process.stdin.on("end", () => {
   }
 
   const filePath = (data.tool_input && (data.tool_input.file_path || data.tool_input.path)) || "";
-  const normalized = filePath.replace(/\\/g, "/");
+  const normalized = process.platform === "win32"
+    ? filePath.replace(/\\/g, "/").toLowerCase()
+    : filePath.replace(/\\/g, "/");
 
   if (!isProtected(normalized)) {
+    decide("approve");
+    return;
+  }
+
+  // No commits yet (bootstrap) — pipeline files don't exist yet, let the install through
+  let hasHead = false;
+  try {
+    execSync("git rev-parse --verify HEAD", { encoding: "utf8", stdio: "pipe" });
+    hasHead = true;
+  } catch {}
+  if (!hasHead) {
     decide("approve");
     return;
   }
