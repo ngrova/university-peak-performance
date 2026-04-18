@@ -30,7 +30,7 @@ sentry:
   org: upp-wz
   project: thriving-mobile
   platform: javascript-nextjs
-  dsn: TBD  # run `npx @sentry/wizard@latest -i nextjs` in apps/thriving-mobile after sync
+  dsn: https://f2f4fc50b00fe4994fdb663173d6d376@o4511061209382912.ingest.us.sentry.io/4511238050152448
 
 stripe:
   mode: test  # live flip is a separate feature branch

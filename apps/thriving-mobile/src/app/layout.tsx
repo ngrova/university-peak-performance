@@ -9,22 +9,26 @@
 // ═══════════════════════════════════════════════════════════
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
+import * as Sentry from '@sentry/nextjs';
 import { Providers } from './providers';
 import './globals.css';
 
-export const metadata: Metadata = {
-  title: 'Thriving',
-  description: 'Your daily driver for goals, tasks, and life pillars.',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
+export function generateMetadata(): Metadata {
+  return {
     title: 'Thriving',
-  },
-  other: {
-    'mobile-web-app-capable': 'yes',
-  },
-};
+    description: 'Your daily driver for goals, tasks, and life pillars.',
+    manifest: '/manifest.json',
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'black-translucent',
+      title: 'Thriving',
+    },
+    other: {
+      'mobile-web-app-capable': 'yes',
+      ...Sentry.getTraceData(),
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: 'device-width',
