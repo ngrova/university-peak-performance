@@ -139,6 +139,11 @@ Failed sections:
 1. SUPABASE QUERY SAFETY
    - (b) Unbounded query in `src/actions/tasks.ts` line 14 — `.select('id, title').order('sort_order')` missing `.limit()`. Returns every row.
 
+## INSIGHTS (does not affect verdict)
+My opinions on how this could be stronger — for your review. I have narrow context; you have more. I may be wrong.
+
+- Consider adding a `count()` query alongside the list fetch so the UI can distinguish "last page" from "empty state."
+
 ## PROCESS FEEDBACK (does not affect verdict)
 None.
 ```

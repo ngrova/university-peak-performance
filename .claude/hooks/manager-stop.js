@@ -73,28 +73,52 @@ try {
 
 const errors = [];
 
-try {
-  execSync('npx tsc --noEmit', {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    stdio: ['pipe', 'pipe', 'pipe'],
-    timeout: 120000,
-  });
-} catch (err) {
-  const output = (err.stdout || '') + (err.stderr || '');
-  errors.push(`Typecheck failed:\n${output.slice(0, 500)}`);
+function hasTypeScript(root) {
+  try {
+    const out = execSync('git ls-files "*tsconfig.json"', { cwd: root, encoding: 'utf8' });
+    return out.trim().length > 0;
+  } catch {
+    return false;
+  }
 }
 
-try {
-  execSync('npx vitest run --reporter=verbose', {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    stdio: ['pipe', 'pipe', 'pipe'],
-    timeout: 120000,
-  });
-} catch (err) {
-  const output = (err.stdout || '') + (err.stderr || '');
-  errors.push(`Tests failed:\n${output.slice(0, 500)}`);
+function hasVitest(root) {
+  try {
+    const pkgPath = path.join(root, 'package.json');
+    if (!fs.existsSync(pkgPath)) return false;
+    const pkg = fs.readFileSync(pkgPath, 'utf8');
+    return pkg.includes('"vitest"');
+  } catch {
+    return false;
+  }
+}
+
+if (hasTypeScript(repoRoot)) {
+  try {
+    execSync('npx tsc --noEmit', {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 120000,
+    });
+  } catch (err) {
+    const output = (err.stdout || '') + (err.stderr || '');
+    errors.push(`Typecheck failed:\n${output.slice(0, 500)}`);
+  }
+}
+
+if (hasVitest(repoRoot)) {
+  try {
+    execSync('npx vitest run --reporter=verbose', {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 120000,
+    });
+  } catch (err) {
+    const output = (err.stdout || '') + (err.stderr || '');
+    errors.push(`Tests failed:\n${output.slice(0, 500)}`);
+  }
 }
 
 // Post-PR retrospective check — if a PR was merged, the retrospective

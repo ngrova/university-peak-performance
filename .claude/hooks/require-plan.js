@@ -48,13 +48,16 @@ process.stdin.on("end", () => {
   }
 
   const filePath = (data.tool_input && (data.tool_input.file_path || data.tool_input.path)) || "";
-  const normalized = filePath.replace(/\\/g, "/");
+  const normalized = process.platform === "win32"
+    ? filePath.replace(/\\/g, "/").toLowerCase()
+    : filePath.replace(/\\/g, "/");
 
   // Exempt paths — these can be edited without a plan
   const baseName = path.basename(normalized);
+  const baseLower = baseName.toLowerCase();
   if (
-    baseName === "CLAUDE.md" ||
-    baseName === "DELEGATION.md" ||
+    baseLower === "claude.md" ||
+    baseLower === "delegation.md" ||
     normalized.includes("/plans/") ||
     normalized.includes("/.claude/") ||
     normalized.includes("/docs/") ||
@@ -68,10 +71,16 @@ process.stdin.on("end", () => {
 
   const { branch, planPath } = getBranchAndPlan();
 
-  // Branch naming enforcement — must be nick/ or erin/ prefix
-  if (branch && branch !== "main" && branch !== "master" && !/^(nick|erin)\//.test(branch)) {
+  // No commits yet (bootstrap) — nothing to gate on
+  if (!branch) {
+    process.stdout.write(JSON.stringify({ decision: "approve" }));
+    return;
+  }
+
+  // Branch naming enforcement — must be nick/ prefix
+  if (branch && branch !== "main" && branch !== "master" && !/^nick\//.test(branch)) {
     process.stdout.write(
-      JSON.stringify({ decision: "block", reason: "Feature branches must use nick/ or erin/ prefix." })
+      JSON.stringify({ decision: "block", reason: "Feature branches must use nick/ prefix." })
     );
     return;
   }

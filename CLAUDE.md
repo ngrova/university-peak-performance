@@ -72,7 +72,7 @@ This is a Turborepo monorepo. The deployable Next.js app lives at `apps/thriving
 - `plans/` — per-branch plan files (committed to the branch)
 - `apps/thriving-mobile/supabase/` — migrations and local config
 
-- Build with `turbo run build` (not `pnpm build` directly)
+- Build with `pnpm run build` (delegates to turbo via root package.json scripts)
 - Netlify deploys from `apps/thriving-mobile/` (configured in `netlify.toml`)
 - See `.claude/rules/coding-standards.md` for Sandi Metz rules and resilience rules
 - See `.claude/rules/workflow.md` for task lifecycle and git workflow

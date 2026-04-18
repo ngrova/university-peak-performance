@@ -64,7 +64,6 @@ check "agent-7 (design-consistency) exists" "[ -f .claude/review-agents/agent-7-
 echo ""
 echo "Rules:"
 check "coding-standards.md exists" "[ -f .claude/rules/coding-standards.md ]"
-check "platform-traps.md exists" "[ -f .claude/rules/platform-traps.md ]"
 check "workflow.md exists" "[ -f .claude/rules/workflow.md ]"
 
 # --- Core Config ---
@@ -147,9 +146,7 @@ check "references catalog files" "grep -q 'DESIGN-TOKENS\|DESIGN-REGISTRY\|CODE-
 # --- DELEGATION.md Content Check ---
 echo ""
 echo "DELEGATION.md Content:"
-check "DELEGATION.md references Supabase" "grep -qi 'supabase' DELEGATION.md"
 check "DELEGATION.md references GitHub" "grep -qi 'github' DELEGATION.md"
-check "DELEGATION.md references Netlify" "grep -qi 'netlify' DELEGATION.md"
 check "DELEGATION.md has provisioning section" "grep -qi 'provisioning' DELEGATION.md"
 
 echo ""

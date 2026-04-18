@@ -20,9 +20,10 @@
 const fs = require("fs");
 const path = require("path");
 
+// Assumes script lives at <repo>/scripts/ and apps/web/ is the deployable app.
 const SRC_DIR = process.env.DEADCODE_SRC_DIR
   ? path.resolve(process.env.DEADCODE_SRC_DIR)
-  : path.resolve(__dirname, "../src");
+  : path.resolve(__dirname, "../apps/web/src");
 
 const ALIAS = process.env.DEADCODE_ALIAS || "@/";
 
