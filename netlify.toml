@@ -1,6 +1,6 @@
 [build]
   base = "apps/thriving-mobile"
-  command = "cd ../.. && turbo run build --filter=@upp/thriving-mobile"
+  command = "cd ../.. && turbo run build --filter=web"
   publish = ".next"
 
 [[plugins]]

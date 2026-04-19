@@ -47,7 +47,9 @@ The user describes what they want in plain English. The system handles everythin
 
 17. **Deploy monitoring** — After merge, confirm deploy succeeds. A merge that doesn't deploy is not done.
 
-18. **Post-PR retrospective** — This is mandatory. The manager-stop hook blocks session end until this is done. Review your entire PR cycle from plan through merge and write a retrospective using this structure:
+17b. **Clean Workbench** — After deploy confirms, verify on GitHub that the PR is MERGED (`gh pr view <N> --json state,mergedAt`), then: `git checkout main && git pull origin main`, `git branch -D <branch>` (force-delete — squash-merge makes `-d` refuse because git sees the branch as unmerged even though its contents landed), `git remote prune origin`. Verify: `git status` clean, `git branch --show-current` is `main`, `git branch --list <branch>` empty. If any check fails, STOP and report. Do not proceed to Step 18 with a lingering feature branch.
+
+18. **Post-PR retrospective** — This is mandatory. Write a retrospective to `ngrova/pipeline` at `retros/<project>/<YYYY.MM.DD>_pr<N>_<slug>.md`. Include a link to the Council JSON artifact for this PR (the `council-ledger` artifact on the external review workflow run; 90-day retention). Review your entire PR cycle from plan through merge using this structure:
 
     **Review Cycle Summary**
     - Plan review passes: [count — how many rounds before the Council approved the plan]
@@ -74,9 +76,9 @@ The user describes what they want in plain English. The system handles everythin
     **Council process feedback**
     [Aggregated from all three Council firings (steps 6, 10, 13). Include any agent observations about the checklist itself — questions that didn't apply, were unclear, or patterns the questions don't cover. If no agent had feedback: "None."]
 
-19. **Present retrospective** — Present your retrospective to the human: "Here's my feedback on the pipeline for this PR. If you'd like, you can send this to Paul." Do not ask a question — just present the feedback and let the human decide.
+19. **Present retrospective** — Present your retrospective to the human in the terminal: "Here's my feedback on the pipeline for this PR. If you'd like, you can send this to Paul." Do not ask a question — just present the feedback and let the human decide.
 
-20. **Mark retrospective complete** — Set `RETROSPECTIVE: PRESENTED` in the plan file. The manager-stop hook will block session end if this is not set.
+20. **Commit retrospective to pipeline repo** — Commit the retrospective file to `ngrova/pipeline` with message `retro(<project>): pr<N> <slug>`. Direct commit to main — no PR, no Council review. If the commit fails (network, auth, repo unreachable), STOP and report to the human with the retrospective body printed inline so no feedback is lost.
 
 ## Plan File Template
 
@@ -246,23 +248,11 @@ The branch name suffix must match the current branch exactly.
 A previous branch's PASS cannot greenlight this branch.
 -->
 RESULT: PENDING
-
-## RETROSPECTIVE
-<!-- 
-INSTRUCTIONS — This field starts as PENDING. Do not change it until ALL of the following are true:
-1. The PR has been merged and deployed successfully
-2. You wrote the retrospective covering: review cycle summary, what the pipeline 
-   caught, friction encountered, restart thoughts, and improvement recommendations
-3. You presented the retrospective to Nick
-4. You offered to send any feedback to Paul for pipeline improvement
-Only then set to PRESENTED. A retrospective that hasn't been shown to Nick is not PRESENTED.
--->
-RETROSPECTIVE: PENDING
 ```
 
 ## Variable Enforcement Summary
 
-Eight gate variables, each with inline instructions at the point of change:
+Seven gate variables, each with inline instructions at the point of change:
 
 1. **TYPE** — Behavior modifier. Controls which hooks apply (PIPELINE-INFRA unlocks infra edits) AND which Council sections fire (DOCS and PIPELINE-INFRA short-circuit runtime-only checks).
 2. **PUSHBACK-PREPLAN** — Mandatory declaration at step 3. `UNDECLARED` blocks all progress. `CLEAR-{branch}` or `CONCERNS`.
@@ -271,7 +261,8 @@ Eight gate variables, each with inline instructions at the point of change:
 5. **HUMAN APPROVAL STATUS** — `AWAITING` → `CONFIRMED` (explicit approval) → `COMPLETED — PR #{number}` (post-merge).
 6. **PUSHBACK-POSTBUILD** — Mandatory declaration at step 9. `UNDECLARED` blocks code review. `CLEAR-PR-{number}` or `CONCERNS`.
 7. **COUNCIL CODE REVIEW RESULT** — Set after all 7 agents PASS on code. Branch-matched suffix prevents carry-over.
-8. **RETROSPECTIVE** — Set to `PRESENTED` only after Nick has seen it.
+
+Retrospectives are not a gate variable — they are a post-merge step that writes durable output to the `ngrova/pipeline` repo (see Retrospectives section). The artifact is the proof of work, not a plan field.
 
 **Reset rules:** New task = new branch = new plan file. Every variable starts fresh. Nothing carries over between branches. After pushback resolved mid-plan: COUNCIL PLAN REVIEW resets to PENDING, HUMAN APPROVAL resets to AWAITING.
 
@@ -305,6 +296,7 @@ Feature PRs with user-facing changes must include Playwright tests. Infrastructu
 ## Pipeline Feedback Loop
 
 - After every merged PR, present a structured retrospective to the human (Steps 18–20)
-- The manager-stop hook enforces this — session cannot end without it
+- The retrospective is committed to `ngrova/pipeline` at `retros/<project>/<YYYY.MM.DD>_pr<N>_<slug>.md` and presented inline in the terminal
+- Every retrospective must link to the Council JSON artifact for that PR (90-day retention)
 - The human routes actionable findings to Paul (the pipeline architect)
 - Do not append lessons to CLAUDE.md — improvements flow through the retrospective, not file edits
