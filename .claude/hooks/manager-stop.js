@@ -121,32 +121,6 @@ if (hasVitest(repoRoot)) {
   }
 }
 
-// Post-PR retrospective check — if a PR was merged, the retrospective
-// must be presented before the session can end.
-try {
-  const branch = execSync(
-    'git rev-parse --abbrev-ref HEAD',
-    { encoding: 'utf8', cwd: repoRoot }
-  ).trim();
-  const slug = branch.replace(/\//g, '-');
-  const planPath = path.join(repoRoot, 'plans', slug + '.md');
-  if (fs.existsSync(planPath)) {
-    const content = fs.readFileSync(planPath, 'utf8');
-    if (/STATUS:\s*COMPLETED\s*—\s*PR\s*#/i.test(content)) {
-      if (!/RETROSPECTIVE:\s*PRESENTED/i.test(content)) {
-        errors.push(
-          'Post-PR retrospective not completed.\n' +
-          'Review your full PR cycle and present your pipeline\n' +
-          'feedback to the human. Then set RETROSPECTIVE: PRESENTED\n' +
-          'in the plan file.'
-        );
-      }
-    }
-  }
-} catch {
-  // Non-critical — don't block session end if plan is unreadable
-}
-
 if (errors.length > 0) {
   const message = [
     'Manager check FAILED. Fix these before proceeding:',

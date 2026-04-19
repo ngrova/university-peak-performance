@@ -95,7 +95,8 @@ This is a Turborepo monorepo. The deployable Next.js app lives at `apps/thriving
 ## Pipeline Feedback Loop
 
 - After every merged PR, present a structured retrospective to the human (Steps 18–20 of the workflow)
-- The manager-stop hook enforces this — session cannot end without presenting the retrospective
+- The retrospective is committed to `ngrova/pipeline` at `retros/<project>/<YYYY.MM.DD>_pr<N>_<slug>.md` and presented inline in the terminal
+- Every retrospective must link to the Council JSON artifact for that PR (90-day retention)
 - The human routes actionable findings to Paul (the pipeline architect)
 - Never modify hooks, delete permanent rules, or weaken review checks
 

@@ -74,16 +74,17 @@ function buildContextManifest(diff, plan, catalog, codebaseScan, fullFiles) {
 }
 
 function parseVerdict(text) {
-  // Look for the VERDICT line in structured output format
-  const verdictLine = text.match(/^VERDICT[:\s]*(PASS|FAIL)/im);
+  // Look for the VERDICT line in structured output format.
+  // Tolerate markdown decoration: **VERDICT**, ## VERDICT, > VERDICT, - **VERDICT**, etc.
+  const verdictLine = text.match(/^[\s>*#\-_]*\**\s*VERDICT\**[:\s]*\**\s*(PASS|FAIL|EXEMPT)/im);
   if (verdictLine) return verdictLine[1].toUpperCase();
-  // Fallback: last verdict keyword found (fail closed)
+  // Fallback: last verdict keyword found (fail closed). Also tolerate markdown decoration.
   const lines = text.split("\n");
   let verdict = "FAIL";
   for (const line of lines) {
-    if (/^\s*PASS\b/i.test(line)) verdict = "PASS";
-    else if (/^\s*FAIL\b/i.test(line)) verdict = "FAIL";
-    else if (/^\s*EXEMPT\b/i.test(line)) verdict = "EXEMPT";
+    if (/^[\s>*#\-_]*\**\s*PASS\b/i.test(line)) verdict = "PASS";
+    else if (/^[\s>*#\-_]*\**\s*FAIL\b/i.test(line)) verdict = "FAIL";
+    else if (/^[\s>*#\-_]*\**\s*EXEMPT\b/i.test(line)) verdict = "EXEMPT";
   }
   return verdict;
 }

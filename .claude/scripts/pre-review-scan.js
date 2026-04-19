@@ -4,8 +4,8 @@ const path = require("path");
 const { execSync } = require("child_process");
 
 const SHARED_DIRS = [
-  "apps/web/src/actions", "apps/web/src/lib", "apps/web/src/hooks",
-  "apps/web/src/utils", "apps/web/src/components/shared",
+  "apps/thriving-mobile/src/actions", "apps/thriving-mobile/src/lib", "apps/thriving-mobile/src/hooks",
+  "apps/thriving-mobile/src/utils", "apps/thriving-mobile/src/components/shared",
   "packages"
 ];
 
