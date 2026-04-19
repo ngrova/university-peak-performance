@@ -28,24 +28,23 @@ Execute Preflight + Steps 1 through 7b of the Sync section. Stop after Step 7b. 
 9. Step 7b: Write `4.1.2` to `.pipeline-version`.
 10. STOP.
 
-## Files to Change
-- `.claude/hooks/*` — overwrite with SoT versions
-- `.claude/review-agents/*` — re-generate from SoT templates (agent-4 carries RULE DISCIPLINE + test-files-count-as-runtime language)
-- `.claude/rules/*` — re-generate
-- `.claude/scripts/*` — overwrite with SoT versions
-- `.claude/settings.json` — re-generate
-- `.github/scripts/code-review-helpers.js` — **parser fix** (core v4.1.2 payload)
-- `.github/scripts/code-review.js` — overwrite with SoT version
-- `.github/workflows/ci.yml` — **e2e fixes** (reverts to SoT template, which will drop UPP's project-specific Sentry envs in the build job and use `--filter=web` instead of UPP's `--filter=@thriving/mobile`)
-- `.github/workflows/council.yml` — overwrite with SoT version
-- `.github/dependabot.yml` — overwrite with SoT version
-- `netlify.toml` — overwrite with SoT template (reverts UPP's project-specific base path / filter — known overlay gap)
-- `CLAUDE.md` — re-generate
-- `.nvmrc` — overwrite with SoT version
-- `scripts/check-dead-code.js` — overwrite with SoT version
-- `.pipeline-version` — write `4.1.2`
+## Files to Change (narrowed to actual diff post-Step 3; many universal files already matched SoT)
+- `.claude/hooks/manager-stop.js` — SoT dropped the post-PR retrospective-block gate
+- `.claude/review-agents/agent-4-plan-fidelity.md` — **RULE DISCIPLINE preamble + test-files-count-as-runtime carve-out (v4.1.2 Bug 4)**
+- `.claude/review-agents/agent-6-test-coverage.md` — Baseline assumption block + TEST COVERAGE ASSESSMENT reasoning
+- `.claude/rules/workflow.md` — Step 17b Clean Workbench + retros commit to ngrova/pipeline
+- `.claude/scripts/pre-review-scan.js` — SHARED_DIRS app_dir substitution for apps/thriving-mobile
+- `.github/scripts/code-review-helpers.js` — **parser fix (core v4.1.2 Bug 1 — tolerates markdown-decorated VERDICT lines)**
+- `.github/workflows/ci.yml` — **e2e build step + e2e result parser (Bugs 2+3); adds Unit Tests job; reverts to SoT template shape, dropping UPP's project-specific Sentry envs and `--filter=@thriving/mobile`**
+- `netlify.toml` — overwrite with SoT template (reverts UPP's project-specific filter — known overlay gap)
+- `CLAUDE.md` — re-rendered from template with project.yml values (handbook title, stack, structure)
+- `scripts/check-dead-code.js` — default SRC_DIR app_dir substitution
+
+## Files Matching SoT (listed in prior plan but not in diff — already on v4.0 shape)
+- `.claude/settings.json`, `.claude/rules/coding-standards.md`, `.claude/scripts/verify-pipeline.sh`, `.claude/hooks/*` (except manager-stop), `.claude/review-agents/agent-1/2/3/5/7`, `.claude/review-agents/shared-rules.md`, `.github/scripts/code-review.js`, `.github/workflows/council.yml`, `.github/dependabot.yml`, `.nvmrc`.
 
 ## New Files
+- `.pipeline-version` — write `4.1.2`
 - `plans/pipeline-sync-v4.1.2.md` — this plan
 
 ## Files to Delete
