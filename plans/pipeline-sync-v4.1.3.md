@@ -24,8 +24,20 @@ Execute Preflight + Steps 1 through 7b of the Sync section. Stop after Step 7b. 
 9. Step 7b: Write `4.1.3` to `.pipeline-version`.
 10. STOP. Report to Nick and await "commit and push."
 
-## Files to Change
-- (Narrowed post-Step 3; the actual diff vs SoT v4.1.3 will be recorded here once discovered. Expected candidates: any universal file changed between v4.1.2 and v4.1.3.)
+## Files to Change (narrowed post-Step 3; most universal files already matched SoT)
+- `.github/workflows/ci.yml` — adds `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` env to the E2E job (v4.1.3 SoT addition)
+- `.claude/review-agents/shared-rules.md` — SoT trimmed the example-receipts appendix (-117 lines)
+- `.claude/rules/workflow.md` — SoT dropped the duplicated plan template (-214 lines)
+- `.pipeline-version` — `4.1.2` → `4.1.3`
+
+## Files Matching SoT (no change needed at v4.1.3)
+- All hooks (`block-dangerous`, `block-infra-edit`, `block-on-pushback`, `require-plan`, `require-ci-pass`, `manager-stop`, `block-redlisted-ops`)
+- `.claude/settings.json`
+- `.claude/review-agents/agent-1–7` (already render `{{AGENT_CONTEXT_BLOCKS}}` to empty)
+- `.claude/rules/coding-standards.md`, `.claude/scripts/verify-pipeline.sh`, `.claude/scripts/pre-review-scan.js`
+- `.github/workflows/council.yml`, `.github/scripts/code-review.js`, `.github/scripts/code-review-helpers.js`, `.github/dependabot.yml`
+- `.nvmrc`, `netlify.toml`, `scripts/check-dead-code.js`
+- `CLAUDE.md` (template render with project.yml produces no semantic change)
 
 ## New Files
 - `plans/pipeline-sync-v4.1.3.md` — this plan
