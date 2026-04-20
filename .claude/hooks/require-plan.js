@@ -77,10 +77,16 @@ process.stdin.on("end", () => {
     return;
   }
 
-  // Branch naming enforcement — must be nick/ prefix
-  if (branch && branch !== "main" && branch !== "master" && !/^nick\//.test(branch)) {
+  // Branch naming enforcement — feature branches use nick/, sync branches use pipeline-sync-v
+  if (
+    branch &&
+    branch !== "main" &&
+    branch !== "master" &&
+    !/^nick\//.test(branch) &&
+    !/^pipeline-sync-v/.test(branch)
+  ) {
     process.stdout.write(
-      JSON.stringify({ decision: "block", reason: "Feature branches must use nick/ prefix." })
+      JSON.stringify({ decision: "block", reason: "Feature branches must use nick/ prefix; sync branches must use pipeline-sync-v prefix." })
     );
     return;
   }
@@ -122,11 +128,19 @@ process.stdin.on("end", () => {
       return;
     }
 
-    // Council plan review must have passed — tied to THIS branch
+    // Council plan review must have passed — tied to THIS branch.
+    // PIPELINE-INFRA sync plans defer Council to CI (Sync Step 8), so they
+    // record RESULT: DEFERRED — CI Council instead of a fabricated PASS.
+    const planType = extractField(content, "TYPE") || "";
+    const isSyncBranch = /^(nick\/)?pipeline-sync-v/.test(branch);
     const branchMatchedPass = content.includes("RESULT: PASS \u2014 " + branch);
-    if (!branchMatchedPass) {
+    const syncDeferred =
+      planType === "PIPELINE-INFRA" &&
+      isSyncBranch &&
+      content.includes("RESULT: DEFERRED \u2014 CI Council");
+    if (!branchMatchedPass && !syncDeferred) {
       process.stdout.write(
-        JSON.stringify({ decision: "block", reason: "Plan review not completed for this branch — run the council review before building." })
+        JSON.stringify({ decision: "block", reason: "Plan review not completed for this branch — run the council review before building (or record RESULT: DEFERRED — CI Council on a PIPELINE-INFRA sync plan)." })
       );
       return;
     }
