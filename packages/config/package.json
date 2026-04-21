@@ -8,7 +8,7 @@
     "tailwind.config.base.ts"
   ],
   "devDependencies": {
-    "tailwindcss": "^3.0.0",
-    "typescript": "^5.0.0"
+    "tailwindcss": "^4.2.4",
+    "typescript": "^6.0.3"
   }
 }
